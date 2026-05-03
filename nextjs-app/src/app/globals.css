@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* ═══ DESIGN TOKENS ═══ */
+@theme {
+  --color-cream: #F5F0E8;
+  --color-cream-dark: #EDE7D9;
+  --color-navy: #0A1F44;
+  --color-navy-light: #0D2550;
+  --color-gold: #C9A84C;
+  --color-gold-light: #E0BF6F;
+  --color-grey: #6B6B6B;
+  --color-card-border: #E0D8C8;
+  --color-warm: #E8D5BE;
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+}
+
+/* ═══ BASE ═══ */
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--color-cream);
+  color: var(--color-navy);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ TICKER ANIMATION ═══ */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+}
+
+/* ═══ PULSE ═══ */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s infinite;
+}
+
+/* ═══ SCROLLBAR ═══ */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-card-border) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { height: 4px; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-card-border);
+  border-radius: 2px;
+}
