@@ -15,27 +15,12 @@ export default function Handbook() {
       <div className="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
         {/* Book Mockup */}
         <FadeIn className="flex justify-center">
-          <div className="w-[280px] h-[380px] bg-gradient-to-br from-cream to-cream-dark rounded-r-2xl rounded-l border border-card-border shadow-[-6px_6px_0_0_var(--color-card-border),16px_24px_60px_rgba(10,31,68,0.15)] px-8 py-10 flex flex-col items-center justify-between relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-cream-dark to-cream" />
-            <div className="text-center">
-              <div className="text-[9px] font-bold tracking-[0.2em] text-gold uppercase mb-4">
-                Paul Joseph Ministries
-              </div>
-              <div className="w-[50px] h-[50px] mx-auto mb-5 relative flex items-center justify-center">
-                <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-navy -translate-x-1/2" />
-                <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-navy -translate-y-1/2" />
-              </div>
-              <div className="font-display text-base font-extrabold text-navy text-center leading-snug mb-1">
-                Handbook for a Disciple of Jesus
-              </div>
-              <div className="text-[9px] text-grey uppercase tracking-widest mt-1">
-                Scripture. Topic by Topic.
-              </div>
-            </div>
-            <div className="w-full h-[1px] bg-navy/12 my-4" />
-            <div className="text-[11px] font-semibold text-gold tracking-[0.06em]">
-              Paul Joseph
-            </div>
+          <div className="relative w-full max-w-[320px] aspect-[3/4] flex justify-center">
+            <img
+              src="/images/ChatGPT Image May 8, 2026, 03_22_25 PM.png"
+              alt="Handbook for a Disciple of Jesus"
+              className="w-full h-full object-contain rounded-lg shadow-[16px_24px_60px_rgba(10,31,68,0.15)]"
+            />
           </div>
         </FadeIn>
 
