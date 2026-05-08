@@ -1,17 +1,9 @@
-import { Play, Camera, Users } from "lucide-react";
-
 const links = [
   { href: "#problem", label: "About" },
   { href: "#how", label: "The Course" },
   { href: "#handbook", label: "The Handbook" },
   { href: "#testimonials", label: "Testimonials" },
   { href: "#cta-final", label: "Join Free" },
-];
-
-const socials = [
-  { icon: Play, label: "YouTube" },
-  { icon: Camera, label: "Instagram" },
-  { icon: Users, label: "Facebook" },
 ];
 
 export default function Footer() {
@@ -41,19 +33,7 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Socials */}
-        <div className="flex gap-3">
-          {socials.map((social) => (
-            <a
-              key={social.label}
-              href="#"
-              aria-label={social.label}
-              className="w-[38px] h-[38px] rounded-[10px] bg-white border border-card-border flex items-center justify-center transition-all hover:bg-navy hover:border-navy hover:text-cream group"
-            >
-              <social.icon className="w-4 h-4 text-navy group-hover:text-cream transition-colors" />
-            </a>
-          ))}
-        </div>
+        {/* Socials removed temporarily */}
       </div>
 
       {/* Bottom */}

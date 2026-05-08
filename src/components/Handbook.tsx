@@ -60,7 +60,7 @@ export default function Handbook() {
               </span>
             ))}
           </div>
-          <ButtonGold>Download Free Handbook ›</ButtonGold>
+          <ButtonGold href="#lead-magnet">Download Free Handbook ›</ButtonGold>
         </FadeIn>
       </div>
     </section>

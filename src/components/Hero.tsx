@@ -53,7 +53,6 @@ export default function Hero() {
           className="flex items-center justify-center gap-4 flex-wrap mb-12"
         >
           <ButtonGold>Join the Boot Camp — It&apos;s Free ›</ButtonGold>
-          <ButtonOutline>▶ Watch the Intro</ButtonOutline>
         </motion.div>
 
         {/* Floating Cards */}

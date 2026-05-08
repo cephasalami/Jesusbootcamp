@@ -15,13 +15,12 @@ export default function About() {
         {/* Portrait */}
         <FadeIn className="text-center">
           <div className="w-[200px] h-[240px] mx-auto bg-gradient-to-br from-[#1a3a7c] to-navy rounded-[50%_50%_50%_50%/40%_40%_60%_60%] border-[3px] border-gold flex items-center justify-center mb-6 shadow-[0_0_0_6px_rgba(201,168,76,0.15)] overflow-hidden">
-            <div className="text-xs text-white/30 text-center px-4 leading-relaxed">
-              Photo of
-              <br />
-              Paul Joseph
-              <br />
-              will go here
-            </div>
+            {/* Replace with actual Paul Joseph headshot */}
+            <img
+              src="/images/WhatsApp Image 2026-05-05 at 03.09.32.jpeg"
+              alt="Paul Joseph"
+              className="w-full h-full object-cover"
+            />
           </div>
           <div className="font-display text-[1.1rem] font-bold text-cream mb-1">Paul Joseph</div>
           <div className="text-xs text-gold font-medium">Author &amp; Founder</div>

@@ -15,12 +15,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The Jesus Boot Camp — From Believer to Disciple",
+  title: "Jesus Boot Camp — Free 90-Day Discipleship Course by Paul Joseph",
   description:
-    "A free 90-day discipleship course that transforms believers into disciples. 30 minutes a day. Completely free. Start today.",
+    "Transform from a dormant believer into a disciplined disciple of Christ. Join the free 90-day Jesus Boot Camp and get your free Handbook today.",
   openGraph: {
-    title: "The Jesus Boot Camp — From Believer to Disciple",
-    description: "A free 90-day discipleship course. 30 minutes a day. Completely free.",
+    title: "Jesus Boot Camp — Free 90-Day Discipleship Course by Paul Joseph",
+    description: "Transform from a dormant believer into a disciplined disciple of Christ. Join the free 90-day Jesus Boot Camp and get your free Handbook today.",
     type: "website",
   },
 };
