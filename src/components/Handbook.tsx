@@ -9,7 +9,7 @@ export default function Handbook() {
         <div className="relative group">
           <div className="relative z-10 transition-transform duration-700 group-hover:-translate-y-4">
             <img
-              src="/images/ChatGPT Image May 10, 2026, 02_40_09 PM.png"
+              src="/images/ChatGPT Image May 10, 2026, 02_49_46 PM.png"
               alt="Handbook for a Disciple of Jesus"
               className="w-full max-w-[450px] mx-auto drop-shadow-[0_32px_64px_rgba(0,0,0,0.12)] rounded-lg"
             />
