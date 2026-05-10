@@ -75,18 +75,48 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center">
-              <div className="w-full max-w-[320px] aspect-video bg-navy shadow-2xl relative overflow-hidden rotate-[2deg] group-hover:rotate-0 transition-transform duration-500">
-                <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent z-10" />
-                <PlayCircle className="w-14 h-14 text-gold relative z-20 transition-transform group-hover:scale-110 drop-shadow-2xl" />
-                <div className="absolute bottom-6 left-6 right-6 z-20">
-                  <div className="text-[10px] font-bold tracking-widest text-gold mb-2 uppercase">Session 01</div>
-                  <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full w-1/3 bg-gold" />
+            <div className="flex-1 flex items-center justify-center relative w-full py-8">
+              {/* Subtle background glow */}
+              <div className="absolute w-[200px] h-[200px] bg-gold/5 blur-[50px] rounded-full" />
+
+              <div className="w-full max-w-[300px] bg-[#1A1A1A] rounded-[16px] shadow-[0_20px_50px_rgba(26,26,26,0.15)] relative overflow-hidden rotate-[3deg] group-hover:rotate-0 transition-transform duration-500 border border-[#333] group-hover:shadow-[0_20px_60px_rgba(201,168,76,0.1)]">
+
+                {/* Header Mockup */}
+                <div className="px-5 py-4 border-b border-[#333] flex items-center gap-3 bg-[#1A1A1A]">
+                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+                    <Mail className="w-4 h-4 text-gold" />
+                  </div>
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-2 w-20 bg-white/20 rounded-full" />
+                    <div className="h-1.5 w-12 bg-white/10 rounded-full" />
                   </div>
                 </div>
+
+                {/* Video Mockup */}
+                <div className="p-5 bg-gradient-to-b from-[#1A1A1A] to-[#0A0A0A]">
+                  <div className="w-full aspect-video bg-black rounded-lg relative overflow-hidden group/video border border-[#333] shadow-inner">
+                    <div className="absolute inset-0 flex items-center justify-center z-20">
+                      <div className="w-12 h-12 rounded-full bg-gold/90 backdrop-blur-sm flex items-center justify-center text-navy shadow-lg transition-transform duration-300 group-hover:scale-110 cursor-pointer">
+                        <PlayCircle className="w-6 h-6 fill-navy text-gold/90" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[9px] font-bold tracking-[0.15em] text-white uppercase drop-shadow-md">Session 01</span>
+                        <span className="text-[9px] font-medium text-white/70">12:04 / 30:00</span>
+                      </div>
+                      <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
+                        <div className="h-full w-[40%] bg-gold rounded-full relative">
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
+
             <p className="text-[14px] text-grey mt-10 font-medium">
               Delivered daily to your primary inbox.
             </p>
