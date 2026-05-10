@@ -106,27 +106,35 @@ export default function BentoFeatures() {
           <div
             data-aos="fade-up"
             data-aos-delay="100"
-            className="md:col-span-2 bg-[#1A1A1A] p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden"
+            className="md:col-span-2 bg-[#F9F4E8] p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-3xl" />
-            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/40 mb-6">The Vision</div>
-            <h3 className="font-display text-[2.2rem] font-bold text-white mb-6 tracking-tight">The Give Me Five Vision</h3>
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-              <p className="text-[1rem] text-white/60 leading-[1.8] max-w-[350px]">
-                Authentication is multiplication. You disciple 5, who disciple 5, who disciple 5.
-              </p>
-              <div className="flex-1 space-y-4 w-full">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 blur-3xl rounded-full" />
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-6 relative z-10">The Vision</div>
+            <h3 className="font-display text-[2.2rem] font-bold text-navy mb-6 tracking-tight relative z-10">The Give Me Five Vision</h3>
+            <div className="flex flex-col md:flex-row gap-12 items-start relative z-10">
+              <div className="flex-1 max-w-[420px]">
+                <p className="text-[1.1rem] text-navy font-bold leading-[1.8] mb-4">
+                  Authentication is multiplication. You disciple 5, who disciple 5, who disciple 5.
+                </p>
+                <p className="text-[1rem] text-grey leading-[1.8] mb-6">
+                  We aren't building a passive audience. We are equipping an active movement. The model is simple and exponential—rooted in deep, face-to-face relationships rather than mass media. It's the exact blueprint Jesus used to change the world, starting with just a few dedicated men.
+                </p>
+                <p className="text-[1rem] text-navy font-semibold italic leading-[1.8]">
+                  Are you ready to take your five?
+                </p>
+              </div>
+              <div className="flex-1 space-y-5 w-full bg-white/50 p-8 border border-white/60 shadow-sm rounded-sm">
                 {visionSteps.map((step, i) => (
                   <div key={i} className="flex items-center gap-6">
-                    <div className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-[12px] font-bold text-gold">
+                    <div className="w-12 h-12 rounded-full bg-white border border-gold/30 flex shrink-0 items-center justify-center text-[13px] font-bold text-navy shadow-[0_4px_10px_rgba(0,0,0,0.03)]">
                       {step.num}
                     </div>
-                    <div className="text-[14px] text-white/80 font-medium">{step.label}</div>
+                    <div className="text-[14px] text-navy font-bold leading-tight">{step.label}</div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="mt-12 inline-block bg-white text-navy px-8 py-4 font-bold text-[14px] uppercase tracking-widest shadow-lg">
+            <div className="mt-12 inline-flex relative z-10 bg-navy text-white px-8 py-4 font-bold text-[14px] uppercase tracking-widest shadow-lg hover:bg-gold hover:text-navy transition-colors duration-300">
               → 2,000,000+ Reached
             </div>
           </div>
