@@ -1,59 +1,40 @@
-import { BookOpen, Globe, Cross } from "lucide-react";
-import FadeIn from "./ui/FadeIn";
 import { SectionTag } from "./ui/Buttons";
-
-const badges = [
-  { icon: BookOpen, label: "Published Author" },
-  { icon: Globe, label: "Global Ministry Reach" },
-  { icon: Cross, label: "Rooted in Scripture" },
-];
 
 export default function About() {
   return (
-    <section id="about" className="bg-navy py-28 px-8">
-      <div className="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-[320px_1fr] gap-20 items-center">
-        {/* Portrait */}
-        <FadeIn className="text-center">
-          <div className="w-[200px] h-[240px] mx-auto bg-gradient-to-br from-[#1a3a7c] to-navy rounded-[50%_50%_50%_50%/40%_40%_60%_60%] border-[3px] border-gold flex items-center justify-center mb-6 shadow-[0_0_0_6px_rgba(201,168,76,0.15)] overflow-hidden">
-            {/* Replace with actual Paul Joseph headshot */}
+    <section id="about" className="py-24 px-8 bg-cream border-t border-card-border">
+      <div className="max-w-[1000px] mx-auto text-center" data-aos="fade-up">
+        <div className="mb-10">
+          <SectionTag className="border-navy/10 text-navy/60">The Author</SectionTag>
+        </div>
+
+        <div className="relative w-40 h-40 mx-auto mb-8">
+          <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-xl">
             <img
               src="/images/WhatsApp Image 2026-05-05 at 03.09.32.jpeg"
               alt="Paul Joseph"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover grayscale-[0.1]"
             />
           </div>
-          <div className="font-display text-[1.1rem] font-bold text-cream mb-1">Paul Joseph</div>
-          <div className="text-xs text-gold font-medium">Author &amp; Founder</div>
-        </FadeIn>
-
-        {/* Content */}
-        <FadeIn delay={0.15}>
-          <SectionTag className="border-gold/30 mb-5">About the Founder</SectionTag>
-          <p className="text-[1.05rem] text-cream/75 leading-[1.85] mb-8">
-            Paul Joseph is the author of{" "}
-            <em className="text-gold italic">
-              The Discipline of a Disciple — The Cost, Calling, and Power of Authentic Discipleship.
-            </em>{" "}
-            The Jesus Boot Camp was born from his life&apos;s mission: to see every believer not just
-            saved, but sent.
-          </p>
-          <p className="text-[1.05rem] text-cream/75 leading-[1.85] mb-8">
-            After decades of ministry, Paul saw the same pattern everywhere: sincere believers who
-            never became disciplined disciples. The Boot Camp is his answer — structured, free, and
-            built for the real world.
-          </p>
-          <div className="flex gap-3 flex-wrap">
-            {badges.map((badge, i) => (
-              <span
-                key={i}
-                className="flex items-center gap-2 bg-white/7 border border-white/12 rounded-full px-5 py-2.5 text-[13px] font-semibold text-cream"
-              >
-                <badge.icon className="w-4 h-4 text-gold" />
-                {badge.label}
-              </span>
-            ))}
+          <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gold rounded-full flex items-center justify-center text-navy shadow-lg">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2z" /></svg>
           </div>
-        </FadeIn>
+        </div>
+
+        <h2 className="font-display text-[2.5rem] font-bold text-navy mb-2 tracking-tight">Paul Joseph</h2>
+        <p className="text-[14px] uppercase tracking-[0.2em] text-gold font-bold mb-8">Founder & Author</p>
+
+        <div className="max-w-[700px] mx-auto space-y-6 text-[1.1rem] text-grey leading-[1.8]">
+          <p>
+            Jesus Boot Camp was born from a simple observation: many people are
+            born again, but few are being made into disciples.
+          </p>
+          <p>
+            Paul Joseph is dedicated to helping believers transition from dormant spectators
+            to active, disciplined ambassadors of Christ. This course is the result of
+            years of testing in prisons, churches, and mission fields.
+          </p>
+        </div>
       </div>
     </section>
   );

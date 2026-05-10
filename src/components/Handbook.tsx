@@ -1,52 +1,60 @@
 import { BookOpen, Church, Link2, Globe } from "lucide-react";
-import FadeIn from "./ui/FadeIn";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
-
-const pills = [
-  { icon: BookOpen, label: "Scripture by topic" },
-  { icon: Church, label: "Used in 50+ churches" },
-  { icon: Link2, label: "Prison ministry tested" },
-  { icon: Globe, label: "Global reach" },
-];
 
 export default function Handbook() {
   return (
-    <section id="handbook" className="py-28 px-8 bg-white border-t border-card-border">
-      <div className="max-w-[1100px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-        {/* Book Mockup */}
-        <FadeIn className="flex justify-center">
-          <div className="relative w-full max-w-[320px] aspect-[3/4] flex justify-center">
+    <section id="handbook" className="py-24 px-8 bg-cream-dark">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center" data-aos="fade-up">
+        {/* Book Visual */}
+        <div className="relative group">
+          <div className="relative z-10 transition-transform duration-700 group-hover:-translate-y-4">
             <img
               src="/images/ChatGPT Image May 8, 2026, 03_22_25 PM.png"
               alt="Handbook for a Disciple of Jesus"
-              className="w-full h-full object-contain rounded-lg shadow-[16px_24px_60px_rgba(10,31,68,0.15)]"
+              className="w-full max-w-[450px] mx-auto drop-shadow-[0_32px_64px_rgba(0,0,0,0.12)] rounded-lg"
             />
           </div>
-        </FadeIn>
+          {/* Subtle decoration */}
+          <div className="absolute -inset-10 bg-gold/5 rounded-full blur-3xl -z-0" />
+        </div>
 
-        {/* Text */}
-        <FadeIn delay={0.15}>
-          <SectionTag>Free Resource</SectionTag>
-          <h2 className="font-display text-[clamp(1.8rem,3vw,2.4rem)] font-bold text-navy leading-snug mt-5 mb-4">
-            Your Pocket Companion for Daily Discipleship
+        {/* Content */}
+        <div>
+          <SectionTag className="mb-6 border-navy/10 text-navy/60">Essential Resource</SectionTag>
+          <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mb-6 tracking-tight">
+            The Handbook for a
+            <br />
+            <em className="italic text-gold font-normal">Disciple of Jesus.</em>
           </h2>
-          <p className="text-base text-grey leading-[1.8] mb-8">
-            Thousands of Scripture references, categorized by topic — for every situation life throws
-            at you. Used in prisons, youth groups, and churches worldwide. Now free for you.
+          <p className="text-[1.1rem] text-grey leading-[1.8] mb-10 max-w-[500px]">
+            This isn&apos;t just a book. It&apos;s a tactical field manual. It contains
+            thousands of categorized Scripture references to guide you through every
+            situation a disciple faces.
           </p>
-          <div className="flex gap-2.5 flex-wrap mb-8">
-            {pills.map((pill, i) => (
-              <span
-                key={i}
-                className="bg-cream border border-card-border rounded-full px-4 py-2 text-xs font-medium text-navy flex items-center gap-1.5"
-              >
-                <pill.icon className="w-3.5 h-3.5 text-gold" />
-                {pill.label}
-              </span>
-            ))}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+            <div className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5" />
+              <div className="text-[14px] font-medium text-navy">Over 2,000 Scripture References</div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5" />
+              <div className="text-[14px] font-medium text-navy">Practical Life Topics</div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5" />
+              <div className="text-[14px] font-medium text-navy">Pocket-Sized Guidance</div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5" />
+              <div className="text-[14px] font-medium text-navy">Free with Every Session</div>
+            </div>
           </div>
-          <ButtonGold href="#lead-magnet">Download Free Handbook ›</ButtonGold>
-        </FadeIn>
+
+          <ButtonGold href="#lead-magnet">
+            Download the Free Handbook ›
+          </ButtonGold>
+        </div>
       </div>
     </section>
   );

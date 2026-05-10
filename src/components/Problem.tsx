@@ -1,5 +1,4 @@
 import { Search, VolumeX, BedDouble } from "lucide-react";
-import FadeIn from "./ui/FadeIn";
 import { SectionTag } from "./ui/Buttons";
 
 const cards = [
@@ -22,31 +21,37 @@ const cards = [
 
 export default function Problem() {
   return (
-    <section id="problem" className="py-28 px-8 bg-white border-t border-card-border">
+    <section id="problem" className="py-24 px-8 bg-cream border-t border-card-border overflow-hidden">
       <div className="max-w-[1100px] mx-auto">
-        <FadeIn className="text-center mb-16">
-          <SectionTag>The Problem</SectionTag>
-          <h2 className="font-display text-[clamp(2rem,4vw,3rem)] font-bold text-navy leading-tight mt-5 mb-3">
+        <div className="text-center mb-16" data-aos="fade-up">
+          <SectionTag className="border-navy/10 text-navy/60">The Crisis</SectionTag>
+          <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mt-6 mb-6 tracking-tight">
             &quot;Most believers attend church.
             <br />
             Few actually follow Christ.&quot;
           </h2>
-          <p className="text-[1.05rem] text-grey max-w-[650px] mx-auto leading-[1.7]">
-            You know the Bible stories. You&apos;ve sat in the pews. But when someone asks you a hard
-            question about your faith — or when life falls apart — you freeze. You were never trained.
+          <p className="text-[1.15rem] text-grey max-w-[680px] mx-auto leading-[1.8]">
+            You know the stories. You&apos;ve sat in the pews. But when life demands a defense
+            of your hope, or when the mission calls for action — you freeze.
+            You were never trained for the front lines.
           </p>
-        </FadeIn>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {cards.map((card, i) => (
-            <FadeIn key={i} delay={i * 0.1}>
-              <div className="bg-cream rounded-3xl border border-card-border p-8 transition-all duration-300 relative overflow-hidden hover:shadow-[0_12px_36px_rgba(10,31,68,0.08)] hover:-translate-y-1 group">
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gold rounded-t-3xl" />
-                <card.icon className="w-8 h-8 text-gold mb-4" />
-                <h4 className="font-display text-[1.1rem] font-bold text-navy mb-2">{card.title}</h4>
-                <p className="text-sm text-grey leading-relaxed italic">{card.text}</p>
+            <div
+              key={i}
+              data-aos="fade-up"
+              data-aos-delay={i * 100}
+              className="bg-white rounded-lg border border-card-border p-10 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-[3px] bg-gold opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-12 h-12 rounded-full bg-warm flex items-center justify-center mb-6 text-navy">
+                <card.icon className="w-6 h-6" />
               </div>
-            </FadeIn>
+              <h4 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">{card.title}</h4>
+              <p className="text-[1rem] text-grey leading-[1.7] italic font-medium opacity-80 group-hover:opacity-100 transition-opacity">&ldquo;{card.text.replace(/"/g, '')}&rdquo;</p>
+            </div>
           ))}
         </div>
       </div>

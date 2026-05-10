@@ -8,47 +8,51 @@ const links = [
 
 export default function Footer() {
   return (
-    <footer className="bg-cream border-t border-card-border py-14 px-8">
-      <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-navy rounded-[9px] flex items-center justify-center text-[15px]">
-            ✝️
+    <footer className="bg-cream border-t border-card-border py-20 px-8" data-aos="fade-up">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        {/* Logo & About */}
+        <div className="md:col-span-2">
+          <div className="font-display text-[1.2rem] font-bold text-navy tracking-tight mb-6">
+            JESUS BOOT CAMP
           </div>
-          <div className="font-display text-[0.95rem] font-bold text-navy">
-            The Jesus Boot Camp
+          <p className="text-[0.95rem] text-grey leading-[1.7] max-w-[380px]">
+            A free 90-day discipleship journey designed to move you from dormant
+            believer to disciplined ambassador of Christ.
+          </p>
+        </div>
+
+        {/* Quick Links */}
+        <div>
+          <h4 className="font-sans text-[12px] font-bold uppercase tracking-[0.15em] text-navy mb-6">Navigation</h4>
+          <div className="flex flex-col gap-4">
+            {links.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-sm text-grey hover:text-gold transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
 
-        {/* Links */}
-        <div className="flex gap-8 flex-wrap">
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm text-grey transition-colors hover:text-navy"
-            >
-              {link.label}
-            </a>
-          ))}
+        {/* Legal */}
+        <div>
+          <h4 className="font-sans text-[12px] font-bold uppercase tracking-[0.15em] text-navy mb-6">Legal</h4>
+          <div className="flex flex-col gap-4">
+            <a href="#" className="text-sm text-grey hover:text-gold transition-colors">Privacy Policy</a>
+            <a href="#" className="text-sm text-grey hover:text-gold transition-colors">Terms of Service</a>
+          </div>
         </div>
-
-        {/* Socials removed temporarily */}
       </div>
 
-      {/* Bottom */}
-      <div className="max-w-[1100px] mx-auto mt-8 pt-6 border-t border-card-border flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p className="text-xs text-grey">
-          © 2025 The Jesus Boot Camp — A Ministry of Paul Joseph
+      <div className="max-w-[1200px] mx-auto pt-10 border-t border-card-border flex flex-col md:flex-row justify-between items-center gap-6">
+        <p className="text-[13px] text-grey/60">
+          © 2025 Jesus Boot Camp — A Ministry of Paul Joseph.
         </p>
-        <p className="text-xs text-grey">
-          <a href="#" className="underline underline-offset-2">
-            Privacy Policy
-          </a>{" "}
-          ·{" "}
-          <a href="#" className="underline underline-offset-2">
-            Terms
-          </a>
+        <p className="text-[13px] text-grey/60">
+          Built for the Mission.
         </p>
       </div>
     </footer>

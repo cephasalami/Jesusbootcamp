@@ -3,14 +3,14 @@
 /* ═══ DESIGN TOKENS ═══ */
 @theme {
   --color-cream: #F5F0E8;
-  --color-cream-dark: #EDE7D9;
-  --color-navy: #0A1F44;
-  --color-navy-light: #0D2550;
+  --color-cream-dark: #EDEAE2;
+  --color-navy: #1A1A1A;
+  --color-navy-light: #2A2A2A;
   --color-gold: #C9A84C;
   --color-gold-light: #E0BF6F;
-  --color-grey: #6B6B6B;
+  --color-grey: #5C5C5C;
   --color-card-border: #E0D8C8;
-  --color-warm: #E8D5BE;
+  --color-warm: #EDEAE2;
 
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
@@ -18,6 +18,7 @@
   --radius-xl: 32px;
   --radius-lg: 24px;
   --radius-md: 16px;
+  --radius-sm: 6px;
 }
 
 /* ═══ BASE ═══ */
@@ -25,9 +26,20 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-body);
   background: var(--color-cream);
-  color: var(--color-navy);
+  color: var(--color-grey);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  font-weight: 700;
+}
+
+p {
+  color: var(--color-grey);
+  line-height: 1.7;
 }
 
 /* ═══ TICKER ANIMATION ═══ */

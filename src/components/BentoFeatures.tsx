@@ -1,5 +1,4 @@
-import { Lock, Unlock, Coffee, Monitor, Home, Smartphone, Mail } from "lucide-react";
-import FadeIn from "./ui/FadeIn";
+import { Lock, Unlock, Mail, Coffee, Monitor, Home, Smartphone } from "lucide-react";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
 
 const sessions = [
@@ -28,131 +27,139 @@ const visionSteps = [
 
 export default function BentoFeatures() {
   return (
-    <section id="bento" className="py-28 px-8 bg-cream">
+    <section id="bento" className="py-24 px-8 bg-cream overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
-        <FadeIn className="text-center mb-16">
-          <SectionTag>Features</SectionTag>
-          <h2 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-bold text-navy leading-tight mt-5 mb-2">
+        <div className="text-center mb-16" data-aos="fade-up">
+          <SectionTag className="border-navy/10 text-navy/60">Features</SectionTag>
+          <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mt-6 mb-4 tracking-tight">
             Everything You Need.
             <br />
             Nothing You Don&apos;t.
           </h2>
-          <p className="text-[1.05rem] text-grey">Built for real life, not a classroom — all free, forever.</p>
-        </FadeIn>
+          <p className="text-[1.1rem] text-grey max-w-[500px] mx-auto leading-[1.7]">Built for the battlefield of real life, not a comfortable classroom.</p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Card 1: 90 Sessions (spans 2) */}
-          <FadeIn className="md:col-span-2">
-            <div className="bg-white rounded-[var(--radius-xl)] border border-card-border p-9 transition-all hover:shadow-[0_16px_48px_rgba(10,31,68,0.09)] hover:-translate-y-1">
-              <div className="text-[10px] font-bold tracking-[0.14em] uppercase text-gold mb-2">Full Curriculum</div>
-              <h3 className="font-display text-[1.35rem] font-bold text-navy mb-2">90 Dynamic Sessions</h3>
-              <p className="text-[13.5px] text-grey leading-relaxed">Every session is video-taught, Scripture-anchored, and built for real-life application.</p>
-              <div className="mt-4">
-                {sessions.map((s, i) => (
-                  <div key={i} className="flex items-center gap-2.5 py-2.5 border-b border-card-border last:border-b-0 text-[13px] text-grey">
-                    <span className="text-[11px] font-bold text-gold min-w-[28px]">{s.num}</span>
-                    <span className="flex-1">{s.title}</span>
-                    {s.locked ? <Lock className="w-3.5 h-3.5 opacity-50" /> : <Unlock className="w-3.5 h-3.5 text-gold" />}
-                  </div>
-                ))}
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Card 1: 90 Sessions */}
+          <div
+            data-aos="fade-up"
+            className="md:col-span-2 bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 relative group"
+          >
+            <div className="absolute top-0 right-0 p-8">
+              <div className="w-14 h-14 bg-warm rounded-full flex items-center justify-center text-navy font-bold text-sm">90</div>
             </div>
-          </FadeIn>
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-4">Curriculum</div>
+            <h3 className="font-display text-[2.2rem] font-bold text-navy mb-4 tracking-tight">Dynamic Sessions</h3>
+            <p className="text-[1rem] text-grey leading-[1.8] max-w-[450px] mb-10">Every session is Scripture-anchored, mission-focused, and built for immediate daily application.</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-4">
+              {sessions.map((s, i) => (
+                <div key={i} className="flex items-center gap-4 py-3 border-b border-card-border last:border-b-0 group/item">
+                  <span className="text-[12px] font-bold text-gold group-hover/item:scale-110 transition-transform">{s.num}</span>
+                  <span className="text-[14px] text-navy font-medium flex-1">{s.title}</span>
+                  {s.locked ? <Lock className="w-3.5 h-3.5 text-grey/30" /> : <Unlock className="w-3.5 h-3.5 text-gold" />}
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Card 2: Free Handbook */}
-          <FadeIn delay={0.1}>
-            <div className="bg-cream-dark rounded-[var(--radius-xl)] border border-card-border p-9 transition-all hover:shadow-[0_16px_48px_rgba(10,31,68,0.09)] hover:-translate-y-1">
-              <div className="text-[10px] font-bold tracking-[0.14em] uppercase text-navy/50 mb-2">Free Resource</div>
-              <div className="w-full h-[150px] bg-gradient-to-br from-navy to-[#1a3a7c] rounded-2xl mb-4 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-6 h-6 mx-auto mb-2 relative">
-                    <div className="absolute left-1/2 top-0 bottom-0 w-[1.5px] bg-gold/60 -translate-x-1/2" />
-                    <div className="absolute top-1/2 left-0 right-0 h-[1.5px] bg-gold/60 -translate-y-1/2" />
-                  </div>
-                  <div className="font-display text-[10px] font-bold text-gold/80 uppercase tracking-widest leading-snug">
-                    Handbook<br />for a Disciple<br />of Jesus
-                  </div>
+          <div
+            data-aos="fade-up"
+            data-aos-delay="100"
+            className="bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+          >
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-navy/40 mb-6">Resource</div>
+            <div className="w-full aspect-[3/4] bg-cream shadow-inner border border-card-border relative overflow-hidden mb-8 flex items-center justify-center p-8 group-hover:rotate-[-2deg] transition-transform duration-500">
+              <div className="w-full h-full border border-navy/5 flex flex-col items-center justify-center text-center">
+                <div className="font-display text-[14px] font-bold text-navy/80 uppercase tracking-widest leading-relaxed">
+                  Handbook<br />For A<br />Disciple
                 </div>
-              </div>
-              <h3 className="font-display text-[1.35rem] font-bold text-navy mb-2">Free Handbook</h3>
-              <p className="text-[13.5px] text-grey leading-relaxed">Thousands of Scripture references, categorized by life topic. Your daily pocket guide.</p>
-              <div className="mt-4">
-                <ButtonGold href="#handbook" className="!text-[13px] !px-5 !py-2.5">Download Free ›</ButtonGold>
+                <div className="w-6 h-[1px] bg-gold my-4" />
+                <div className="text-[14px] font-serif italic text-navy/40">Premium PDF</div>
               </div>
             </div>
-          </FadeIn>
+            <h3 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">Digital Handbook</h3>
+            <p className="text-[14px] text-grey leading-[1.7] mb-8">Thousands of Scripture references categorized by life topic. Your active pocket guide.</p>
+            <ButtonGold href="#handbook" className="w-full !text-[13px] rounded-none !py-4">Download Free ›</ButtonGold>
+          </div>
 
           {/* Card 3: Study Anywhere */}
-          <FadeIn delay={0.15}>
-            <div className="bg-white rounded-[var(--radius-xl)] border border-card-border p-9 transition-all hover:shadow-[0_16px_48px_rgba(10,31,68,0.09)] hover:-translate-y-1">
-              <div className="text-[10px] font-bold tracking-[0.14em] uppercase text-gold mb-2">Flexible Format</div>
-              <h3 className="font-display text-[1.35rem] font-bold text-navy mb-2">Study Anywhere</h3>
-              <p className="text-[13.5px] text-grey leading-relaxed">No rigid schedule. Learn where life happens.</p>
-              <div className="flex flex-col gap-2 mt-4">
-                {studyLocations.map((loc, i) => (
-                  <div key={i} className="flex items-center gap-2.5 bg-cream rounded-[10px] px-4 py-2.5 text-[13px] text-navy font-medium">
-                    <loc.icon className="w-[18px] h-[18px] text-gold" />
-                    {loc.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
-
-          {/* Card 4: Vision (dark, tall) */}
-          <FadeIn delay={0.2} className="md:row-span-2">
-            <div className="bg-navy rounded-[var(--radius-xl)] border border-transparent p-9 transition-all hover:shadow-[0_16px_48px_rgba(10,31,68,0.09)] hover:-translate-y-1 h-full">
-              <div className="text-[10px] font-bold tracking-[0.14em] uppercase text-cream/50 mb-2">The Vision</div>
-              <h3 className="font-display text-[1.35rem] font-bold text-cream mb-2">The Give Me Five Vision</h3>
-              <p className="text-[13.5px] text-cream/55 leading-relaxed mb-5">You disciple 5. They disciple 5. Watch what happens.</p>
-              <div className="flex flex-col">
-                {visionSteps.map((step, i) => (
-                  <div key={i}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-full bg-gold/15 border-[1.5px] border-gold flex items-center justify-center text-xs font-bold text-gold shrink-0 z-[1]">
-                        {step.num}
-                      </div>
-                      <div className="text-[13px] text-cream font-medium">{step.label}</div>
-                    </div>
-                    {i < visionSteps.length - 1 && (
-                      <div className="w-[1px] h-[18px] bg-gold/30 ml-[18px]" />
-                    )}
-                  </div>
-                ))}
-                <div className="bg-gold rounded-full px-4 py-1.5 text-xs font-bold text-navy mt-3 inline-block w-fit">
-                  → 2,000,000+ reached
+          <div
+            data-aos="fade-up"
+            className="bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+          >
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-6">Format</div>
+            <h3 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">Study Anywhere</h3>
+            <p className="text-[14px] text-grey leading-[1.7] mb-10">No rigid school schedule. Learn where your life actually happens.</p>
+            <div className="space-y-3">
+              {studyLocations.map((loc, i) => (
+                <div key={i} className="flex items-center gap-4 bg-cream p-4 hover:bg-white hover:border-gold border border-transparent transition-all">
+                  <loc.icon className="w-5 h-5 text-gold" />
+                  <span className="text-[14px] font-bold text-navy uppercase tracking-wider">{loc.label}</span>
                 </div>
-              </div>
-              <p className="text-[11px] mt-5 text-cream/50">All because you discipled five.</p>
+              ))}
             </div>
-          </FadeIn>
+          </div>
+
+          {/* Card 4: Give Me Five Vision */}
+          <div
+            data-aos="fade-up"
+            data-aos-delay="100"
+            className="md:col-span-2 bg-[#1A1A1A] p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-3xl" />
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-white/40 mb-6">The Vision</div>
+            <h3 className="font-display text-[2.2rem] font-bold text-white mb-6 tracking-tight">The Give Me Five Vision</h3>
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <p className="text-[1rem] text-white/60 leading-[1.8] max-w-[350px]">
+                Authentication is multiplication. You disciple 5, who disciple 5, who disciple 5.
+              </p>
+              <div className="flex-1 space-y-4 w-full">
+                {visionSteps.map((step, i) => (
+                  <div key={i} className="flex items-center gap-6">
+                    <div className="w-10 h-10 rounded-full border border-gold/30 flex items-center justify-center text-[12px] font-bold text-gold">
+                      {step.num}
+                    </div>
+                    <div className="text-[14px] text-white/80 font-medium">{step.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-12 inline-block bg-white text-navy px-8 py-4 font-bold text-[14px] uppercase tracking-widest shadow-lg">
+              → 2,000,000+ Reached
+            </div>
+          </div>
 
           {/* Card 5: Daily Email */}
-          <FadeIn delay={0.25}>
-            <div className="bg-white rounded-[var(--radius-xl)] border border-card-border p-9 transition-all hover:shadow-[0_16px_48px_rgba(10,31,68,0.09)] hover:-translate-y-1">
-              <div className="text-[10px] font-bold tracking-[0.14em] uppercase text-gold mb-2">Delivery</div>
-              <div className="w-14 h-14 bg-gold/12 rounded-[14px] flex items-center justify-center mb-4">
-                <Mail className="w-7 h-7 text-gold" />
-              </div>
-              <h3 className="font-display text-[1.35rem] font-bold text-navy mb-2">Daily Email Delivery</h3>
-              <p className="text-[13.5px] text-grey leading-relaxed">One session a day, delivered to your inbox. No app to download. No platform to log in to.</p>
-              <div className="flex items-baseline gap-1.5 mt-3">
-                <span className="font-display text-3xl font-extrabold text-navy">1</span>
-                <span className="text-[13px] text-grey">session per day · 30 min each</span>
-              </div>
+          <div
+            data-aos="fade-up"
+            className="bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+          >
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-8">Delivery</div>
+            <div className="w-16 h-16 bg-cream flex items-center justify-center mb-6 text-gold group-hover:scale-110 transition-transform">
+              <Mail className="w-8 h-8" />
             </div>
-          </FadeIn>
+            <h3 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">Daily Email</h3>
+            <p className="text-[14px] text-grey leading-[1.7]">One session a day. Zero apps to download. Pure focus delivered to your inbox.</p>
+          </div>
 
-          {/* Card 6: Free Forever (gold) */}
-          <FadeIn delay={0.3}>
-            <div className="bg-gradient-to-br from-gold to-gold-light rounded-[var(--radius-xl)] border border-transparent p-9 transition-all hover:shadow-[0_16px_48px_rgba(10,31,68,0.09)] hover:-translate-y-1">
-              <div className="text-[10px] font-bold tracking-[0.14em] uppercase text-navy/50 mb-2">Pricing</div>
-              <h3 className="font-display text-[1.35rem] font-bold text-navy mb-2">Free Forever</h3>
-              <div className="font-display text-7xl font-extrabold text-navy leading-none my-3">$0</div>
-              <div className="text-[13px] text-navy/65">The only cost is your commitment.</div>
-              <p className="mt-3 text-xs text-navy/70">No hidden fees. No premium tier. No upsell. This is a ministry, not a product.</p>
+          {/* Card 6: Free Forever */}
+          <div
+            data-aos="fade-up"
+            data-aos-delay="100"
+            className="md:col-span-2 bg-warm p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group flex flex-col md:flex-row items-center justify-between gap-12"
+          >
+            <div className="max-w-[400px]">
+              <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-navy/40 mb-6">Investment</div>
+              <h3 className="font-display text-[2.2rem] font-bold text-navy mb-4 tracking-tight">Free. Forever.</h3>
+              <p className="text-[1rem] text-grey leading-[1.8]">No subscriptions. No tiers. No upsells. This is a ministry, not a software company.</p>
             </div>
-          </FadeIn>
+            <div className="text-center">
+              <div className="font-display text-[10rem] font-bold text-navy leading-none select-none opacity-10">$0</div>
+              <div className="text-[15px] font-bold text-navy tracking-widest uppercase mt-[-2rem] relative z-10">Total Cost</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

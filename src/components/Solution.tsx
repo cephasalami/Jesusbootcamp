@@ -1,5 +1,4 @@
 import { Swords, BookOpen, Flame, Globe } from "lucide-react";
-import FadeIn from "./ui/FadeIn";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
 
 const pillars = [
@@ -11,36 +10,40 @@ const pillars = [
 
 export default function Solution() {
   return (
-    <section id="solution" className="bg-navy py-28 px-8">
-      <FadeIn className="max-w-[1100px] mx-auto text-center">
-        <SectionTag className="border-gold/30">The Solution</SectionTag>
-        <h2 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-bold text-cream leading-tight mt-5 mb-4">
-          The Jesus Boot Camp was built
+    <section id="solution" className="bg-[#EDEAE2] py-24 px-8 overflow-hidden">
+      <div className="max-w-[1100px] mx-auto text-center" data-aos="fade-up">
+        <SectionTag className="border-navy/10 text-navy/60">The Mission</SectionTag>
+        <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mt-6 mb-6 tracking-tight">
+          A Blueprint for the
           <br />
-          for exactly this.
+          Modern Ambassador.
         </h2>
-        <p className="text-base text-cream/55 mb-16">
-          90 sessions. 30 minutes a day. Everything you need to go from dormant to deployed.
+        <p className="text-[1.15rem] text-grey max-w-[600px] mx-auto mb-16 leading-[1.8]">
+          90 sessions. 30 minutes a day. Everything you need to transition
+          from dormant believer to deployed disciple.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[2px] bg-white/8 rounded-[var(--radius-xl)] overflow-hidden mb-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {pillars.map((p, i) => (
             <div
               key={i}
-              className="bg-navy px-7 py-10 text-center transition-colors relative hover:bg-navy-light group"
+              data-aos="fade-up"
+              data-aos-delay={i * 100}
+              className="bg-white p-10 rounded-lg shadow-sm border border-card-border hover:shadow-md transition-all duration-500 group"
             >
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-[3px] bg-gold rounded-b-sm" />
-              <p.icon className="w-9 h-9 text-gold mx-auto mb-4" />
-              <h3 className="font-body text-[11px] font-bold tracking-[0.12em] uppercase text-gold mb-3">
+              <div className="w-12 h-12 rounded-full bg-cream flex items-center justify-center mb-6 text-gold group-hover:scale-110 transition-transform">
+                <p.icon className="w-6 h-6" />
+              </div>
+              <h3 className="font-sans text-[11px] font-bold tracking-[0.2em] uppercase text-navy mb-4">
                 {p.title}
               </h3>
-              <p className="text-[13px] text-cream/50 leading-relaxed">{p.text}</p>
+              <p className="text-[14px] text-grey leading-[1.7] font-medium">{p.text}</p>
             </div>
           ))}
         </div>
 
-        <ButtonGold className="mx-auto">Start My 90-Day Journey ›</ButtonGold>
-      </FadeIn>
+        <ButtonGold className="mx-auto h-[56px] px-10 rounded-sm">Start My 90-Day Journey ›</ButtonGold>
+      </div>
     </section>
   );
 }

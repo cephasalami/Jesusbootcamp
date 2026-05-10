@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import SocialProof from "@/components/SocialProof";
+import Stats from "@/components/Stats";
 import Problem from "@/components/Problem";
 import Solution from "@/components/Solution";
 import HowItWorks from "@/components/HowItWorks";
@@ -19,7 +19,7 @@ export default function Home() {
     <>
       <Navbar />
       <Hero />
-      <SocialProof />
+      <Stats />
       <Problem />
       <Solution />
       <HowItWorks />
