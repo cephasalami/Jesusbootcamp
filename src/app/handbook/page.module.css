@@ -26,15 +26,18 @@
 .announcementBar {
     background-color: var(--gold);
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: clamp(10px, 2.5vw, 13px);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 44px;
+    text-align: center;
+    min-height: 44px;
+    padding: 10px 16px;
     width: 100%;
+    line-height: 1.5;
 }
 
 .heroSection {
