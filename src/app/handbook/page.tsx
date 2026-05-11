@@ -1,0 +1,544 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { BookOpen, Compass, Shield, Globe, Smartphone, Key, Mail, Inbox, Download } from "lucide-react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import styles from "./page.module.css";
+
+export default function HandbookLandingPage() {
+  const router = useRouter();
+  const [email1, setEmail1] = useState("");
+  const [email2, setEmail2] = useState("");
+  const [error1, setError1] = useState("");
+  const [error2, setError2] = useState("");
+  const [isSubmitting1, setIsSubmitting1] = useState(false);
+  const [isSubmitting2, setIsSubmitting2] = useState(false);
+  const [success1, setSuccess1] = useState(false);
+  const [success2, setSuccess2] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
+  useEffect(() => {
+    AOS.init({
+      once: true,
+      duration: 700,
+    });
+  }, []);
+
+  const validateEmail = (email: string) => {
+    const re = /^\S+@\S+\.\S+$/;
+    return re.test(email);
+  };
+
+  const handleFormSubmit = async (
+    e: React.FormEvent,
+    email: string,
+    setSubmitting: (val: boolean) => void,
+    setError: (val: string) => void,
+    setSuccess: (val: boolean) => void
+  ) => {
+    e.preventDefault();
+    setError("");
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Subscription failed");
+      }
+
+      setSubmitting(false);
+      setSuccess(true);
+
+      setTimeout(() => {
+        router.push("/power-for-the-hour");
+      }, 1500);
+    } catch (err: any) {
+      setSubmitting(false);
+      setError(err.message || "Failed to subscribe. Please try again.");
+    }
+  };
+
+  return (
+    <div className={styles.pageWrapper}>
+      {/* SECTION 1 - ANNOUNCEMENT BAR */}
+      <div className={styles.announcementBar}>
+        📖 FREE DOWNLOAD — LIMITED TIME · The Handbook for a Disciple of Jesus · Instant Access
+      </div>
+
+      {/* SECTION 2 - HERO SECTION */}
+      <section className={styles.heroSection}>
+        <div className={styles.container}>
+          <div className={styles.heroGrid}>
+            <div data-aos="fade-up">
+              <div className={styles.labelWrapper}>
+                <span className={styles.labelText}>FREE DOWNLOAD</span>
+              </div>
+              <h1 className={`${styles.headingDisplay} ${styles.heroH1}`}>
+                The Book That Trains You To Actually Live Your Faith.
+              </h1>
+              <p className={styles.heroSub}>
+                Most believers know the scriptures. Few know how to use them.
+                The Handbook for a Disciple of Jesus gives you thousands of
+                scripture references organized by life topic — so you always
+                know what God says about what you&apos;re facing.
+              </p>
+
+              <div className={styles.trustLine}>
+                ✓ Used in prisons &nbsp;&nbsp; ✓ Youth groups &nbsp;&nbsp; ✓ Churches worldwide &nbsp;&nbsp; ✓ 100% Free
+              </div>
+
+              <form
+                className={styles.emailForm}
+                onSubmit={(e) => handleFormSubmit(e, email1, setIsSubmitting1, setError1, setSuccess1)}
+                noValidate
+              >
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    className={styles.inputField}
+                    value={email1}
+                    onChange={(e) => setEmail1(e.target.value)}
+                    disabled={isSubmitting1 || success1}
+                  />
+                  {error1 && <div className={styles.errorText}>{error1}</div>}
+                </div>
+
+                <button
+                  type="submit"
+                  className={`${styles.submitBtn} ${success1 ? styles.btnSuccess : ""}`}
+                  disabled={isSubmitting1 || success1}
+                >
+                  {isSubmitting1 ? (
+                    <><span className={styles.spinner}></span>Sending...</>
+                  ) : success1 ? (
+                    "✓ On its way!"
+                  ) : (
+                    "Send Me The Free Handbook →"
+                  )}
+                </button>
+                <div className={styles.formDisclaimer}>
+                  No spam. No credit card. Unsubscribe anytime.
+                </div>
+              </form>
+            </div>
+
+            <div className={styles.mockupImageWrapper} data-aos="fade-up" data-aos-delay="100">
+              <Image
+                src="/images/ChatGPT Image May 10, 2026, 02_49_46 PM.png"
+                alt="Handbook for a Disciple of Jesus Mockup"
+                width={480}
+                height={600}
+                className={styles.mockupImage}
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3 - SOCIAL PROOF BAR */}
+      <section className={styles.socialProofSection}>
+        <div className={`${styles.container} ${styles.socialProofFlex}`} data-aos="fade-up">
+          <div className={styles.proofItem}>
+            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>26,000+</div>
+            <div className={styles.proofLabel}>Words of Scripture Content</div>
+          </div>
+          <div className={styles.proofDivider}></div>
+          <div className={styles.proofItem}>
+            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>90</div>
+            <div className={styles.proofLabel}>Days of Transformation</div>
+          </div>
+          <div className={styles.proofDivider}></div>
+          <div className={styles.proofItem}>
+            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>3 Languages</div>
+            <div className={styles.proofLabel}>And Growing</div>
+          </div>
+          <div className={styles.proofDivider}></div>
+          <div className={styles.proofItem}>
+            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>100% Free</div>
+            <div className={styles.proofLabel}>No Hidden Fees. Ever.</div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4 - WHAT'S INSIDE */}
+      <section className={styles.featuresSection}>
+        <div className={styles.container}>
+          <h2 className={`${styles.headingDisplay} ${styles.sectionH2}`} data-aos="fade-up">
+            Everything You Need. Organized For Real Life.
+          </h2>
+          <p className={styles.sectionSub} data-aos="fade-up" data-aos-delay="50">
+            This isn&apos;t a devotional. This is a reference tool —
+            built for disciples who want to know what God says
+            about every situation they face.
+          </p>
+
+          <div className={styles.featuresGrid}>
+            <div className={styles.featureCard} data-aos="fade-up">
+              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <BookOpen size={32} color="var(--gold)" />
+              </div>
+              <h3 className={styles.featureCardTitle}>Scripture By Topic</h3>
+              <p className={styles.featureCardText}>
+                Find exactly what God says about identity, fear, relationships, purpose,
+                and dozens of other life topics — instantly.
+              </p>
+            </div>
+
+            <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="50">
+              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <Compass size={32} color="var(--gold)" />
+              </div>
+              <h3 className={styles.featureCardTitle}>Built For Disciples</h3>
+              <p className={styles.featureCardText}>
+                Not for seminary students. Built for ordinary believers who want
+                to live like Christ — not just believe in Him.
+              </p>
+            </div>
+
+            <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="100">
+              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <Shield size={32} color="var(--gold)" />
+              </div>
+              <h3 className={styles.featureCardTitle}>For Every Battle</h3>
+              <p className={styles.featureCardText}>
+                When your faith is challenged, your identity is attacked, or someone
+                needs an answer — this handbook gives you the Word.
+              </p>
+            </div>
+
+            <div className={styles.featureCard} data-aos="fade-up">
+              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <Globe size={32} color="var(--gold)" />
+              </div>
+              <h3 className={styles.featureCardTitle}>Used Worldwide</h3>
+              <p className={styles.featureCardText}>
+                From prisons in the South to youth groups in Africa — the Handbook
+                has been used in churches and ministries across the globe.
+              </p>
+            </div>
+
+            <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="50">
+              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <Smartphone size={32} color="var(--gold)" />
+              </div>
+              <h3 className={styles.featureCardTitle}>Saves To Your Phone</h3>
+              <p className={styles.featureCardText}>
+                Download it as a PDF and add it to your phone&apos;s home screen.
+                Your entire reference library, one tap away.
+              </p>
+            </div>
+
+            <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="100">
+              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                <Key size={32} color="var(--gold)" />
+              </div>
+              <h3 className={styles.featureCardTitle}>Completely Free</h3>
+              <p className={styles.featureCardText}>
+                No subscription. No catch. No credit card.
+                Paul built this as a ministry tool — not a product.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5 - AUTHOR SECTION */}
+      <section className={styles.authorSection}>
+        <div className={`${styles.container} ${styles.authorContainer}`}>
+          <div className={styles.authorImageCol} data-aos="fade-right">
+            <div className={styles.authorImageWrapper}>
+              <Image
+                src="/images/WhatsApp Image 2026-05-05 at 03.09.32.jpeg"
+                alt="Paul Joseph"
+                width={360}
+                height={360}
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
+          </div>
+          <div className={styles.authorTextCol} data-aos="fade-left">
+            <div className={styles.labelWrapper}>
+              <span className={styles.labelText}>MEET THE AUTHOR</span>
+            </div>
+            <h2 className={styles.headingDisplay} style={{ fontSize: '38px', marginBottom: '8px', lineHeight: 1.1 }}>
+              Paul Joseph
+            </h2>
+            <div className={styles.authorTitle}>Author, Missionary & Founder of Jesus Boot Camp</div>
+
+            <p className={styles.authorBio}>
+              Paul Joseph spent over a decade as a missionary in Africa,
+              working alongside churches, youth groups, and communities across
+              the continent. Out of that experience — and a deep conviction
+              that most believers are never truly trained to live their faith —
+              he wrote the Handbook for a Disciple of Jesus.
+            </p>
+            <p className={styles.authorBio}>
+              His mission is simple: to transform dormant believers into
+              disciplined, mission-driven disciples of Christ. The Handbook
+              is the first step.
+            </p>
+
+            <div className={styles.authorQuote}>
+              <div className={`${styles.headingDisplay} ${styles.authorQuoteText}`}>
+                "The Great Commission was never meant to be a suggestion."
+              </div>
+              <div className={styles.authorQuoteAttr}>— Paul Joseph, Author</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 6 - TESTIMONIALS */}
+      <section className={styles.testimonialsSection}>
+        <div className={styles.container}>
+          <h2 className={`${styles.headingDisplay} ${styles.sectionH2}`} data-aos="fade-up">
+            What Disciples Are Saying
+          </h2>
+          <p className={styles.sectionSub} data-aos="fade-up" data-aos-delay="50">
+            Real feedback from real believers.
+          </p>
+
+          <div className={styles.testimonialsGrid}>
+            <div className={styles.testimonialCard} data-aos="fade-up">
+              <div className={styles.testiHeader}>
+                <Image src="/images/handbook/testimonial_sarah.png" alt="Sarah M." width={56} height={56} className={styles.testiAvatar} />
+                <div>
+                  <div className={styles.testiName}>Sarah M.</div>
+                  <div className={styles.testiLoc}>Texas, USA</div>
+                </div>
+              </div>
+              <div className={styles.testiStars}>★★★★★</div>
+              <p className={styles.testiQuote}>
+                "I&apos;ve been a believer my whole life, but I never had
+                a tool like this. Every time someone asks me a hard question
+                about faith now, I actually have an answer."
+              </p>
+            </div>
+
+            <div className={styles.testimonialCard} data-aos="fade-up" data-aos-delay="50">
+              <div className={styles.testiHeader}>
+                <Image src="/images/handbook/testimonial_james.png" alt="James K." width={56} height={56} className={styles.testiAvatar} />
+                <div>
+                  <div className={styles.testiName}>James K.</div>
+                  <div className={styles.testiLoc}>California, USA</div>
+                </div>
+              </div>
+              <div className={styles.testiStars}>★★★★★</div>
+              <p className={styles.testiQuote}>
+                "I downloaded it thinking it was just another Christian
+                resource. I was wrong. This completely changed how I read
+                scripture and how I share my faith."
+              </p>
+            </div>
+
+            <div className={styles.testimonialCard} data-aos="fade-up" data-aos-delay="100">
+              <div className={styles.testiHeader}>
+                <Image src="/images/handbook/testimonial_linda.png" alt="Pastor Linda R." width={56} height={56} className={styles.testiAvatar} />
+                <div>
+                  <div className={styles.testiName}>Pastor Linda R.</div>
+                  <div className={styles.testiLoc}>Georgia, USA</div>
+                </div>
+              </div>
+              <div className={styles.testiStars}>★★★★★</div>
+              <p className={styles.testiQuote}>
+                "We&apos;ve distributed this in our prison ministry for two years.
+                The transformation we&apos;ve seen in men who had nothing —
+                but now have the Word organized in a way they can use —
+                is remarkable."
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.testiDisclaimer} data-aos="fade-in">
+            * Testimonials are representative of expected reader experience.
+            Individual results may vary.
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 7 - VIDEO SECTION */}
+      <section className={styles.videoSection}>
+        <div className={styles.container}>
+          <h2 className={`${styles.headingDisplay} ${styles.sectionH2}`} data-aos="fade-up">
+            Hear What This Handbook Can Do For You
+          </h2>
+          <p className={styles.sectionSub} data-aos="fade-up" data-aos-delay="50" style={{ marginBottom: '40px' }}>
+            Paul shares why he wrote it — and how it can equip you
+            for every situation you face.
+          </p>
+
+          <div
+            className={styles.videoWrapper}
+            data-aos="fade-up"
+            onClick={() => setIsVideoPlaying(true)}
+          >
+            {!isVideoPlaying ? (
+              <>
+                <img
+                  src="https://img.youtube.com/vi/bjtWnnAPjvY/maxresdefault.jpg"
+                  alt="Video Thumbnail"
+                  className={styles.videoThumbnail}
+                />
+                <div className={styles.videoOverlay} />
+                <div className={styles.videoPlayBtn}>
+                  <svg className={styles.videoPlayIcon} viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </>
+            ) : (
+              <iframe
+                src="https://www.youtube.com/embed/bjtWnnAPjvY?autoplay=1&modestbranding=1&rel=0&showinfo=0&color=white"
+                className={styles.videoPlaceholderIframe}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            )}
+          </div>
+          <div className={styles.videoCaption}>
+            Watch time: approximately three minutes
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 8 - HOW IT WORKS */}
+      <section className={styles.stepsSection}>
+        <div className={styles.container}>
+          <h2 className={`${styles.headingDisplay} ${styles.sectionH2}`} data-aos="fade-up">
+            Three Steps To Get Your Free Copy
+          </h2>
+
+          <div className={styles.stepsRow}>
+            <div className={styles.stepsConnector}></div>
+
+            <div className={styles.stepCol} data-aos="fade-up">
+              <div className={styles.stepImg} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--white)' }}>
+                <Mail size={48} color="var(--gold)" />
+              </div>
+              <div className={`${styles.headingDisplay} ${styles.stepNumber}`}>01</div>
+              <h3 className={styles.stepTitle}>Enter Your Email</h3>
+              <p className={styles.stepText}>
+                Drop your email address in the form above.
+                That&apos;s all we need.
+              </p>
+            </div>
+
+            <div className={styles.stepCol} data-aos="fade-up" data-aos-delay="100">
+              <div className={styles.stepImg} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--white)' }}>
+                <Inbox size={48} color="var(--gold)" />
+              </div>
+              <div className={`${styles.headingDisplay} ${styles.stepNumber}`}>02</div>
+              <h3 className={styles.stepTitle}>Check Your Inbox</h3>
+              <p className={styles.stepText}>
+                We&apos;ll send the Handbook directly to your email
+                as a PDF — instant delivery.
+              </p>
+            </div>
+
+            <div className={styles.stepCol} data-aos="fade-up" data-aos-delay="200">
+              <div className={styles.stepImg} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--white)' }}>
+                <Download size={48} color="var(--gold)" />
+              </div>
+              <div className={`${styles.headingDisplay} ${styles.stepNumber}`}>03</div>
+              <h3 className={styles.stepTitle}>Save It & Use It</h3>
+              <p className={styles.stepText}>
+                Open the PDF, save it to your phone&apos;s home screen,
+                and access it anywhere — anytime.
+              </p>
+            </div>
+          </div>
+
+          <p className={styles.stepTip} data-aos="fade-in" data-aos-delay="300">
+            💡 iPhone tip: Open PDF → tap Share → 'Add to Home Screen'.
+            Android: Open PDF → tap Menu → 'Add to Home Screen'.
+          </p>
+        </div>
+      </section>
+
+      {/* SECTION 9 - FINAL CTA */}
+      <section className={styles.ctaSection}>
+        <div className={styles.ctaBg} style={{ backgroundImage: "radial-gradient(circle at center, #2A2A2A 0%, #1A1A1A 100%)", opacity: 0.8 }}></div>
+        <div className={styles.container}>
+          <div className={styles.ctaContent} data-aos="fade-up">
+            <div className={styles.labelWrapper} style={{ justifyContent: 'center', margin: '0 auto 24px auto', display: 'flex', width: 'fit-content' }}>
+              <span className={styles.labelText} style={{ letterSpacing: '0.2em' }}>GET YOUR FREE COPY</span>
+            </div>
+
+            <h2 className={`${styles.headingDisplay} ${styles.ctaH2}`}>
+              Start Your Journey As A Disciple. Today.
+            </h2>
+
+            <p className={styles.ctaSub}>
+              The Handbook is free. The training is free.
+              The only thing required is the willingness to be trained.
+            </p>
+
+            <div className={styles.ctaFormWrapper}>
+              <form
+                className={`${styles.emailForm} ${styles.ctaForm}`}
+                onSubmit={(e) => handleFormSubmit(e, email2, setIsSubmitting2, setError2, setSuccess2)}
+                noValidate
+              >
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    className={styles.inputField}
+                    value={email2}
+                    onChange={(e) => setEmail2(e.target.value)}
+                    disabled={isSubmitting2 || success2}
+                  />
+                  {error2 && <div className={styles.errorText}>{error2}</div>}
+                </div>
+
+                <button
+                  type="submit"
+                  className={`${styles.submitBtn} ${success2 ? styles.btnSuccess : ""}`}
+                  disabled={isSubmitting2 || success2}
+                >
+                  {isSubmitting2 ? (
+                    <><span className={styles.spinner}></span>Sending...</>
+                  ) : success2 ? (
+                    "✓ On its way!"
+                  ) : (
+                    "Yes — Send Me The Free Handbook →"
+                  )}
+                </button>
+                <div className={styles.formDisclaimer} style={{ color: '#666666' }}>
+                  No spam. No credit card. Unsubscribe anytime.
+                </div>
+              </form>
+            </div>
+
+            <Link href="/" className={styles.skipLink}>
+              Already have it? No thanks, take me to the main site →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className={styles.footer}>
+        © 2026 Jesus Boot Camp · All Rights Reserved · <Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Terms</Link>
+      </footer>
+    </div>
+  );
+}

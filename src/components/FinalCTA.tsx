@@ -5,14 +5,38 @@ import { SectionTag } from "./ui/Buttons";
 
 export default function FinalCTA() {
   const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && email.includes("@")) {
-      alert("Welcome to the Jesus Boot Camp! Check your inbox for Session 1.");
+    setErrorMessage("");
+
+    if (!email || !email.includes("@")) {
+      setStatus("error");
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
+    setStatus("loading");
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Subscription failed");
+      }
+
+      setStatus("success");
       setEmail("");
-    } else {
-      alert("Please enter a valid email address.");
+    } catch (err: any) {
+      setStatus("error");
+      setErrorMessage(err.message || "Something went wrong.");
     }
   };
 
@@ -35,21 +59,27 @@ export default function FinalCTA() {
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row max-w-[540px] mx-auto mb-8 rounded-sm overflow-hidden shadow-sm"
+          className="flex flex-col max-w-[540px] mx-auto mb-8"
         >
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email address…"
-            className="flex-1 px-6 py-[18px] bg-white border border-card-border sm:border-r-0 text-navy font-body text-[1rem] outline-none transition-colors focus:border-gold placeholder:text-grey/40"
-          />
-          <button
-            type="submit"
-            className="bg-navy border-none text-white font-body text-[15px] font-bold px-8 py-[18px] transition-all hover:bg-gold hover:text-navy whitespace-nowrap"
-          >
-            Yes — Send Me Day 1 ›
-          </button>
+          <div className="flex flex-col sm:flex-row rounded-sm overflow-hidden shadow-sm">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={status === "loading" || status === "success"}
+              placeholder="Enter your email address…"
+              className="flex-1 px-6 py-[18px] bg-white border border-card-border sm:border-r-0 text-navy font-body text-[1rem] outline-none transition-colors focus:border-gold placeholder:text-grey/40 disabled:opacity-75"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading" || status === "success"}
+              className="bg-navy border-none text-white font-body text-[15px] font-bold px-8 py-[18px] transition-all hover:bg-gold hover:text-navy whitespace-nowrap disabled:opacity-75 disabled:cursor-not-allowed"
+            >
+              {status === "loading" ? "Sending..." : status === "success" ? "✓ Sent!" : "Yes — Send Me Day 1 ›"}
+            </button>
+          </div>
+          {status === "error" && <p className="text-[#D94F4F] text-sm mt-3 text-left pl-2">{errorMessage}</p>}
+          {status === "success" && <p className="text-[#4CAF50] font-bold text-sm mt-3 text-center">Welcome! Check your inbox for Session 1.</p>}
         </form>
         <p className="text-xs text-grey/50 italic">
           No marketing spam. Unsubscribe anytime. Instant access.

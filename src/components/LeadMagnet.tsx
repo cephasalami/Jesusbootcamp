@@ -1,8 +1,45 @@
 "use client";
 
+import { useState } from "react";
 import { SectionTag } from "./ui/Buttons";
 
 export default function LeadMagnet() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+
+    if (!email || !email.includes("@")) {
+      setStatus("error");
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
+    setStatus("loading");
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Subscription failed");
+      }
+
+      setStatus("success");
+      setEmail("");
+    } catch (err: any) {
+      setStatus("error");
+      setErrorMessage(err.message || "Something went wrong.");
+    }
+  };
+
   return (
     <section id="lead-magnet" className="bg-cream py-24 px-8 border-t border-card-border">
       <div className="max-w-[800px] mx-auto text-center" data-aos="fade-up">
@@ -15,19 +52,27 @@ export default function LeadMagnet() {
           organized by life topic. Download it instantly for free.
         </p>
 
-        <form className="max-w-[480px] mx-auto flex flex-col sm:flex-row gap-3 mb-6" onSubmit={(e) => e.preventDefault()}>
-          <input
-            type="email"
-            placeholder="Your email address"
-            required
-            className="flex-1 bg-white border border-card-border rounded-sm px-5 py-4 text-navy placeholder:text-grey/50 focus:outline-none focus:border-gold transition-colors"
-          />
-          <button
-            type="submit"
-            className="bg-navy text-white text-[15px] font-bold px-8 py-4 rounded-sm border-none transition-all duration-250 hover:bg-gold hover:text-navy whitespace-nowrap"
-          >
-            Send Me The Handbook ›
-          </button>
+        <form className="max-w-[480px] mx-auto flex flex-col mb-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={status === "loading" || status === "success"}
+              placeholder="Your email address"
+              required
+              className="flex-1 bg-white border border-card-border rounded-sm px-5 py-4 text-navy placeholder:text-grey/50 focus:outline-none focus:border-gold transition-colors disabled:opacity-75"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading" || status === "success"}
+              className="bg-navy text-white text-[15px] font-bold px-8 py-4 rounded-sm border-none transition-all duration-250 hover:bg-gold hover:text-navy whitespace-nowrap disabled:opacity-75 disabled:cursor-not-allowed"
+            >
+              {status === "loading" ? "Sending..." : status === "success" ? "✓ Sent!" : "Send Me The Handbook ›"}
+            </button>
+          </div>
+          {status === "error" && <p className="text-[#D94F4F] text-sm mt-3 text-left">{errorMessage}</p>}
+          {status === "success" && <p className="text-[#4CAF50] font-bold text-sm mt-3 text-center">Check your inbox for the download link!</p>}
         </form>
         <p className="text-xs text-grey/60 italic">No marketing spam. Only your resource.</p>
       </div>

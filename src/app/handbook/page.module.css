@@ -1,0 +1,789 @@
+/* src/app/handbook/page.module.css */
+
+.pageWrapper {
+    --bg-cream: #F5F0E8;
+    --bg-cream-alt: #EDEAE2;
+    --bg-dark: #1A1A1A;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --text-light: #AAAAAA;
+    --gold: #C9A84C;
+    --white: #FFFFFF;
+    --input-bg: #FFFFFF;
+    --input-border: #D4CFC6;
+
+    font-family: var(--font-body), "Inter", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--white);
+    line-height: 1.75;
+}
+
+.headingDisplay {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-weight: 700;
+}
+
+.announcementBar {
+    background-color: var(--gold);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    width: 100%;
+}
+
+.heroSection {
+    background-color: var(--bg-cream);
+    min-height: 680px;
+    padding: 96px 24px;
+    display: flex;
+    align-items: center;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.heroGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.labelWrapper {
+    display: inline-flex;
+    align-items: center;
+    border-left: 2px solid var(--gold);
+    padding-left: 12px;
+    margin-bottom: 24px;
+}
+
+.labelText {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    line-height: 1;
+}
+
+.heroH1 {
+    font-size: 52px;
+    line-height: 1.1;
+    margin-bottom: 24px;
+}
+
+.heroSub {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+}
+
+.trustLine {
+    font-size: 13px;
+    color: #9A9A9A;
+    margin-bottom: 24px;
+}
+
+.emailForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.inputField {
+    width: 100%;
+    padding: 16px 20px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: var(--input-bg);
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    color: inherit;
+}
+
+.inputField:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 16px 36px;
+    background-color: var(--bg-dark);
+    color: var(--white);
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+    font-family: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background-color: var(--gold);
+    color: var(--bg-dark);
+}
+
+.submitBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.formDisclaimer {
+    font-size: 12px;
+    color: #9A9A9A;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.mockupImageWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.mockupImage {
+    width: 100%;
+    height: auto;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+    transform: rotate(-3deg);
+    border-radius: 4px;
+}
+
+.socialProofSection {
+    background-color: var(--bg-dark);
+    padding: 32px 24px;
+}
+
+.socialProofFlex {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 64px;
+    flex-wrap: wrap;
+}
+
+.proofItem {
+    text-align: center;
+    position: relative;
+}
+
+.proofDivider {
+    width: 1px;
+    background-color: #333333;
+    height: 40px;
+    margin: auto 0;
+}
+
+.proofNumber {
+    color: var(--gold);
+    font-size: 36px;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.proofLabel {
+    color: var(--text-light);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.featuresSection {
+    background-color: var(--bg-cream);
+    padding: 96px 24px;
+}
+
+.sectionH2 {
+    font-size: 38px;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.sectionSub {
+    font-size: 17px;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 580px;
+    margin: 0 auto 64px auto;
+}
+
+.featuresGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+.featureCard {
+    background-color: var(--white);
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.featureCard:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
+    transform: translateY(-4px);
+}
+
+.featureIcon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 24px;
+    border-radius: 50%;
+}
+
+.featureCardTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.3;
+}
+
+.featureCardText {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.authorSection {
+    background-color: var(--bg-cream-alt);
+    padding: 96px 24px;
+}
+
+.authorContainer {
+    display: flex;
+    align-items: center;
+    gap: 64px;
+}
+
+.authorImageCol {
+    flex: 1;
+    max-width: 360px;
+}
+
+.authorImageWrapper {
+    border-left: 3px solid var(--gold);
+    padding-left: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.10);
+    position: relative;
+    background: var(--bg-dark);
+    /* acts as border color essentially */
+}
+
+.authorImageWrapper>img {
+    border-radius: 16px;
+    border-top-left-radius: 14px;
+    border-bottom-left-radius: 14px;
+    width: 100%;
+    height: auto;
+    display: block;
+    transform: translateX(3px);
+    /* To reveal left border */
+    width: calc(100% - 3px);
+}
+
+.authorTextCol {
+    flex: 1.5;
+}
+
+.authorTitle {
+    font-size: 16px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.authorBio {
+    font-size: 17px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.authorQuote {
+    border-left: 3px solid var(--gold);
+    padding-left: 20px;
+    margin-top: 32px;
+}
+
+.authorQuoteText {
+    font-size: 20px;
+    color: var(--text-primary);
+    font-style: italic;
+    margin-bottom: 8px;
+}
+
+.authorQuoteAttr {
+    font-size: 13px;
+    color: #9A9A9A;
+}
+
+.testimonialsSection {
+    background-color: var(--bg-dark);
+    padding: 96px 24px;
+    color: var(--white);
+}
+
+.testimonialsSection .sectionH2 {
+    color: var(--white);
+}
+
+.testimonialsSection .sectionSub {
+    color: var(--text-light);
+}
+
+.testimonialsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.testimonialCard {
+    background-color: #242424;
+    border-radius: 12px;
+    padding: 32px;
+    border-top: 3px solid var(--gold);
+}
+
+.testiHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.testiAvatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.testiName {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.testiLoc {
+    font-size: 13px;
+    color: #888888;
+}
+
+.testiStars {
+    color: var(--gold);
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+.testiQuote {
+    font-size: 15px;
+    color: #CCCCCC;
+    line-height: 1.6;
+}
+
+.testiDisclaimer {
+    font-size: 13px;
+    color: #666666;
+    text-align: center;
+}
+
+.videoSection {
+    background-color: var(--bg-cream);
+    padding: 96px 24px;
+}
+
+.videoWrapper {
+    width: 100%;
+    max-width: 1024px;
+    margin: 0 auto 32px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background-color: #333333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.videoThumbnail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.videoOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    transition: background 0.3s ease;
+}
+
+.videoWrapper:hover .videoOverlay {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.videoPlaceholderIframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.videoPlayBtn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px;
+    height: 72px;
+    background-color: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: transform 0.3s ease;
+}
+
+.videoWrapper:hover .videoPlayBtn {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.videoPlayIcon {
+    width: 24px;
+    height: 24px;
+    fill: var(--white);
+    margin-left: 4px;
+}
+
+.videoCaption {
+    font-size: 13px;
+    color: #9A9A9A;
+    text-align: center;
+}
+
+.stepsSection {
+    background-color: var(--bg-cream-alt);
+    padding: 96px 24px;
+}
+
+.stepsRow {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    position: relative;
+}
+
+.stepsConnector {
+    position: absolute;
+    top: 172px;
+    /* Image (120px) + margin (24px) + half of circle (28px) = 172px */
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    border-top: 1px dashed var(--gold);
+    z-index: 0;
+}
+
+.stepCol {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.stepImg {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 24px;
+    border-radius: 50%;
+    background: var(--bg-cream);
+    /* fallback */
+}
+
+.stepNumber {
+    width: 56px;
+    height: 56px;
+    background-color: var(--bg-dark);
+    color: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.stepTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.stepText {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.stepTip {
+    font-size: 13px;
+    color: #9A9A9A;
+    font-style: italic;
+    text-align: center;
+    margin-top: 48px;
+}
+
+.ctaSection {
+    background-color: var(--bg-dark);
+    padding: 120px 24px;
+    position: relative;
+}
+
+.ctaBg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.ctaContent {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.ctaH2 {
+    font-size: 44px;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 24px;
+}
+
+.ctaSub {
+    font-size: 18px;
+    color: var(--text-light);
+    margin-bottom: 40px;
+}
+
+.ctaFormWrapper {
+    margin-bottom: 16px;
+}
+
+.ctaForm .inputField {
+    background-color: #2A2A2A;
+    border-color: #444444;
+    color: var(--white);
+}
+
+.ctaForm .inputField::placeholder {
+    color: #888888;
+}
+
+.ctaForm .inputField:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+}
+
+.ctaForm .submitBtn {
+    background-color: var(--gold);
+    color: var(--bg-dark);
+}
+
+.ctaForm .submitBtn:hover:not(:disabled) {
+    background-color: var(--white);
+    color: var(--bg-dark);
+}
+
+.skipLink {
+    font-size: 13px;
+    color: #555555;
+    text-decoration: underline;
+    display: inline-block;
+    margin-top: 24px;
+    transition: color 0.2s;
+}
+
+.skipLink:hover {
+    color: #999999;
+}
+
+.footer {
+    background-color: #111111;
+    padding: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: #555555;
+}
+
+.footer a {
+    color: #666666;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer a:hover {
+    color: #aaaaaa;
+}
+
+.errorText {
+    color: #D94F4F;
+    font-size: 13px;
+    margin-top: 4px;
+    text-align: left;
+}
+
+/* Spinner */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: currentColor;
+    animation: spin 1s ease-in-out infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.ctaForm .spinner {
+    border: 2px solid rgba(26, 26, 26, 0.2);
+    border-top-color: var(--bg-dark);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success Button state */
+.btnSuccess {
+    background-color: #4CAF50 !important;
+    color: white !important;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+
+    .heroSection,
+    .featuresSection,
+    .authorSection,
+    .testimonialsSection,
+    .videoSection,
+    .stepsSection {
+        padding: 64px 24px;
+    }
+
+    .ctaSection {
+        padding: 80px 24px;
+    }
+
+    .heroGrid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .mockupImage {
+        transform: none;
+    }
+
+    .heroH1 {
+        font-size: 34px;
+    }
+
+    .heroSub {
+        font-size: 16px;
+    }
+
+    .socialProofFlex {
+        gap: 32px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .proofDivider {
+        display: none;
+    }
+
+    .featuresGrid,
+    .testimonialsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .sectionH2 {
+        font-size: 28px;
+    }
+
+    .authorContainer {
+        flex-direction: column-reverse;
+        gap: 40px;
+    }
+
+    .authorImageWrapper {
+        max-width: 280px;
+        margin: 0 auto;
+    }
+
+    .stepsRow {
+        flex-direction: column;
+        gap: 48px;
+    }
+
+    .stepsConnector {
+        display: none;
+    }
+
+    .ctaH2 {
+        font-size: 34px;
+    }
+}
