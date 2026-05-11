@@ -31,7 +31,7 @@ export default function BentoFeatures() {
       <div className="max-w-[1200px] mx-auto">
         <div className="text-center mb-16" data-aos="fade-up">
           <SectionTag className="border-navy/10 text-navy/60">Features</SectionTag>
-          <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mt-6 mb-4 tracking-tight">
+          <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] font-bold text-navy leading-tight mt-6 mb-4 tracking-tight">
             Everything You Need.
             <br />
             Nothing You Don&apos;t.
@@ -43,13 +43,13 @@ export default function BentoFeatures() {
           {/* Card 1: 90 Sessions */}
           <div
             data-aos="fade-up"
-            className="md:col-span-2 bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 relative group"
+            className="md:col-span-2 bg-white border border-card-border p-6 sm:p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 relative group"
           >
             <div className="absolute top-0 right-0 p-8">
               <div className="w-14 h-14 bg-warm rounded-full flex items-center justify-center text-navy font-bold text-sm">90</div>
             </div>
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-4">Curriculum</div>
-            <h3 className="font-display text-[2.2rem] font-bold text-navy mb-4 tracking-tight">Dynamic Sessions</h3>
+            <h3 className="font-display text-[clamp(1.6rem,4vw,2.2rem)] font-bold text-navy mb-4 tracking-tight">Dynamic Sessions</h3>
             <p className="text-[1rem] text-grey leading-[1.8] max-w-[450px] mb-10">Every session is Scripture-anchored, mission-focused, and built for immediate daily application.</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-4">
@@ -67,7 +67,7 @@ export default function BentoFeatures() {
           <div
             data-aos="fade-up"
             data-aos-delay="100"
-            className="bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+            className="bg-white border border-card-border p-6 sm:p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-navy/40 mb-6">Resource</div>
             <div className="w-full aspect-[3/4] bg-cream shadow-inner border border-card-border relative overflow-hidden mb-8 flex items-center justify-center p-8 group-hover:rotate-[-2deg] transition-transform duration-500">
@@ -87,7 +87,7 @@ export default function BentoFeatures() {
           {/* Card 3: Study Anywhere */}
           <div
             data-aos="fade-up"
-            className="bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+            className="bg-white border border-card-border p-6 sm:p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-6">Format</div>
             <h3 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">Study Anywhere</h3>
@@ -106,11 +106,11 @@ export default function BentoFeatures() {
           <div
             data-aos="fade-up"
             data-aos-delay="100"
-            className="md:col-span-2 bg-[#F9F4E8] p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden"
+            className="md:col-span-2 bg-[#F9F4E8] p-6 sm:p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 blur-3xl rounded-full" />
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-6 relative z-10">The Vision</div>
-            <h3 className="font-display text-[2.2rem] font-bold text-navy mb-6 tracking-tight relative z-10">The Give Me Five Vision</h3>
+            <h3 className="font-display text-[clamp(1.6rem,4vw,2.2rem)] font-bold text-navy mb-6 tracking-tight relative z-10">The Give Me Five Vision</h3>
             <div className="flex flex-col md:flex-row gap-12 items-start relative z-10">
               <div className="flex-1 max-w-[420px]">
                 <p className="text-[1.1rem] text-navy font-bold leading-[1.8] mb-4">
@@ -142,7 +142,7 @@ export default function BentoFeatures() {
           {/* Card 5: Daily Email */}
           <div
             data-aos="fade-up"
-            className="bg-white border border-card-border p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+            className="bg-white border border-card-border p-6 sm:p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold mb-8">Delivery</div>
             <div className="w-16 h-16 bg-cream flex items-center justify-center mb-6 text-gold group-hover:scale-110 transition-transform">
@@ -156,11 +156,11 @@ export default function BentoFeatures() {
           <div
             data-aos="fade-up"
             data-aos-delay="100"
-            className="md:col-span-2 bg-warm p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group flex flex-col md:flex-row items-center justify-between gap-12"
+            className="md:col-span-2 bg-warm p-6 sm:p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group flex flex-col md:flex-row items-center justify-between gap-12"
           >
             <div className="max-w-[400px]">
               <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-navy/40 mb-6">Investment</div>
-              <h3 className="font-display text-[2.2rem] font-bold text-navy mb-4 tracking-tight">Free. Forever.</h3>
+              <h3 className="font-display text-[clamp(1.6rem,4vw,2.2rem)] font-bold text-navy mb-4 tracking-tight">Free. Forever.</h3>
               <p className="text-[1rem] text-grey leading-[1.8]">No subscriptions. No tiers. No upsells. This is a ministry, not a software company.</p>
             </div>
             <div className="text-center">

@@ -13,7 +13,7 @@ export default function HowItWorks() {
       <div className="max-w-[1200px] mx-auto">
         <div className="text-center mb-20" data-aos="fade-up">
           <SectionTag className="border-navy/10 text-navy/60">Process</SectionTag>
-          <h2 className="font-display text-[2.8rem] font-bold text-navy mt-6 mb-4 tracking-tight">
+          <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] font-bold text-navy mt-6 mb-4 tracking-tight">
             How It Works
           </h2>
           <p className="text-[1.1rem] text-grey max-w-[500px] mx-auto leading-[1.7]">Four clear steps to transformation. No barriers, just discipline.</p>
@@ -23,10 +23,10 @@ export default function HowItWorks() {
           {/* Card 1: Join Free */}
           <div
             data-aos="fade-up"
-            className="bg-white border border-card-border p-12 min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+            className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[2.2rem] font-bold leading-tight text-navy tracking-tight">
+              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
                 Join Free.
                 <br />
                 Start Instantly.
@@ -62,10 +62,10 @@ export default function HowItWorks() {
           <div
             data-aos="fade-up"
             data-aos-delay="100"
-            className="bg-white border border-card-border p-12 min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+            className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[2.2rem] font-bold leading-tight text-navy tracking-tight">
+              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
                 Daily Sessions.
                 <br />
                 Thirty Minutes.
@@ -126,10 +126,10 @@ export default function HowItWorks() {
           <div
             data-aos="fade-up"
             data-aos-delay="200"
-            className="bg-white border border-card-border p-12 min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+            className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[2.2rem] font-bold leading-tight text-navy tracking-tight">
+              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
                 Real Action.
                 <br />
                 Steady Growth.
@@ -161,10 +161,10 @@ export default function HowItWorks() {
           <div
             data-aos="fade-up"
             data-aos-delay="300"
-            className="bg-navy p-12 min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
+            className="bg-navy p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[2.2rem] font-bold leading-tight text-white tracking-tight">
+              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-white tracking-tight">
                 Ambassador
                 <br />
                 Activation.

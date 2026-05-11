@@ -4,22 +4,22 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="pt-[160px] pb-24 px-8 bg-cream overflow-hidden"
+      className="pt-[120px] pb-16 sm:pt-[160px] sm:pb-24 px-5 sm:px-8 bg-cream overflow-hidden"
     >
-      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-16 items-center">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-10 lg:gap-16 items-center">
         {/* Content */}
         <div data-aos="fade-up" data-aos-duration="1000">
-          <SectionTag className="mb-8 border-navy/10 text-navy/60">
+          <SectionTag className="mb-6 sm:mb-8 border-navy/10 text-navy/60">
             Three-Month Discipleship Course — Completely Free
           </SectionTag>
 
-          <h1 className="font-display text-[clamp(2.8rem,6vw,4.8rem)] font-bold leading-[1.1] text-navy mb-8 tracking-tight">
+          <h1 className="font-display text-[clamp(2.2rem,6vw,4.8rem)] font-bold leading-[1.1] text-navy mb-6 sm:mb-8 tracking-tight">
             From Believer
             <br />
             to <em className="italic text-gold">Disciple.</em>
           </h1>
 
-          <p className="text-[1.15rem] text-grey leading-[1.8] max-w-[580px] mb-12">
+          <p className="text-[1rem] sm:text-[1.15rem] text-grey leading-[1.8] max-w-[580px] mb-10 sm:mb-12">
             The Jesus Boot Camp empowers <strong className="text-navy font-semibold">YOU</strong> to
             disciple your family, friends, and coworkers — and pass it on. One life at a time. Starting
             yours.
@@ -30,8 +30,8 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Visual */}
-        <div className="relative" data-aos="fade-left" data-aos-duration="1200">
+        {/* Visual — hidden on mobile to prevent clutter, shown lg+ */}
+        <div className="hidden lg:block relative" data-aos="fade-left" data-aos-duration="1200">
           <div className="aspect-[4/5] w-full max-w-[450px] mx-auto bg-warm rounded-lg overflow-hidden relative shadow-[24px_24px_80px_rgba(0,0,0,0.06)]">
             <img
               src="/images/WhatsApp Image 2026-05-05 at 03.09.32.jpeg"

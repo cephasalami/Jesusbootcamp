@@ -41,10 +41,10 @@ export default function LeadMagnet() {
   };
 
   return (
-    <section id="lead-magnet" className="bg-cream py-24 px-8 border-t border-card-border">
+    <section id="lead-magnet" className="bg-cream py-16 sm:py-24 px-5 sm:px-8 border-t border-card-border">
       <div className="max-w-[800px] mx-auto text-center" data-aos="fade-up">
         <SectionTag className="mb-6 border-navy/10 text-navy/60">Free Resource</SectionTag>
-        <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mb-6 tracking-tight">
+        <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] font-bold text-navy leading-tight mb-6 tracking-tight">
           Get Your Free Copy.
         </h2>
         <p className="text-[1.1rem] text-grey leading-[1.8] mb-12 max-w-[600px] mx-auto">

@@ -76,7 +76,7 @@
 }
 
 .heroH1 {
-    font-size: 52px;
+    font-size: clamp(2rem, 6vw, 52px);
     line-height: 1.1;
     margin-bottom: 24px;
 }

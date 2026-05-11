@@ -21,11 +21,11 @@ const cards = [
 
 export default function Problem() {
   return (
-    <section id="problem" className="py-24 px-8 bg-cream border-t border-card-border overflow-hidden">
+    <section id="problem" className="py-16 sm:py-24 px-5 sm:px-8 bg-cream border-t border-card-border overflow-hidden">
       <div className="max-w-[1100px] mx-auto">
         <div className="text-center mb-16" data-aos="fade-up">
           <SectionTag className="border-navy/10 text-navy/60">The Crisis</SectionTag>
-          <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mt-6 mb-6 tracking-tight">
+          <h2 className="font-display text-[clamp(1.8rem,5vw,2.8rem)] font-bold text-navy leading-tight mt-6 mb-6 tracking-tight">
             &quot;Most believers attend church.
             <br />
             Few actually follow Christ.&quot;

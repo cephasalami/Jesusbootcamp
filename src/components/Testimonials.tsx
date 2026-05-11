@@ -30,11 +30,11 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section id="testimonials" className="py-24 px-8 bg-cream border-t border-card-border">
+    <section id="testimonials" className="py-16 sm:py-24 px-5 sm:px-8 bg-cream border-t border-card-border">
       <div className="max-w-[1100px] mx-auto">
         <div className="text-center mb-16" data-aos="fade-up">
           <SectionTag className="border-navy/10 text-navy/60">Testimonials</SectionTag>
-          <h2 className="font-display text-[2.8rem] font-bold text-navy mt-6 tracking-tight leading-tight">
+          <h2 className="font-display text-[clamp(1.8rem,5vw,2.8rem)] font-bold text-navy mt-6 tracking-tight leading-tight">
             Lives Transformed by
             <br />
             Authentic Discipleship.
