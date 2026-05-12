@@ -1,4 +1,5 @@
 import { SectionTag, ButtonGold } from "./ui/Buttons";
+import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -26,17 +27,20 @@ export default function Hero() {
           </p>
 
           <div className="flex items-center gap-4 flex-wrap">
-            <ButtonGold>Join the Boot Camp — It&apos;s Free ›</ButtonGold>
+            {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. Supports "any amount" with monthly recurring option. */}
+            <ButtonGold href="#stripe-donation">Join the Boot Camp — Give What You Can ›</ButtonGold>
           </div>
         </div>
 
         {/* Visual — hidden on mobile to prevent clutter, shown lg+ */}
         <div className="hidden lg:block relative" data-aos="fade-left" data-aos-duration="1200">
           <div className="aspect-[4/5] w-full max-w-[450px] mx-auto bg-warm rounded-lg overflow-hidden relative shadow-[24px_24px_80px_rgba(0,0,0,0.06)]">
-            <img
-              src="/images/WhatsApp Image 2026-05-05 at 03.09.32.jpeg"
+            <Image
+              src="/images/paul-joseph.jpg"
               alt="Paul Joseph"
-              className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
+              fill
+              className="object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
+              priority
             />
           </div>
           {/* Subtle decoration */}

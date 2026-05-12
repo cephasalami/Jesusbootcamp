@@ -81,7 +81,7 @@ export default function BentoFeatures() {
             </div>
             <h3 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">Digital Handbook</h3>
             <p className="text-[14px] text-grey leading-[1.7] mb-8">Thousands of Scripture references categorized by life topic. Your active pocket guide.</p>
-            <ButtonGold href="#handbook" className="w-full !text-[13px] rounded-none !py-4">Download Free ›</ButtonGold>
+            <ButtonGold href="/handbook" className="w-full !text-[13px] rounded-none !py-4">Download Free ›</ButtonGold>
           </div>
 
           {/* Card 3: Study Anywhere */}
@@ -152,7 +152,7 @@ export default function BentoFeatures() {
             <p className="text-[14px] text-grey leading-[1.7]">One session a day. Zero apps to download. Pure focus delivered to your inbox.</p>
           </div>
 
-          {/* Card 6: Free Forever */}
+          {/* Card 6: Free Access */}
           <div
             data-aos="fade-up"
             data-aos-delay="100"

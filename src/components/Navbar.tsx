@@ -16,7 +16,7 @@ export default function Navbar() {
   const links = [
     { href: "#problem", label: "About" },
     { href: "#how", label: "The Course" },
-    { href: "#handbook", label: "The Handbook" },
+    { href: "/handbook", label: "The Handbook" },
     { href: "#testimonials", label: "Testimonials" },
   ];
 
@@ -49,11 +49,12 @@ export default function Navbar() {
 
         {/* Right */}
         <div className="flex items-center gap-3">
+          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. Supports "any amount" with monthly recurring option. */}
           <a
-            href="#cta-final"
+            href="#stripe-donation"
             className="hidden sm:block bg-navy text-white text-[13px] font-bold px-[24px] py-[12px] rounded-sm transition-all hover:bg-gold hover:text-navy whitespace-nowrap"
           >
-            Join Free — Start Today
+            Join the Boot Camp
           </a>
           <button
             className="flex md:hidden flex-col gap-[5px] p-1 bg-transparent border-none"
@@ -82,12 +83,13 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. Supports "any amount" with monthly recurring option. */}
           <a
-            href="#cta-final"
+            href="#stripe-donation"
             onClick={() => setMenuOpen(false)}
             className="block mt-3 bg-gold text-navy text-center text-sm font-bold py-3 rounded-xl"
           >
-            Join Free — Start Today
+            Join the Boot Camp
           </a>
         </div>
       )}

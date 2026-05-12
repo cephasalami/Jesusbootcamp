@@ -15,13 +15,20 @@ const inter = Inter({
   display: "swap",
 });
 
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "Jesus Boot Camp — Free 90-Day Discipleship Course by Paul Joseph",
-  description:
-    "Transform from a dormant believer into a disciplined disciple of Christ. Join the free 90-day Jesus Boot Camp and get your free Handbook today.",
+  title: "Jesus Boot Camp — 90-Day Discipleship Training by Paul Joseph",
+  description: "Transform from a dormant believer into a disciplined disciple of Christ. Join the Jesus Boot Camp — free 90-day training. Get your free Handbook today.",
   openGraph: {
-    title: "Jesus Boot Camp — Free 90-Day Discipleship Course by Paul Joseph",
-    description: "Transform from a dormant believer into a disciplined disciple of Christ. Join the free 90-day Jesus Boot Camp and get your free Handbook today.",
+    title: "Jesus Boot Camp — 90-Day Discipleship Training",
+    description: "From believer to disciple in 90 days. Free training. Free handbook. Global mission.",
+    url: "https://jesusbootcamp.org",
     type: "website",
   },
 };

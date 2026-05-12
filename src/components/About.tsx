@@ -1,5 +1,5 @@
 import { SectionTag } from "./ui/Buttons";
-
+import Image from "next/image";
 export default function About() {
   return (
     <section id="about" className="py-24 px-8 bg-cream border-t border-card-border">
@@ -10,10 +10,12 @@ export default function About() {
 
         <div className="relative w-40 h-40 mx-auto mb-8">
           <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-xl">
-            <img
-              src="/images/WhatsApp Image 2026-05-05 at 03.09.32.jpeg"
+            <Image
+              src="/images/paul-joseph.jpg"
               alt="Paul Joseph"
-              className="w-full h-full object-cover grayscale-[0.1]"
+              fill
+              className="object-cover grayscale-[0.1]"
+              loading="lazy"
             />
           </div>
           <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gold rounded-full flex items-center justify-center text-navy shadow-lg">

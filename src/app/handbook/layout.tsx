@@ -14,6 +14,9 @@ export const metadata: Metadata = {
         index: false,
         follow: false,
     },
+    alternates: {
+        canonical: "https://jesusbootcamp.org/handbook",
+    },
 };
 
 export default function HandbookLayout({

@@ -46,7 +46,7 @@ export default function FinalCTA() {
       className="bg-cream py-20 sm:py-32 px-5 sm:px-8 border-t border-card-border text-center overflow-hidden"
     >
       <div className="max-w-[700px] mx-auto relative z-10" data-aos="fade-up">
-        <SectionTag className="mb-6 border-navy/10 text-navy/60">Join Free — Start Today</SectionTag>
+        <SectionTag className="mb-6 border-navy/10 text-navy/60">Join the Boot Camp</SectionTag>
         <h2 className="font-display text-[clamp(2rem,6vw,3.2rem)] font-bold text-navy leading-[1.1] mt-6 mb-8 tracking-tight">
           The world needs disciples.
           <br />

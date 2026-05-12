@@ -1,9 +1,9 @@
 const links = [
   { href: "#problem", label: "About" },
   { href: "#how", label: "The Course" },
-  { href: "#handbook", label: "The Handbook" },
+  { href: "/handbook", label: "The Handbook" },
   { href: "#testimonials", label: "Testimonials" },
-  { href: "#cta-final", label: "Join Free" },
+  { href: "#stripe-donation", label: "Join the Boot Camp" },
 ];
 
 export default function Footer() {

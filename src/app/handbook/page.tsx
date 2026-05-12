@@ -307,72 +307,7 @@ export default function HandbookLandingPage() {
       </section>
 
       {/* SECTION 6 - TESTIMONIALS */}
-      <section className={styles.testimonialsSection}>
-        <div className={styles.container}>
-          <h2 className={`${styles.headingDisplay} ${styles.sectionH2}`} data-aos="fade-up">
-            What Disciples Are Saying
-          </h2>
-          <p className={styles.sectionSub} data-aos="fade-up" data-aos-delay="50">
-            Real feedback from real believers.
-          </p>
-
-          <div className={styles.testimonialsGrid}>
-            <div className={styles.testimonialCard} data-aos="fade-up">
-              <div className={styles.testiHeader}>
-                <Image src="/images/handbook/testimonial_sarah.png" alt="Sarah M." width={56} height={56} className={styles.testiAvatar} />
-                <div>
-                  <div className={styles.testiName}>Sarah M.</div>
-                  <div className={styles.testiLoc}>Texas, USA</div>
-                </div>
-              </div>
-              <div className={styles.testiStars}>★★★★★</div>
-              <p className={styles.testiQuote}>
-                "I&apos;ve been a believer my whole life, but I never had
-                a tool like this. Every time someone asks me a hard question
-                about faith now, I actually have an answer."
-              </p>
-            </div>
-
-            <div className={styles.testimonialCard} data-aos="fade-up" data-aos-delay="50">
-              <div className={styles.testiHeader}>
-                <Image src="/images/handbook/testimonial_james.png" alt="James K." width={56} height={56} className={styles.testiAvatar} />
-                <div>
-                  <div className={styles.testiName}>James K.</div>
-                  <div className={styles.testiLoc}>California, USA</div>
-                </div>
-              </div>
-              <div className={styles.testiStars}>★★★★★</div>
-              <p className={styles.testiQuote}>
-                "I downloaded it thinking it was just another Christian
-                resource. I was wrong. This completely changed how I read
-                scripture and how I share my faith."
-              </p>
-            </div>
-
-            <div className={styles.testimonialCard} data-aos="fade-up" data-aos-delay="100">
-              <div className={styles.testiHeader}>
-                <Image src="/images/handbook/testimonial_linda.png" alt="Pastor Linda R." width={56} height={56} className={styles.testiAvatar} />
-                <div>
-                  <div className={styles.testiName}>Pastor Linda R.</div>
-                  <div className={styles.testiLoc}>Georgia, USA</div>
-                </div>
-              </div>
-              <div className={styles.testiStars}>★★★★★</div>
-              <p className={styles.testiQuote}>
-                "We&apos;ve distributed this in our prison ministry for two years.
-                The transformation we&apos;ve seen in men who had nothing —
-                but now have the Word organized in a way they can use —
-                is remarkable."
-              </p>
-            </div>
-          </div>
-
-          <div className={styles.testiDisclaimer} data-aos="fade-in">
-            * Testimonials are representative of expected reader experience.
-            Individual results may vary.
-          </div>
-        </div>
-      </section>
+      {/* TODO: Replace with real testimonials when available. Do not publish placeholder names — Paul's instructions. */}
 
       {/* SECTION 7 - VIDEO SECTION */}
       <section className={styles.videoSection}>

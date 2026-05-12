@@ -25,7 +25,8 @@ export default function Home() {
       <HowItWorks />
       <BentoFeatures />
       <CoursePreview />
-      <Testimonials />
+      {/* <Testimonials /> */}
+      {/* TODO: Replace with real testimonials when available. Do not publish placeholder names — Paul's instructions. */}
       <Handbook />
       <About />
       <LeadMagnet />
