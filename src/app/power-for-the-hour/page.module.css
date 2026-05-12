@@ -1,0 +1,528 @@
+/* src/app/power-for-the-hour/page.module.css */
+
+.pageWrapper {
+    --bg-cream: #F5F0E8;
+    --bg-cream-alt: #EDEAE2;
+    --bg-dark: #1A1A1A;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --text-light: #AAAAAA;
+    --gold: #C9A84C;
+    --green: #2D6A4F;
+    --green-hover: #1B4332;
+    --white: #FFFFFF;
+
+    font-family: var(--font-body), "Inter", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-cream);
+    line-height: 1.75;
+}
+
+.headingDisplay {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-weight: 700;
+}
+
+/* ═══ SECTION 1: PROGRESS BAR ═══ */
+.progressBar {
+    background-color: var(--bg-dark);
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 16px;
+    width: 100%;
+}
+
+.progressStep {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.stepCompleted {
+    color: var(--gold);
+}
+
+.stepCurrent {
+    color: var(--white);
+}
+
+.stepUpcoming {
+    color: #666666;
+}
+
+.progressChevron {
+    color: #444444;
+    font-size: 14px;
+    user-select: none;
+}
+
+/* ═══ SECTION 2: URGENCY BANNER ═══ */
+.urgencyBanner {
+    background-color: var(--gold);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 40px;
+    padding: 8px 16px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    line-height: 1.4;
+}
+
+/* ═══ SECTION 3: HERO ═══ */
+.heroSection {
+    background-color: var(--bg-cream);
+    padding: 80px 24px;
+    display: flex;
+    align-items: center;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.heroGrid {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 56px;
+    align-items: center;
+}
+
+.labelWrapper {
+    border-left: 3px solid var(--gold);
+    padding-left: 12px;
+    margin-bottom: 24px;
+}
+
+.labelText {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+}
+
+.heroH1 {
+    font-size: clamp(2rem, 5vw, 48px);
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.heroSub {
+    font-size: clamp(16px, 2.5vw, 19px);
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+.priceBlock {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+}
+
+.priceOriginal {
+    font-size: 22px;
+    color: var(--text-light);
+    text-decoration: line-through;
+}
+
+.priceNow {
+    font-size: clamp(40px, 8vw, 52px);
+    font-weight: 700;
+    color: var(--green);
+}
+
+.priceTag {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--gold);
+    background-color: var(--bg-dark);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.savingsLine {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+}
+
+.ctaButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: var(--green);
+    color: var(--white);
+    font-size: 17px;
+    font-weight: 700;
+    padding: 20px 40px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    margin-top: 28px;
+    min-width: 420px;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(45, 106, 79, 0.3);
+    transition: background-color 0.25s ease, transform 0.25s ease;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.ctaButton:hover {
+    background-color: var(--green-hover);
+    transform: scale(1.02);
+}
+
+.securityLine {
+    font-size: 12px;
+    color: #9A9A9A;
+    text-align: center;
+    margin-top: 16px;
+}
+
+.mockupImageWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mockupImage {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    filter: drop-shadow(0 32px 72px rgba(0, 0, 0, 0.15));
+    transform: rotate(3deg);
+    transition: transform 0.4s ease;
+}
+
+.mockupImage:hover {
+    transform: rotate(0deg) scale(1.02);
+}
+
+/* ═══ SECTION 4: WHAT IS POWER FOR THE HOUR ═══ */
+.whatSection {
+    background-color: var(--bg-cream-alt);
+    padding: 80px 24px;
+}
+
+.whatContainer {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.sectionH2 {
+    font-size: clamp(1.6rem, 4vw, 36px);
+    text-align: center;
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.sectionSub {
+    font-size: 17px;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 48px auto;
+    line-height: 1.7;
+}
+
+.benefitsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.benefitBlock {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.benefitIcon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    background-color: rgba(201, 168, 76, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+}
+
+.benefitContent {
+    border-left: 2px solid var(--gold);
+    padding-left: 16px;
+}
+
+.benefitLabel {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.benefitText {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ═══ SECTION 5: SOCIAL PROOF ═══ */
+.socialSection {
+    background-color: var(--bg-dark);
+    padding: 64px 24px;
+}
+
+.socialContainer {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.socialH2 {
+    font-size: clamp(1.5rem, 4vw, 32px);
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 40px;
+    line-height: 1.2;
+}
+
+.socialGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.quoteCard {
+    background-color: #242424;
+    border-radius: 10px;
+    padding: 28px;
+    border-top: 3px solid var(--gold);
+}
+
+.quoteStars {
+    color: var(--gold);
+    font-size: 16px;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+}
+
+.quoteText {
+    font-size: 15px;
+    color: #CCCCCC;
+    line-height: 1.6;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+.quoteAuthor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.authorName {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.authorLocation {
+    font-size: 12px;
+    color: #888888;
+}
+
+/* ═══ SECTION 6: FINAL CTA ═══ */
+.finalCtaSection {
+    background-color: var(--bg-cream);
+    padding: 80px 24px;
+}
+
+.finalCtaContainer {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.finalH2 {
+    font-size: clamp(1.8rem, 5vw, 38px);
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.finalSub {
+    font-size: 17px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.finalPriceBlock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+}
+
+.finalCtaButton {
+    composes: ctaButton;
+    margin: 0 auto;
+    margin-top: 24px;
+}
+
+/* ═══ SECTION 7: DECLINE LINK ═══ */
+.declineSection {
+    padding: 32px 24px 48px 24px;
+    text-align: center;
+}
+
+.declineLink {
+    font-size: 13px;
+    color: #AAAAAA;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+}
+
+.declineLink:hover {
+    color: #888888;
+}
+
+.declineNote {
+    font-size: 11px;
+    color: #BBBBBB;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .progressBar {
+        gap: 10px;
+        height: auto;
+        min-height: 44px;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .progressStep {
+        font-size: 11px;
+    }
+
+    .urgencyBanner {
+        min-height: 36px;
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+
+    .heroSection {
+        padding: 56px 20px;
+    }
+
+    .heroGrid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .heroGrid>*:first-child {
+        order: 2;
+    }
+
+    .heroGrid>*:last-child {
+        order: 1;
+    }
+
+    .mockupImage {
+        transform: none;
+        max-width: 280px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .priceBlock {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .ctaButton {
+        width: 100%;
+        min-width: unset;
+        min-height: 56px;
+        padding: 18px 24px;
+        font-size: 16px;
+    }
+
+    .benefitsGrid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .whatSection {
+        padding: 56px 20px;
+    }
+
+    .socialSection {
+        padding: 48px 20px;
+    }
+
+    .socialGrid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .finalCtaSection {
+        padding: 56px 20px;
+    }
+
+    .finalCtaButton {
+        width: 100%;
+        min-width: unset;
+        min-height: 56px;
+    }
+
+    .finalPriceBlock {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .declineLink {
+        font-size: 14px;
+    }
+}
