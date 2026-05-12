@@ -1,0 +1,466 @@
+/* src/app/thank-you/page.module.css */
+
+.pageWrapper {
+    --bg-cream: #F5F0E8;
+    --bg-cream-alt: #EDEAE2;
+    --bg-dark: #1A1A1A;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --gold: #C9A84C;
+    --green: #2D6A4F;
+    --white: #FFFFFF;
+
+    font-family: var(--font-body), "Inter", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-cream);
+    line-height: 1.75;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.headingDisplay {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-weight: 700;
+}
+
+/* ═══ SECTION 1: SUCCESS CONFIRMATION (Hero) ═══ */
+.heroSection {
+    background-color: var(--bg-cream);
+    padding: 100px 24px 64px 24px;
+    text-align: center;
+}
+
+.heroContainer {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.illustrationWrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.illustration {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+}
+
+.heroH1 {
+    font-size: clamp(2.2rem, 6vw, 44px);
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.heroSub {
+    font-size: clamp(16px, 3vw, 18px);
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 580px;
+    margin: 0 auto;
+}
+
+.deliveryBox {
+    background-color: var(--bg-cream-alt);
+    border-radius: 10px;
+    padding: 20px 32px;
+    border-left: 4px solid var(--gold);
+    max-width: 520px;
+    margin: 32px auto 0 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    text-align: left;
+}
+
+.deliveryIcon {
+    font-size: 20px;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.deliveryText {
+    font-size: 15px;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ═══ SECTION 2: SAVE TO PHONE ═══ */
+.savePhoneSection {
+    background-color: var(--bg-cream-alt);
+    padding: 64px 24px;
+}
+
+.savePhoneContainer {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.sectionH2 {
+    font-size: clamp(1.8rem, 5vw, 32px);
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.sectionSub {
+    font-size: 16px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.instructionsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+}
+
+.instructionColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.platformIcon {
+    width: 80px;
+    height: 80px;
+    background-color: var(--bg-cream);
+    border-radius: 50%;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+}
+
+.platformLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+}
+
+.stepsList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    width: 100%;
+    max-width: 320px;
+}
+
+.stepsList li {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 12px;
+    padding-left: 24px;
+    position: relative;
+}
+
+.stepsList li::before {
+    content: "•";
+    color: var(--gold);
+    font-weight: bold;
+    position: absolute;
+    left: 8px;
+}
+
+/* ═══ SECTION 3: BOOT CAMP INTRO ═══ */
+.bootcampSection {
+    background-color: var(--bg-dark);
+    padding: 96px 24px;
+    text-align: center;
+}
+
+.bootcampContainer {
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+.whatsNextLabel {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.bootcampH2 {
+    font-size: clamp(2rem, 5vw, 38px);
+    color: var(--white);
+    margin-bottom: 24px;
+}
+
+.bootcampBody {
+    font-size: 17px;
+    color: #AAAAAA;
+    line-height: 1.75;
+    max-width: 640px;
+    margin: 0 auto;
+    white-space: pre-wrap;
+}
+
+.statsRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    margin: 40px 0;
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.statNumber {
+    font-size: 40px;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.statLabel {
+    font-size: 13px;
+    color: #888888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ctaButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gold);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 18px 40px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.ctaButton:hover {
+    background-color: var(--white);
+    color: var(--text-primary);
+}
+
+.ctaNote {
+    font-size: 12px;
+    color: #666666;
+    margin-top: 16px;
+    white-space: pre-wrap;
+}
+
+/* ═══ SECTION 4: SOFT UPSELL & COMMUNITY INVITE ═══ */
+.upsellSection {
+    background-color: var(--bg-cream);
+    padding: 72px 24px;
+    text-align: center;
+}
+
+.upsellContainer {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.upsellH2 {
+    font-size: clamp(1.5rem, 4vw, 28px);
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.upsellBody {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+
+.secondaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 32px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.secondaryButton:hover {
+    background-color: var(--text-primary);
+    color: var(--white);
+}
+
+/* ═══ SECTION 5: SOCIAL SHARING ═══ */
+.socialSection {
+    background-color: var(--bg-cream-alt);
+    padding: 64px 24px;
+    text-align: center;
+    flex-grow: 1;
+    /* Pushes footer down */
+}
+
+.socialContainer {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.socialH2 {
+    font-size: clamp(1.5rem, 4vw, 28px);
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.socialBody {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+}
+
+.shareButtonsRow {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.shareButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.shareButton:hover {
+    transform: scale(1.02);
+    filter: brightness(0.9);
+}
+
+.fbButton {
+    background-color: #1877F2;
+}
+
+.waButton {
+    background-color: #25D366;
+}
+
+.copyButton {
+    background-color: var(--text-primary);
+}
+
+/* ═══ MINIMAL FOOTER ═══ */
+.footer {
+    background-color: #111111;
+    padding: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: #555555;
+    margin-top: auto;
+}
+
+.footerLink {
+    color: #888888;
+    text-decoration: none;
+}
+
+.footerLink:hover {
+    text-decoration: underline;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .heroSection {
+        padding: 64px 20px 48px 20px;
+    }
+
+    .deliveryBox {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding: 16px 20px;
+    }
+
+    .deliveryIcon {
+        margin: 0 auto;
+    }
+
+    .savePhoneSection {
+        padding: 56px 20px;
+    }
+
+    .instructionsGrid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .stepsList {
+        max-width: 100%;
+    }
+
+    .bootcampSection {
+        padding: 56px 20px;
+    }
+
+    .statsRow {
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .ctaButton {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .upsellSection {
+        padding: 56px 20px;
+    }
+
+    .secondaryButton {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .socialSection {
+        padding: 56px 20px;
+    }
+
+    .shareButtonsRow {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .shareButton {
+        width: 100%;
+        min-height: 48px;
+    }
+}
