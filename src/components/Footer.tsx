@@ -1,9 +1,12 @@
+import Image from "next/image";
+
 const links = [
-  { href: "#problem", label: "About" },
-  { href: "#how", label: "The Course" },
+  { href: "/#problem", label: "About" },
+  { href: "/#how", label: "The Course" },
   { href: "/handbook", label: "The Handbook" },
-  { href: "#testimonials", label: "Testimonials" },
-  { href: "#stripe-donation", label: "Join the Boot Camp" },
+  { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
+  { href: "/#testimonials", label: "Testimonials" },
+  { href: "/#stripe-donation", label: "Join the Boot Camp" },
 ];
 
 export default function Footer() {
@@ -12,8 +15,17 @@ export default function Footer() {
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
         {/* Logo & About */}
         <div className="md:col-span-2">
-          <div className="font-display text-[1.2rem] font-bold text-navy tracking-tight mb-6">
-            JESUS BOOT CAMP
+          <div className="flex items-center gap-3 mb-6">
+            <Image
+              src="/images/photo_2026-05-20_20-17-44.jpg"
+              alt="Jesus Boot Camp Logo"
+              width={48}
+              height={48}
+              className="rounded-full object-cover shadow-sm border border-card-border"
+            />
+            <div className="font-display text-[1.2rem] font-bold text-navy tracking-tight">
+              JESUS BOOT CAMP
+            </div>
           </div>
           <p className="text-[0.95rem] text-grey leading-[1.7] max-w-[380px]">
             A free 90-day discipleship journey designed to move you from dormant

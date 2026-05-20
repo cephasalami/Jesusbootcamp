@@ -93,10 +93,12 @@ export default function HandbookLandingPage() {
                 The Book That Trains You To Actually Live Your Faith.
               </h1>
               <p className={styles.heroSub}>
-                Most believers know the scriptures. Few know how to use them.
-                The Handbook for a Disciple of Jesus gives you thousands of
-                scripture references organized by life topic — so you always
-                know what God says about what you&apos;re facing.
+                {/* Copy reference: handbookforadiscipleofjesus.com/frontpage */}
+                {/* Paul confirmed this copy is already reviewed and approved. */}
+                Most believers know the scriptures. Few know how to use them — and even fewer know how to share them.
+                The Handbook for a Disciple of Jesus helps you grow in faith through the Word, and gives you the confidence
+                to share your faith with the Word. Thousands of scripture references, organized by life topic —
+                for every situation you face.
               </p>
 
               <div className={styles.trustLine}>
@@ -141,11 +143,12 @@ export default function HandbookLandingPage() {
 
             <div className={styles.mockupImageWrapper} data-aos="fade-up" data-aos-delay="100">
               <Image
-                src="/images/ChatGPT Image May 10, 2026, 02_49_46 PM.png"
-                alt="Handbook for a Disciple of Jesus Mockup"
+                src="/images/ChatGPT Image May 13, 2026, 12_47_13 AM.png"
+                alt="Digital Handbook Mockup"
                 width={480}
                 height={600}
                 className={styles.mockupImage}
+                style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                 priority
               />
             </div>
@@ -157,8 +160,8 @@ export default function HandbookLandingPage() {
       <section className={styles.socialProofSection}>
         <div className={`${styles.container} ${styles.socialProofFlex}`} data-aos="fade-up">
           <div className={styles.proofItem}>
-            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>26,000+</div>
-            <div className={styles.proofLabel}>Words of Scripture Content</div>
+            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>1,000+</div>
+            <div className={styles.proofLabel}>Most Powerful Scriptures</div>
           </div>
           <div className={styles.proofDivider}></div>
           <div className={styles.proofItem}>
@@ -167,8 +170,9 @@ export default function HandbookLandingPage() {
           </div>
           <div className={styles.proofDivider}></div>
           <div className={styles.proofItem}>
-            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>3 Languages</div>
-            <div className={styles.proofLabel}>And Growing</div>
+            <div className={`${styles.headingDisplay} ${styles.proofNumber}`}>15</div>
+            <div className={styles.proofLabel}>Languages</div>
+            <div style={{ fontSize: '11px', color: 'var(--gold)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>And Growing</div>
           </div>
           <div className={styles.proofDivider}></div>
           <div className={styles.proofItem}>
@@ -197,8 +201,10 @@ export default function HandbookLandingPage() {
               </div>
               <h3 className={styles.featureCardTitle}>Scripture By Topic</h3>
               <p className={styles.featureCardText}>
-                Find exactly what God says about identity, fear, relationships, purpose,
-                and dozens of other life topics — instantly.
+                {/* Language adapted from handbookforadiscipleofjesus.com/frontpage */}
+                {/* Approved copy — Paul Joseph confirmed. */}
+                The most highlighted promises from the Bible, compiled in a categorized index
+                for personal growth, counseling, and witnessing.
               </p>
             </div>
 
@@ -208,8 +214,9 @@ export default function HandbookLandingPage() {
               </div>
               <h3 className={styles.featureCardTitle}>Built For Disciples</h3>
               <p className={styles.featureCardText}>
-                Not for seminary students. Built for ordinary believers who want
-                to live like Christ — not just believe in Him.
+                Built for ordinary believers who want to live like Christ,
+                share the message of the Gospel,
+                and make a real difference in the world around them.
               </p>
             </div>
 
@@ -230,8 +237,8 @@ export default function HandbookLandingPage() {
               </div>
               <h3 className={styles.featureCardTitle}>Used Worldwide</h3>
               <p className={styles.featureCardText}>
-                From prisons in the South to youth groups in Africa — the Handbook
-                has been used in churches and ministries across the globe.
+                From prisons in the South to churches across the globe — the Handbook
+                has been used by ministries worldwide to train disciples and equip believers for real mission.
               </p>
             </div>
 
@@ -291,8 +298,8 @@ export default function HandbookLandingPage() {
               he wrote the Handbook for a Disciple of Jesus.
             </p>
             <p className={styles.authorBio}>
-              His mission is simple: to transform dormant believers into
-              disciplined, mission-driven disciples of Christ. The Handbook
+              His mission is simple: to transform passive believers into
+              devoted, mission-driven disciples of Christ. The Handbook
               is the first step.
             </p>
 
@@ -323,29 +330,29 @@ export default function HandbookLandingPage() {
           <div
             className={styles.videoWrapper}
             data-aos="fade-up"
-            onClick={() => setIsVideoPlaying(true)}
+            onClick={() => {
+              if (!isVideoPlaying) setIsVideoPlaying(true);
+            }}
           >
-            {!isVideoPlaying ? (
+            {isVideoPlaying ? (
+              <video
+                src="/images/video_2026-05-20_20-16-28.mp4"
+                controls
+                autoPlay
+                className="w-full h-full object-cover relative z-10"
+              />
+            ) : (
               <>
-                <img
-                  src="https://img.youtube.com/vi/bjtWnnAPjvY/maxresdefault.jpg"
-                  alt="Video Thumbnail"
-                  className={styles.videoThumbnail}
-                />
                 <div className={styles.videoOverlay} />
                 <div className={styles.videoPlayBtn}>
                   <svg className={styles.videoPlayIcon} viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 </div>
+                <div style={{ position: 'absolute', bottom: '24px', left: '24px', zIndex: 10, color: 'white', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 'bold' }}>
+                  Play Handbook Overview
+                </div>
               </>
-            ) : (
-              <iframe
-                src="https://www.youtube.com/embed/bjtWnnAPjvY?autoplay=1&modestbranding=1&rel=0&showinfo=0&color=white"
-                className={styles.videoPlaceholderIframe}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
             )}
           </div>
           <div className={styles.videoCaption}>

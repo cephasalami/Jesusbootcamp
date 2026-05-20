@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { Cross, Menu, X } from "lucide-react";
 
 export default function Navbar() {
@@ -14,10 +15,11 @@ export default function Navbar() {
   }, []);
 
   const links = [
-    { href: "#problem", label: "About" },
-    { href: "#how", label: "The Course" },
+    { href: "/#problem", label: "About" },
+    { href: "/#how", label: "The Course" },
     { href: "/handbook", label: "The Handbook" },
-    { href: "#testimonials", label: "Testimonials" },
+    { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
+    { href: "/#testimonials", label: "Testimonials" },
   ];
 
   return (
@@ -27,7 +29,14 @@ export default function Navbar() {
     >
       <div className="max-w-[1200px] mx-auto flex items-center justify-between px-8 h-[80px]">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-3">
+          <Image
+            src="/images/photo_2026-05-20_20-17-44.jpg"
+            alt="Jesus Boot Camp Logo"
+            width={40}
+            height={40}
+            className="rounded-full object-cover shadow-sm border border-card-border"
+          />
           <div className="font-display text-[1.2rem] font-bold text-navy tracking-tight">
             JESUS BOOT CAMP
           </div>
