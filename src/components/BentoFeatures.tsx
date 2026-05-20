@@ -1,5 +1,6 @@
 import { Lock, Unlock, Mail, Coffee, Monitor, Home, Smartphone } from "lucide-react";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
+import Image from "next/image";
 
 const sessions = [
   { num: "S01", title: "What It Truly Means to Be Born Again", locked: false },
@@ -70,13 +71,15 @@ export default function BentoFeatures() {
             className="bg-white border border-card-border p-6 sm:p-12 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-navy/40 mb-6">Resource</div>
-            <div className="w-full aspect-[3/4] bg-cream shadow-inner border border-card-border relative overflow-hidden mb-8 flex items-center justify-center p-8 group-hover:rotate-[-2deg] transition-transform duration-500">
-              <div className="w-full h-full border border-navy/5 flex flex-col items-center justify-center text-center">
-                <div className="font-display text-[14px] font-bold text-navy/80 uppercase tracking-widest leading-relaxed">
-                  Handbook<br />For A<br />Disciple
-                </div>
-                <div className="w-6 h-[1px] bg-gold my-4" />
-                <div className="text-[14px] font-serif italic text-navy/40">Premium PDF</div>
+            <div className="w-full aspect-[3/4] bg-cream shadow-inner border border-card-border relative overflow-hidden mb-8 flex items-center justify-center p-6 group-hover:rotate-[-2deg] transition-transform duration-500">
+              <div className="w-full h-full relative">
+                <Image
+                  src="/images/ChatGPT Image May 13, 2026, 12_47_13 AM.png"
+                  alt="Handbook for a Disciple of Jesus Book Cover"
+                  fill
+                  className="object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.18)]"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
               </div>
             </div>
             <h3 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">Digital Handbook</h3>
