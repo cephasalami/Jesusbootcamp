@@ -23,6 +23,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://jesusbootcamp.org"),
   title: "Jesus Boot Camp — 90-Day Discipleship Training by Paul Joseph",
   description: "Transform from a dormant believer into a disciplined disciple of Christ. Join the Jesus Boot Camp — free 90-day training. Get your free Handbook today.",
   openGraph: {
@@ -30,6 +31,14 @@ export const metadata: Metadata = {
     description: "From believer to disciple in 90 days. Free training. Free handbook. Global mission.",
     url: "https://jesusbootcamp.org",
     type: "website",
+    images: [
+      {
+        url: "/images/photo_2026-05-20_20-17-44.jpg",
+        width: 800,
+        height: 800,
+        alt: "Jesus Boot Camp Logo",
+      },
+    ],
   },
 };
 
