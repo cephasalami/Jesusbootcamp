@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Cross, Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -24,84 +24,101 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[500] bg-cream/85 backdrop-blur-2xl transition-all duration-300 ${scrolled ? "border-b border-card-border shadow-[0_1px_24px_rgba(10,31,68,0.06)]" : "border-b border-transparent"
-        }`}
+      className={`fixed top-0 left-0 right-0 z-[500] transition-all duration-500 ${
+        scrolled
+          ? "bg-cream/90 backdrop-blur-2xl border-b border-card-border shadow-[0_2px_32px_rgba(10,31,68,0.06)]"
+          : "bg-transparent border-b border-transparent"
+      }`}
     >
-      <div className="max-w-[1200px] mx-auto flex items-center justify-between px-8 h-[80px]">
+      <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 sm:px-8 h-[76px]">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-3">
-          <Image
-            src="/images/photo_2026-05-20_20-17-44.jpg"
-            alt="Jesus Boot Camp Logo"
-            width={40}
-            height={40}
-            className="rounded-full object-cover shadow-sm border border-card-border"
-          />
-          <div className="font-display text-[1.2rem] font-bold text-navy tracking-tight">
-            JESUS BOOT CAMP
+        <a href="/" className="flex items-center gap-3 group shrink-0">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/20 rounded-full blur-md transition-all duration-500" />
+            <Image
+              src="/images/photo_2026-05-20_20-17-44.jpg"
+              alt="Jesus Boot Camp Logo"
+              width={52}
+              height={52}
+              className="rounded-full object-cover border border-gold/30 shadow-sm relative z-10"
+            />
+          </div>
+          <div className="font-display text-[1.15rem] font-bold text-navy tracking-tight leading-tight hidden sm:block">
+            JESUS<br />
+            <span className="text-gold text-[0.9rem] font-semibold tracking-[0.1em]">BOOT CAMP</span>
           </div>
         </a>
 
         {/* Desktop Links */}
-        <ul className="hidden md:flex items-center gap-0 list-none">
+        <ul className="hidden lg:flex items-center gap-0 list-none">
           {links.map((link) => (
             <li key={link.href}>
               <a
                 href={link.href}
-                className="block px-5 text-sm font-medium text-grey transition-colors hover:text-navy"
+                className="relative block px-4 py-2 text-[13px] font-semibold text-grey transition-colors hover:text-navy group/link"
               >
                 {link.label}
+                <span className="absolute bottom-0 left-4 right-4 h-[1.5px] bg-gold scale-x-0 group-hover/link:scale-x-100 transition-transform duration-300 origin-left" />
               </a>
             </li>
           ))}
         </ul>
 
-        {/* Right */}
+        {/* Right: CTA + Hamburger */}
         <div className="flex items-center gap-3">
-          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. Supports "any amount" with monthly recurring option. */}
+          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. */}
           <a
             href="#stripe-donation"
-            className="hidden sm:block bg-navy text-white text-[13px] font-bold px-[24px] py-[12px] rounded-sm transition-all hover:bg-gold hover:text-navy whitespace-nowrap"
+            className="hidden sm:inline-flex items-center gap-2 bg-navy text-white text-[13px] font-bold px-5 py-[11px] rounded-sm transition-all duration-300 hover:bg-gold hover:text-navy group/cta whitespace-nowrap shadow-sm hover:shadow-[0_8px_20px_rgba(201,168,76,0.2)]"
           >
             Join the Boot Camp
+            <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/cta:translate-x-1" />
           </a>
           <button
-            className="flex md:hidden flex-col gap-[5px] p-1 bg-transparent border-none"
+            className="flex lg:hidden flex-col gap-[5px] p-2 bg-transparent border border-card-border rounded-md hover:border-navy/30 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
             {menuOpen ? (
-              <X className="w-6 h-6 text-navy" />
+              <X className="w-5 h-5 text-navy" />
             ) : (
-              <Menu className="w-6 h-6 text-navy" />
+              <Menu className="w-5 h-5 text-navy" />
             )}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-cream border-b border-card-border px-8 pb-4 shadow-[0_8px_24px_rgba(10,31,68,0.08)]">
-          {links.map((link) => (
+      {/* Mobile Menu — elegant drawer */}
+      <div
+        className={`lg:hidden bg-cream border-b border-card-border shadow-[0_8px_32px_rgba(10,31,68,0.08)] overflow-hidden transition-all duration-400 ${
+          menuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-6 py-4">
+          {links.map((link, i) => (
             <a
               key={link.href}
               href={link.href}
               onClick={() => setMenuOpen(false)}
-              className="block py-3 border-b border-card-border text-sm font-medium text-grey hover:text-navy last:border-b-0"
+              style={{ transitionDelay: menuOpen ? `${i * 40}ms` : "0ms" }}
+              className="flex items-center justify-between py-3.5 border-b border-card-border text-sm font-semibold text-grey hover:text-navy hover:pl-2 transition-all duration-200 last:border-b-0"
             >
               {link.label}
+              <ArrowRight className="w-3.5 h-3.5 opacity-30" />
             </a>
           ))}
-          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. Supports "any amount" with monthly recurring option. */}
+          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. */}
           <a
             href="#stripe-donation"
             onClick={() => setMenuOpen(false)}
-            className="block mt-3 bg-gold text-navy text-center text-sm font-bold py-3 rounded-xl"
+            className="flex items-center justify-center gap-2 mt-4 bg-navy text-white text-sm font-bold py-4 rounded-sm hover:bg-gold hover:text-navy transition-all duration-300"
           >
-            Join the Boot Camp
+            Join the Jesus Boot Camp <ArrowRight className="w-4 h-4" />
           </a>
         </div>
-      )}
+      </div>
     </nav>
   );
 }
+
+

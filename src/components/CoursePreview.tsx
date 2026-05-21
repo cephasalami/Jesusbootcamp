@@ -8,7 +8,7 @@ const lessons = [
   { num: "SESSION 02", title: "Who You Are in Christ", desc: "Discover your true identity — not shaped by the world, but declared by the Word.", available: false },
   { num: "SESSION 14", title: "The Power of God's Word", desc: "Learn how to wield Scripture like a soldier wields a sword — with precision and confidence.", available: false },
   { num: "SESSION 27", title: "Live Boldly", desc: "Faith without action is dead. This session moves you from belief into visible, daily obedience.", available: false },
-  { num: "SESSION 38", title: "Sharing Your Faith Is Mandatory", desc: "Jesus didn't suggest evangelism. He commanded it. Learn how to share naturally and boldly.", available: false },
+  { num: "SESSION 38", title: "Learn To Boldly Share Your Faith", desc: "Jesus didn't suggest evangelism. He commanded it. Learn how to share naturally and regularly.", available: false },
   { num: "SESSION 55", title: "The Authority of the Believer", desc: "Every believer has been given power. This session shows you how to walk in it daily.", available: false },
   { num: "SESSION 90", title: "Your Commission — Go and Disciple", desc: "You've trained for 90 days. Now it's time to deploy. Your mission begins here.", available: false },
 ];
@@ -21,8 +21,8 @@ export default function CoursePreview() {
         <h2 className="font-display text-[2.8rem] font-bold text-navy mt-6 mb-4 tracking-tight">
           A Glimpse Inside.
         </h2>
-        <p className="text-[1.1rem] text-grey max-w-[500px]">
-          Scroll to explore. All sessions unlock when you join — free, instantly.
+        <p className="text-[1.1rem] text-grey max-w-[600px]">
+          Scroll to the right to explore. All sessions unlock instantly when you join — free, instantly.
         </p>
       </div>
 
@@ -61,7 +61,7 @@ export default function CoursePreview() {
         <p className="text-[14px] text-grey italic font-medium">
           <strong className="text-navy not-italic">+84 more sessions</strong> waiting for you inside.
         </p>
-        <ButtonGold>Unlock All 90 Sessions — Free ›</ButtonGold>
+        <ButtonGold href="#stripe-donation">Unlock All 90 Sessions — Free HERE ›</ButtonGold>
       </div>
     </section>
   );

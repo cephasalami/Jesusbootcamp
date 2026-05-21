@@ -24,11 +24,11 @@ export default function Handbook() {
           <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mb-6 tracking-tight">
             The Handbook for a
             <br />
-            <em className="italic text-gold font-normal">Disciple of Jesus.</em>
+            <em className="italic text-gold font-normal">Disciple of Jesus</em>
           </h2>
           <p className="text-[1.1rem] text-grey leading-[1.8] mb-10 max-w-[500px]">
             This isn&apos;t just a book. It&apos;s a tactical field manual. It contains
-            thousands of categorized Scripture references to guide you through every
+            thousands of categorized Scriptures for easy references to guide you through every
             situation a disciple faces.
           </p>
 

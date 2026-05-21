@@ -132,16 +132,16 @@ function ThankYouContent() {
                         {isVersionB ? (
                             <>
                                 You didn't just download a free resource. You invested in your discipleship. That tells us something about you — you're serious about this.{"\n\n"}
-                                The Jesus Boot Camp was built for people exactly like you. 90 days. Real training. Real transformation. And it's completely free.
+                                The Jesus Boot Camp was built for people exactly like you. 90 days. Real training. Real transformation. Supported by voluntary donation.
                             </>
                         ) : (
                             <>
-                                The Jesus Boot Camp is a free 90-day discipleship training program that takes everything in the Handbook and teaches you how to live it. Every day. In the real world.{"\n\n"}
+                                The Jesus Boot Camp is a 90-day discipleship training program that takes everything in the Handbook and teaches you how to live it. Every day. In the real world.{"\n\n"}
                                 This isn't church. This isn't a seminar. This is training — for disciples who are serious about their mission.
                             </>
                         )}
                     </p>
-
+ 
                     <div className={styles.statsRow} data-aos="fade-up" data-aos-delay="100">
                         <div className={styles.statItem}>
                             <span className={`${styles.headingDisplay} ${styles.statNumber}`}>90</span>
@@ -152,14 +152,14 @@ function ThankYouContent() {
                             <span className={styles.statLabel}>Words of Content</span>
                         </div>
                         <div className={styles.statItem}>
-                            <span className={`${styles.headingDisplay} ${styles.statNumber}`}>Free</span>
-                            <span className={styles.statLabel}>Always</span>
+                            <span className={`${styles.headingDisplay} ${styles.statNumber}`}>Acts</span>
+                            <span className={styles.statLabel}>21st Century</span>
                         </div>
                     </div>
-
+ 
                     <div data-aos="fade-up" data-aos-delay="200">
                         <a href="/" className={styles.ctaButton}>
-                            Join the Jesus Boot Camp — It's Free
+                            Join the Jesus Boot Camp
                         </a>
                         <p className={styles.ctaNote}>
                             No credit card. No commitment.{"\n"}Supported by voluntary donation.
@@ -167,7 +167,7 @@ function ThankYouContent() {
                     </div>
                 </div>
             </section>
-
+ 
             {/* ═══ SECTION 4: SOFT UPSELL OR COMMUNITY INVITE ═══ */}
             <section className={styles.upsellSection}>
                 <div className={styles.upsellContainer} data-aos="fade-up">
@@ -180,7 +180,7 @@ function ThankYouContent() {
                                 Most believers never take a single step toward real training. You just took two. Join the Boot Camp community and start connecting with disciples who are on the same journey.
                             </p>
                             <a href="/" className={styles.ctaButton}>
-                                Join the Jesus Boot Camp Community — Free
+                                Join the Jesus Boot Camp Community
                             </a>
                         </>
                     ) : (

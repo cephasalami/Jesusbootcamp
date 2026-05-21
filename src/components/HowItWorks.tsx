@@ -2,9 +2,9 @@ import { ArrowUpRight, Mail, Check, PlayCircle, Clock, Users } from "lucide-reac
 import { SectionTag } from "./ui/Buttons";
 
 const floatLessons = [
-  { title: "Apply Scripture in conversations", meta: "Practice · 15 min" },
-  { title: "Share your testimony this week", meta: "Action Step · 20 min" },
-  { title: "Pray with someone today", meta: "Daily Challenge · 10 min" },
+  { title: "Learn to Apply Scripture in conversations", meta: "Practice · 15 min" },
+  { title: "Learn to Share your own testimony this week", meta: "Action Step · 20 min" },
+  { title: "Learn to Pray with someone today", meta: "Daily Challenge · 10 min" },
 ];
 
 export default function HowItWorks() {
@@ -16,10 +16,12 @@ export default function HowItWorks() {
           <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] font-bold text-navy mt-6 mb-4 tracking-tight">
             How It Works
           </h2>
-          <p className="text-[1.1rem] text-grey max-w-[500px] mx-auto leading-[1.7]">Four clear steps to transformation. No barriers, just discipline.</p>
+          <p className="text-[1.1rem] text-grey max-w-[600px] mx-auto leading-[1.7]">
+            Four clear steps to a lifestyle of discipleship
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Card 1: Join Boot Camp */}
           <div
             data-aos="fade-up"
@@ -65,7 +67,7 @@ export default function HowItWorks() {
             className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
+              <h3 className="font-display text-[clamp(1.2rem,3vw,1.8rem)] font-bold leading-tight text-navy tracking-tight">
                 Supported by voluntary donation. Access is open to all — give what you can.
               </h3>
               <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
@@ -115,8 +117,8 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <p className="text-[14px] text-grey mt-10 font-medium">
-              Delivered daily to your primary inbox.
+            <p className="text-[13px] sm:text-[14px] text-grey mt-10 font-medium leading-relaxed">
+              Receive an email daily with a class, an audio podcast, a video version, and a PowerPoint presentation should you want to also teach what you learn.
             </p>
           </div>
 
@@ -128,7 +130,7 @@ export default function HowItWorks() {
           >
             <div className="flex justify-between items-start mb-8">
               <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
-                Real Action.
+                Real Action
                 <br />
                 Steady Growth.
               </h3>
@@ -153,44 +155,6 @@ export default function HowItWorks() {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Card 4: Disciple Others */}
-          <div
-            data-aos="fade-up"
-            data-aos-delay="300"
-            className="bg-navy p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
-          >
-            <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-white tracking-tight">
-                Ambassador
-                <br />
-                Activation.
-              </h3>
-              <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold group-hover:text-navy text-white">
-                <ArrowUpRight className="w-6 h-6" />
-              </div>
-            </div>
-
-            <div className="flex-1 flex items-center justify-center relative">
-              <div className="w-24 h-24 bg-gold/10 rounded-full animate-ping absolute" />
-              <div className="w-24 h-24 bg-gold rounded-full flex items-center justify-center relative z-10 shadow-lg">
-                <Users className="w-10 h-10 text-navy" />
-              </div>
-              {/* Orbital dots */}
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-3 h-3 bg-gold border-2 border-navy rounded-full"
-                  style={{
-                    transform: `rotate(${i * 72}deg) translate(80px) rotate(-${i * 72}deg)`
-                  }}
-                />
-              ))}
-            </div>
-            <p className="text-[14px] text-white/50 mt-10 font-medium">
-              By Day 90, you are ready to lead others.
-            </p>
           </div>
         </div>
       </div>

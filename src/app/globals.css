@@ -60,6 +60,13 @@ p {
   animation: pulse-dot 2s infinite;
 }
 
+/* ═══ SHIMMER SWEEP ═══ */
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 150%; }
+}
+
+
 /* ═══ SCROLLBAR ═══ */
 .scrollbar-thin {
   scrollbar-width: thin;

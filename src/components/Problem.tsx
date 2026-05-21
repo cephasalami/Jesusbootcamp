@@ -5,54 +5,89 @@ const cards = [
   {
     icon: Search,
     title: "Unprepared",
-    text: '"I don\'t know which Scriptures to use in real life — I feel unprepared when it matters most."',
+    text: "I don't know which Scriptures to use in real life — I feel unprepared when it matters most.",
   },
   {
     icon: VolumeX,
     title: "Speechless",
-    text: '"I freeze when someone challenges my faith — I can\'t explain what I believe or defend it."',
+    text: "I freeze when someone challenges my faith — I can't explain what I believe or defend it.",
   },
   {
     icon: BedDouble,
     title: "Stagnant",
-    text: '"My faith feels like a Sunday ritual, not a daily lifestyle — I want more but don\'t know how to get there."',
+    text: "My faith feels like a Sunday ritual, not a daily lifestyle — I want more but don't know how to get there.",
   },
 ];
 
 export default function Problem() {
   return (
-    <section id="problem" className="py-16 sm:py-24 px-5 sm:px-8 bg-cream border-t border-card-border overflow-hidden">
-      <div className="max-w-[1100px] mx-auto">
-        <div className="text-center mb-16" data-aos="fade-up">
-          <SectionTag className="border-navy/10 text-navy/60">The Crisis</SectionTag>
-          <h2 className="font-display text-[clamp(1.8rem,5vw,2.8rem)] font-bold text-navy leading-tight mt-6 mb-6 tracking-tight">
-            &quot;Most believers attend church.
-            <br />
-            Few actually follow Christ.&quot;
-          </h2>
-          <p className="text-[1.15rem] text-grey max-w-[680px] mx-auto leading-[1.8]">
-            You know the stories. You&apos;ve sat in the pews. But when life demands a defense
-            of your hope, or when the mission calls for action — you freeze.
-            You were never trained for the front lines.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {cards.map((card, i) => (
-            <div
-              key={i}
-              data-aos="fade-up"
-              data-aos-delay={i * 100}
-              className="bg-white rounded-lg border border-card-border p-10 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 w-full h-[3px] bg-gold opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="w-12 h-12 rounded-full bg-warm flex items-center justify-center mb-6 text-navy">
-                <card.icon className="w-6 h-6" />
-              </div>
-              <h4 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">{card.title}</h4>
-              <p className="text-[1rem] text-grey leading-[1.7] italic font-medium opacity-80 group-hover:opacity-100 transition-opacity">&ldquo;{card.text.replace(/"/g, '')}&rdquo;</p>
+    <section id="problem" className="bg-cream border-t border-card-border overflow-hidden">
+      {/* Top: Editorial prose block */}
+      <div className="py-20 sm:py-28 px-5 sm:px-8">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 lg:gap-16 items-start" data-aos="fade-up">
+            {/* Left: sticky tag */}
+            <div className="pt-2 shrink-0">
+              <SectionTag className="border-navy/10 text-navy/60">The Crisis</SectionTag>
             </div>
-          ))}
+
+            {/* Right: three paragraphs */}
+            <div className="space-y-6">
+              <p className="text-[1.2rem] sm:text-[1.3rem] text-navy/80 leading-[1.85] font-medium">
+                There is an undeniable, roaring heart cry echoing across this entire generation — a holy hunger for more that bridges the gap between those inside and outside the Body of Christ.
+              </p>
+              <p className="text-[1.05rem] text-grey leading-[1.85]">
+                While many believers are fiercely desiring to obey Jesus explicitly, and step into their Great Commission authority, seekers and non-believers are feeling a genuine hunger to discover who Christ truly is, why He changed history, and how His truth applies to their lives today.
+              </p>
+              <p className="text-[1.05rem] text-grey leading-[1.85]">
+                This is why the Jesus Boot Camp exists — to meet this global hunger and to equip a powerhouse remnant to carry the fire of the early Church into the 21st century and watch the Book of Acts come alive all over again.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom: dark dramatic pain-point band */}
+      <div className="bg-[#111111] py-20 px-5 sm:px-8">
+        <div className="max-w-[1100px] mx-auto">
+          {/* Pull-quote */}
+          <p
+            className="font-display text-[clamp(1.6rem,4vw,2.4rem)] font-bold text-white/90 leading-[1.3] max-w-[820px] mb-16 tracking-tight"
+            data-aos="fade-up"
+          >
+            "Most believers know <em className="italic font-normal text-gold">about</em> Jesus.
+            <br className="hidden sm:block" /> Very few know how to{" "}
+            <em className="italic font-normal text-gold">follow</em> Him."
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {cards.map((card, i) => (
+              <div
+                key={i}
+                data-aos="fade-up"
+                data-aos-delay={i * 100}
+                className="border border-white/10 p-8 relative overflow-hidden transition-all duration-500 hover:border-gold/40 hover:bg-white/5 group"
+              >
+                {/* Gold top accent on hover */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+
+                {/* Icon */}
+                <div className="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 text-gold/70 group-hover:text-gold group-hover:border-gold/30 transition-all duration-300">
+                  <card.icon className="w-5 h-5" />
+                </div>
+
+                <h4 className="font-display text-[1.2rem] font-bold !text-white mb-3 tracking-tight">
+                  {card.title}
+                </h4>
+
+                <div className="w-6 h-[1.5px] bg-gold/30 mb-4 group-hover:w-12 transition-all duration-500" />
+
+                <p className="text-[14px] !text-white/60 leading-[1.8] italic group-hover:!text-white/90 transition-colors duration-300">
+                  &ldquo;{card.text}&rdquo;
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

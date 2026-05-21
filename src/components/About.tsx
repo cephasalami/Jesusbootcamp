@@ -33,8 +33,8 @@ export default function About() {
           </p>
           <p>
             Paul Joseph is dedicated to helping believers transition from dormant spectators
-            to active, disciplined ambassadors of Christ. This course is the result of
-            years of testing in prisons, churches, and mission fields.
+            to become active disciplined disciples of Jesus. This course is the result of
+            years of applying God&apos;s Word in daily life.
           </p>
         </div>
       </div>
