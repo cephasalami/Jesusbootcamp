@@ -50,7 +50,7 @@ export default function Footer() {
 
         {/* Quick Links */}
         <div>
-          <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white mb-6 border-l-2 border-gold/60 pl-3">
+          <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] !text-white mb-6 border-l-2 border-gold/60 pl-3">
             Navigation
           </h4>
           <div className="flex flex-col gap-3.5">
@@ -69,7 +69,7 @@ export default function Footer() {
 
         {/* Legal / Resources */}
         <div>
-          <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-white mb-6 border-l-2 border-gold/60 pl-3">
+          <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] !text-white mb-6 border-l-2 border-gold/60 pl-3">
             Resources
           </h4>
           <div className="flex flex-col gap-3.5">
