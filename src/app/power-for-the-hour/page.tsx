@@ -67,9 +67,8 @@ export default function PowerForTheHourPage() {
                                 available anywhere else.
                             </p>
 
-                            {/* TODO: Replace href with live Gumroad $5 product URL */}
                             <a
-                                href="#gumroad-placeholder"
+                                href="https://faithwithoutborders.us/cart/?add-to-cart=3229&code=BOOTCAMP5"
                                 className={styles.ctaButton}
                                 role="button"
                             >
@@ -77,7 +76,7 @@ export default function PowerForTheHourPage() {
                             </a>
 
                             <p className={styles.securityLine}>
-                                🔒 Secure checkout via Gumroad · Instant digital delivery · No subscription
+                                🔒 Secure checkout · Instant digital delivery · No subscription
                             </p>
                         </div>
 
@@ -278,9 +277,8 @@ export default function PowerForTheHourPage() {
                         <span className={styles.priceTag}>ONE-TIME OFFER</span>
                     </div>
 
-                    {/* TODO: Replace href with live Gumroad $5 product URL */}
                     <a
-                        href="#gumroad-placeholder"
+                        href="https://faithwithoutborders.us/cart/?add-to-cart=3229&code=BOOTCAMP5"
                         className={styles.finalCtaButton}
                         role="button"
                     >
