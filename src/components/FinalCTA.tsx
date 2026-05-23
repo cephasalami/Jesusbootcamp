@@ -58,18 +58,18 @@ export default function FinalCTA() {
 
         {/* Editorial Heading */}
         <h2 className="font-display text-[clamp(2.2rem,6vw,3.6rem)] font-bold text-navy leading-[1.15] mb-8 tracking-tight max-w-[750px] mx-auto">
-          The world needs disciples.
-          <br />
+          The world needs{" "}
           <span className="italic text-gold font-normal relative inline-block">
-            Not spectators.
+            committed disciples.
             <span className="absolute bottom-1 left-0 w-full h-[2px] bg-gold/20" />
           </span>
         </h2>
 
         {/* Tagline (Removing completely free) */}
         <p className="text-[1.1rem] sm:text-[1.25rem] text-grey/90 max-w-[580px] mx-auto mb-12 leading-[1.8] font-medium">
-          90 days. 30 minutes a day. 
-          <br className="hidden sm:block" />
+          90 days. 30 minutes a day.
+          <br />
+          <br />
           Are you ready to truly follow Jesus?
         </p>
 

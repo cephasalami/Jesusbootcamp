@@ -32,9 +32,8 @@ export default function About() {
             born again, but few are being made into disciples.
           </p>
           <p>
-            Paul Joseph is dedicated to helping believers transition from dormant spectators
-            to become active disciplined disciples of Jesus. This course is the result of
-            years of applying God&apos;s Word in daily life.
+            Paul Joseph is dedicated to helping believers become active disciples of Jesus.
+            This course is the result of years of applying God&apos;s Word in daily life.
           </p>
         </div>
       </div>

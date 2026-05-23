@@ -28,14 +28,14 @@ export default function Handbook() {
           </h2>
           <p className="text-[1.1rem] text-grey leading-[1.8] mb-10 max-w-[500px]">
             This isn&apos;t just a book. It&apos;s a tactical field manual. It contains
-            thousands of categorized Scriptures for easy references to guide you through every
-            situation a disciple faces.
+            over 1,000 of the most powerful scripture references, categorized by life topic —
+            to guide you through every situation a disciple faces.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
             <div className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5" />
-              <div className="text-[14px] font-medium text-navy">Over 2,000 Scripture References</div>
+              <div className="text-[14px] font-medium text-navy">Over 1,000 Most Powerful Scripture References</div>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2.5" />

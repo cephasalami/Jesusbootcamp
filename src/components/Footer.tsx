@@ -44,7 +44,7 @@ export default function Footer() {
 
           <p className="text-[0.95rem] text-white/50 leading-[1.8] max-w-[400px]">
             A comprehensive 90-day discipleship journey designed to move you from dormant
-            spectator to an active, disciplined ambassador of Jesus Christ.
+            spectator to an active devoted ambassador of Jesus Christ.
           </p>
         </div>
 

@@ -55,9 +55,6 @@ export default function HowItWorks() {
                 </div>
               </div>
             </div>
-            <p className="text-[14px] text-grey mt-10 font-medium">
-              No credit card. No cost. Ever.
-            </p>
           </div>
 
           {/* Card 2: Learn Daily */}
@@ -117,9 +114,6 @@ export default function HowItWorks() {
               </div>
             </div>
 
-            <p className="text-[13px] sm:text-[14px] text-grey mt-10 font-medium leading-relaxed">
-              Receive an email daily with a class, an audio podcast, a video version, and a PowerPoint presentation should you want to also teach what you learn.
-            </p>
           </div>
 
           {/* Card 3: Apply It */}
