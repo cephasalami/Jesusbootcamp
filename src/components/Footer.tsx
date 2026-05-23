@@ -43,8 +43,8 @@ export default function Footer() {
           </div>
 
           <p className="text-[0.95rem] text-white/50 leading-[1.8] max-w-[400px]">
-            A comprehensive 90-day discipleship journey designed to move you from dormant
-            spectator to an active devoted ambassador of Jesus Christ.
+            A comprehensive 90-day discipleship journey designed to move you to an active
+            ambassador of Jesus Christ.
           </p>
         </div>
 

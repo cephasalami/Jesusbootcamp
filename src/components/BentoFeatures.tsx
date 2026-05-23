@@ -65,7 +65,7 @@ export default function BentoFeatures() {
               </div>
             </div>
             <h3 className="font-display text-[1.4rem] font-bold text-navy mb-4 tracking-tight">Digital Handbook</h3>
-            <p className="text-[14px] text-grey leading-[1.7] mb-8">Over 1,000 of the most powerful scripture references, categorized by life topic. Your active pocket guide.</p>
+            <p className="text-[14px] text-grey leading-[1.7] mb-8">Over 1,000 of the most powerful scripture&apos;s categorized by life topic. Your active pocket guide.</p>
             <ButtonGold href="/handbook" className="w-full !text-[13px] rounded-none !py-4">Download Free</ButtonGold>
           </div>
 
