@@ -2,6 +2,7 @@
 
 import { Lock, Unlock } from "lucide-react";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
+import { JOIN_URL } from "@/config/links";
 
 const lessons = [
   { num: "SESSION 01", title: "What It Truly Means to Be Born Again", desc: "Establish the unshakeable foundation of your identity in Christ — not religion, but relationship.", available: true },
@@ -61,7 +62,7 @@ export default function CoursePreview() {
         <p className="text-[14px] text-grey italic font-medium">
           <strong className="text-navy not-italic">+84 more sessions</strong> waiting for you inside.
         </p>
-        <ButtonGold href="#stripe-donation">Unlock All 90 Sessions — Free HERE ›</ButtonGold>
+        <ButtonGold href={JOIN_URL}>Unlock All 90 Sessions — Free HERE ›</ButtonGold>
       </div>
     </section>
   );

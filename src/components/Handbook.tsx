@@ -51,7 +51,7 @@ export default function Handbook() {
             </div>
           </div>
 
-          <ButtonGold href="#lead-magnet">
+          <ButtonGold href="/handbook">
             Download the Free Handbook ›
           </ButtonGold>
         </div>

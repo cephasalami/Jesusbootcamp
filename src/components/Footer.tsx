@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Sparkles, ArrowUpRight } from "lucide-react";
+import { JOIN_URL } from "@/config/links";
 
 const links = [
   { href: "/#problem", label: "About" },
@@ -7,7 +8,7 @@ const links = [
   { href: "/handbook", label: "The Handbook" },
   { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
   { href: "/#testimonials", label: "Testimonials" },
-  { href: "/#stripe-donation", label: "Join the Boot Camp" },
+  { href: JOIN_URL, label: "Join the Boot Camp", external: true },
 ];
 
 export default function Footer() {
@@ -58,6 +59,7 @@ export default function Footer() {
               <a
                 key={link.href}
                 href={link.href}
+                {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200 flex items-center gap-1 group"
               >
                 <span>{link.label}</span>
@@ -75,7 +77,7 @@ export default function Footer() {
           <div className="flex flex-col gap-3.5">
             <a href="/handbook" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">The Handbook PDF</a>
             <a href="/why-the-boot-camp" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">Why the Boot Camp</a>
-            <a href="#" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">Privacy & Terms</a>
+            <a href="/privacy" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">Privacy Policy</a>
           </div>
         </div>
       </div>

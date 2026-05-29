@@ -14,6 +14,12 @@ export function SectionTag({
   );
 }
 
+// Links to other sites open in a new tab with safe rel attributes.
+const externalProps = (href: string) =>
+  /^https?:\/\//.test(href)
+    ? { target: "_blank", rel: "noopener noreferrer" }
+    : {};
+
 export function ButtonGold({
   children,
   href = "#cta-final",
@@ -26,6 +32,7 @@ export function ButtonGold({
   return (
     <a
       href={href}
+      {...externalProps(href)}
       className={`inline-flex items-center gap-2 bg-navy text-white text-[15px] font-bold px-8 py-4 rounded-sm border-none transition-all duration-250 hover:bg-gold hover:text-navy hover:-translate-y-0.5 ${className}`}
     >
       {children}
@@ -45,6 +52,7 @@ export function ButtonOutline({
   return (
     <a
       href={href}
+      {...externalProps(href)}
       className={`inline-flex items-center gap-2 bg-transparent text-navy text-[15px] font-semibold px-8 py-[15px] rounded-sm border-2 border-navy transition-all duration-250 hover:bg-navy hover:text-white ${className}`}
     >
       {children}

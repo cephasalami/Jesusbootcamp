@@ -1,6 +1,7 @@
 import { SectionTag } from "./ui/Buttons";
 import Image from "next/image";
 import { ArrowRight, Play, Award, Sparkles } from "lucide-react";
+import { JOIN_URL } from "@/config/links";
 
 export default function Hero() {
   return (
@@ -61,7 +62,9 @@ export default function Hero() {
           {/* High-end Premium CTA Button */}
           <div className="flex items-center gap-4 flex-wrap">
             <a
-              href="#stripe-donation"
+              href={JOIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-3 bg-navy text-white text-[15px] sm:text-[16px] font-bold px-10 py-5 rounded-none border border-navy/20 transition-all duration-350 shadow-[0_10px_30px_rgba(26,26,26,0.12)] hover:bg-gold hover:text-navy hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(201,168,76,0.25)] group relative overflow-hidden active:translate-y-0"
             >
               {/* Subtle shining light sweep effect on hover */}

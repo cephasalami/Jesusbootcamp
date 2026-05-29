@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Menu, X, ArrowRight } from "lucide-react";
+import { JOIN_URL } from "@/config/links";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -33,14 +34,15 @@ export default function Navbar() {
       <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 sm:px-8 h-[76px]">
         {/* Logo */}
         <a href="/" className="flex items-center gap-3 group shrink-0">
-          <div className="relative">
+          <div className="relative shrink-0">
             <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/20 rounded-full blur-md transition-all duration-500" />
             <Image
               src="/images/photo_2026-05-20_20-17-44.jpg"
               alt="Jesus Boot Camp Logo"
               width={52}
               height={52}
-              className="rounded-full object-cover border border-gold/30 shadow-sm relative z-10"
+              priority
+              className="rounded-full object-cover border border-gold/30 shadow-sm relative z-10 w-[52px] h-[52px]"
             />
           </div>
           <div className="font-display text-[1.15rem] font-bold text-navy tracking-tight leading-tight hidden sm:block">
@@ -66,9 +68,10 @@ export default function Navbar() {
 
         {/* Right: CTA + Hamburger */}
         <div className="flex items-center gap-3">
-          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. */}
           <a
-            href="#stripe-donation"
+            href={JOIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden sm:inline-flex items-center gap-2 bg-navy text-white text-[13px] font-bold px-5 py-[11px] rounded-sm transition-all duration-300 hover:bg-gold hover:text-navy group/cta whitespace-nowrap shadow-sm hover:shadow-[0_8px_20px_rgba(201,168,76,0.2)]"
           >
             Join the Boot Camp
@@ -107,9 +110,10 @@ export default function Navbar() {
               <ArrowRight className="w-3.5 h-3.5 opacity-30" />
             </a>
           ))}
-          {/* TODO: Replace with live Stripe recurring donation link once Stripe is configured. */}
           <a
-            href="#stripe-donation"
+            href={JOIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setMenuOpen(false)}
             className="flex items-center justify-center gap-2 mt-4 bg-navy text-white text-sm font-bold py-4 rounded-sm hover:bg-gold hover:text-navy transition-all duration-300"
           >

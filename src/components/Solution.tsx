@@ -24,7 +24,7 @@ const pillars = [
     icon: Globe,
     num: "04",
     title: "Disciple Others",
-    text: 'By Day 90, you\'ll be ready to lead others through the same journey. One life becomes many. "You have heard me teach things that have been confirmed by many reliable witnesses. Now teach these truths to other trustworthy people who will be able to pass them on to others.” (2 Timothy 2:2)',
+    text: 'By Day 90, you\'ll be equipped to lead others through the same journey — one life becomes many. “Teach these truths to trustworthy people who will be able to pass them on.” (2 Timothy 2:2)',
   },
 ];
 

@@ -17,7 +17,7 @@ export default function HowItWorks() {
             How It Works
           </h2>
           <p className="text-[1.1rem] text-grey max-w-[600px] mx-auto leading-[1.7]">
-            Four clear steps to a lifestyle of discipleship
+            Three clear steps to a lifestyle of discipleship
           </p>
         </div>
 
@@ -64,8 +64,10 @@ export default function HowItWorks() {
             className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
             <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[clamp(1.2rem,3vw,1.8rem)] font-bold leading-tight text-navy tracking-tight">
-                Supported by voluntary donation. Access is open to all — give what you can.
+              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
+                Watch.
+                <br />
+                Learn Daily.
               </h3>
               <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
                 <ArrowUpRight className="w-6 h-6" />
@@ -151,6 +153,15 @@ export default function HowItWorks() {
             </div>
           </div>
         </div>
+
+        {/* Access note */}
+        <p
+          className="text-center text-[14px] text-grey/80 mt-12 max-w-[560px] mx-auto leading-[1.7]"
+          data-aos="fade-up"
+        >
+          Supported by voluntary donation. Access is open to all —{" "}
+          <span className="text-navy font-semibold">give what you can.</span>
+        </p>
       </div>
     </section>
   );

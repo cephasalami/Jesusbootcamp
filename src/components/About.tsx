@@ -1,5 +1,6 @@
 import { SectionTag } from "./ui/Buttons";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 export default function About() {
   return (
     <section id="about" className="py-24 px-8 bg-cream border-t border-card-border">
@@ -36,6 +37,14 @@ export default function About() {
             This course is the result of years of applying God&apos;s Word in daily life.
           </p>
         </div>
+
+        <a
+          href="/why-the-boot-camp"
+          className="inline-flex items-center gap-2 mt-10 text-[15px] font-bold text-navy border-b-2 border-gold/40 pb-1 transition-all duration-300 hover:gap-3 hover:border-gold group"
+        >
+          Read the full story
+          <ArrowRight className="w-4 h-4 text-gold transition-transform duration-300 group-hover:translate-x-1" />
+        </a>
       </div>
     </section>
   );
