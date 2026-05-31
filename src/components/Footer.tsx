@@ -8,7 +8,7 @@ const links = [
   { href: "/handbook", label: "The Handbook" },
   { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
   { href: "/#testimonials", label: "Testimonials" },
-  { href: JOIN_URL, label: "Join the Boot Camp", external: true },
+  { href: JOIN_URL, label: "Start Your Free Trial", external: true },
 ];
 
 export default function Footer() {

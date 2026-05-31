@@ -1,10 +1,8 @@
-import FadeIn from "./ui/FadeIn";
-
-const stats = [
+const stats: { value: string; label: string; sub?: string }[] = [
     { value: "90 Days", label: "Discipleship Course" },
     { value: "26,000+", label: "Scripture Words" },
     { value: "Global Mission", label: "Prison & Church Tested" },
-    { value: "Free Forever", label: "No Hidden Costs" },
+    { value: "$25", label: "Per Month", sub: "After Free Trial" },
 ];
 
 export default function Stats() {
@@ -20,6 +18,11 @@ export default function Stats() {
                             <div className="text-[12px] uppercase tracking-[0.1em] text-grey font-semibold">
                                 {stat.label}
                             </div>
+                            {stat.sub && (
+                                <div className="text-[11px] text-gold font-semibold mt-1 tracking-[0.05em]">
+                                    {stat.sub}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

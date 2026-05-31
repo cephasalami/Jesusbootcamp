@@ -104,7 +104,7 @@ export default function FinalCTA() {
                 </>
               ) : (
                 <>
-                  <span>Yes — Send Me Day 1</span>
+                  <span>Start My Free Trial</span>
                   <Send className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-0.5" />
                 </>
               )}
@@ -126,9 +126,15 @@ export default function FinalCTA() {
           )}
         </div>
 
+        {/* Trial terms */}
+        <p className="font-body text-[13px] italic text-grey mt-8 max-w-[540px] mx-auto leading-[1.7]">
+          First 3 sessions free — no credit card required. Continue for just $25/month
+          after your trial. Cancel anytime.
+        </p>
+
         {/* Small print */}
-        <p className="text-xs text-grey/50 italic mt-8">
-          No marketing spam. Unsubscribe anytime. Instant access.
+        <p className="text-xs text-grey/50 italic mt-3">
+          No marketing spam. Unsubscribe anytime.
         </p>
       </div>
     </section>

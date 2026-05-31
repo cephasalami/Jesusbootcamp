@@ -51,7 +51,7 @@ export default function HowItWorks() {
                   <div className="h-2 w-2/3 bg-navy/5 rounded-full" />
                 </div>
                 <div className="mt-8 bg-navy text-white text-[12px] font-bold py-3 text-center tracking-widest uppercase">
-                  CONFIRM ACCESS
+                  START FREE TRIAL
                 </div>
               </div>
             </div>
@@ -154,13 +154,12 @@ export default function HowItWorks() {
           </div>
         </div>
 
-        {/* Access note */}
+        {/* Trial note */}
         <p
-          className="text-center text-[14px] text-grey/80 mt-12 max-w-[560px] mx-auto leading-[1.7]"
+          className="text-center text-[14px] italic text-grey/80 mt-12 max-w-[560px] mx-auto leading-[1.7]"
           data-aos="fade-up"
         >
-          Supported by voluntary donation. Access is open to all —{" "}
-          <span className="text-navy font-semibold">give what you can.</span>
+          First 3 sessions free · Then $25/month · Cancel anytime
         </p>
       </div>
     </section>

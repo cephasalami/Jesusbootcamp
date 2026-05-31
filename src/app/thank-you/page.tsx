@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Link2, MessageCircle, Share2, Smartphone } from "lucide-react";
+import { JOIN_URL } from "@/config/links";
 import styles from "./page.module.css";
 
 // Separate component that uses useSearchParams for Next.js Suspense boundary
@@ -129,17 +130,8 @@ function ThankYouContent() {
                     </h2>
 
                     <p className={styles.bootcampBody} data-aos="fade-up">
-                        {isVersionB ? (
-                            <>
-                                You didn't just download a free resource. You invested in your discipleship. That tells us something about you — you're serious about this.{"\n\n"}
-                                The Jesus Boot Camp was built for people exactly like you. 90 days. Real training. Real transformation. Supported by voluntary donation.
-                            </>
-                        ) : (
-                            <>
-                                The Jesus Boot Camp is a 90-day discipleship training program that takes everything in the Handbook and teaches you how to live it. Every day. In the real world.{"\n\n"}
-                                This isn't church. This isn't a seminar. This is training — for disciples who are serious about their mission.
-                            </>
-                        )}
+                        The Jesus Boot Camp is a structured 90-day discipleship training program — built to train you to actually use everything in the Handbook.{"\n\n"}
+                        Your first 3 sessions are completely free. No credit card required to start. After Session 3, continue for just $25/month. Cancel anytime.
                     </p>
  
                     <div className={styles.statsRow} data-aos="fade-up" data-aos-delay="100">
@@ -158,11 +150,11 @@ function ThankYouContent() {
                     </div>
  
                     <div data-aos="fade-up" data-aos-delay="200">
-                        <a href="/" className={styles.ctaButton}>
-                            Join the Jesus Boot Camp
+                        <a href={JOIN_URL} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
+                            Start My Free Trial →
                         </a>
                         <p className={styles.ctaNote}>
-                            No credit card. No commitment.{"\n"}Supported by voluntary donation.
+                            3 sessions free · Then $25/month · Cancel anytime
                         </p>
                     </div>
                 </div>
@@ -177,11 +169,14 @@ function ThankYouContent() {
                                 You're Already Ahead.
                             </h2>
                             <p className={styles.upsellBody}>
-                                Most believers never take a single step toward real training. You just took two. Join the Boot Camp community and start connecting with disciples who are on the same journey.
+                                Most believers never take a single step toward real training. You just took two. Start your free trial and connect with disciples who are on the same journey.
                             </p>
-                            <a href="/" className={styles.ctaButton}>
-                                Join the Jesus Boot Camp Community
+                            <a href={JOIN_URL} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
+                                Start My Free Trial →
                             </a>
+                            <p style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontStyle: "italic", color: "#5C5C5C", textAlign: "center", marginTop: "16px" }}>
+                                3 sessions free · Then $25/month · Cancel anytime
+                            </p>
                         </>
                     ) : (
                         <>

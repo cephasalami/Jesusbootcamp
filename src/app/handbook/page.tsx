@@ -429,8 +429,8 @@ export default function HandbookLandingPage() {
             </h2>
 
             <p className={styles.ctaSub}>
-              The Handbook is free. The training is free.
-              The only thing required is the willingness to be trained.
+              The Handbook is free. The only thing required is the
+              willingness to be trained.
             </p>
 
             <div className={styles.ctaFormWrapper}>

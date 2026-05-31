@@ -1,5 +1,7 @@
 import { Swords, BookOpen, Flame, Globe } from "lucide-react";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
+import { JOIN_URL } from "@/config/links";
+import TrialNote from "./ui/TrialNote";
 
 const pillars = [
   {
@@ -84,7 +86,10 @@ export default function Solution() {
           ))}
         </div>
 
-        <ButtonGold className="mx-auto h-[56px] px-10 rounded-sm">Start My 90-Day Journey ›</ButtonGold>
+        <div className="flex flex-col items-center gap-3">
+          <ButtonGold href={JOIN_URL} className="h-[56px] px-10 rounded-sm">Start Your Free Trial →</ButtonGold>
+          <TrialNote className="text-center" />
+        </div>
       </div>
     </section>
   );

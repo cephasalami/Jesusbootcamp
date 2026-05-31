@@ -2,6 +2,7 @@ import { SectionTag } from "./ui/Buttons";
 import Image from "next/image";
 import { ArrowRight, Play, Award, Sparkles } from "lucide-react";
 import { JOIN_URL } from "@/config/links";
+import TrialNote from "./ui/TrialNote";
 
 export default function Hero() {
   return (
@@ -60,7 +61,7 @@ export default function Hero() {
           </p>
 
           {/* High-end Premium CTA Button */}
-          <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex flex-col items-start gap-3">
             <a
               href={JOIN_URL}
               target="_blank"
@@ -69,9 +70,10 @@ export default function Hero() {
             >
               {/* Subtle shining light sweep effect on hover */}
               <div className="absolute top-0 -left-[100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
-              <span>Join the Jesus boot camp</span>
+              <span>Start Your Free Trial</span>
               <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1.5" />
             </a>
+            <TrialNote />
           </div>
         </div>
 
