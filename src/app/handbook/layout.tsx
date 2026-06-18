@@ -6,7 +6,14 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Free Handbook for a Disciple of Jesus",
         description: "Get the free handbook that trains believers to actually live their faith. 90-day discipleship starts here.",
-        images: ["/images/handbook-og-image.jpg"],
+        images: [
+            {
+                url: "/images/photo_2026-05-20_20-17-44.jpg",
+                width: 800,
+                height: 800,
+                alt: "Jesus Boot Camp Logo",
+            },
+        ],
         url: "https://jesusbootcamp.org/handbook",
         type: "website",
     },

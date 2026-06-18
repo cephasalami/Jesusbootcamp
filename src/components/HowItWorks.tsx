@@ -2,9 +2,9 @@ import { ArrowUpRight, Mail, Check, PlayCircle, Clock, Users } from "lucide-reac
 import { SectionTag } from "./ui/Buttons";
 
 const floatLessons = [
-  { title: "Learn to Apply Scripture in conversations", meta: "Practice · 15 min" },
-  { title: "Learn to Share your own testimony this week", meta: "Action Step · 20 min" },
-  { title: "Learn to Pray with someone today", meta: "Daily Challenge · 10 min" },
+  { title: "Month 1 — Sessions 1–30", meta: "First 3 sessions free" },
+  { title: "Month 2 — Sessions 31–60", meta: "$25 / month" },
+  { title: "Month 3 — Sessions 61–90", meta: "$25 / month" },
 ];
 
 export default function HowItWorks() {
@@ -17,7 +17,7 @@ export default function HowItWorks() {
             How It Works
           </h2>
           <p className="text-[1.1rem] text-grey max-w-[600px] mx-auto leading-[1.7]">
-            Three clear steps to a lifestyle of discipleship
+            Three simple steps — from your first free session to a finished disciple
           </p>
         </div>
 
@@ -27,15 +27,19 @@ export default function HowItWorks() {
             data-aos="fade-up"
             className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
-            <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
-                Join.
-                <br />
-                Start Instantly.
-              </h3>
-              <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
-                <ArrowUpRight className="w-6 h-6" />
+            <div className="mb-8">
+              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-gold/70 mb-3">Step 01</div>
+              <div className="flex justify-between items-start">
+                <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
+                  Start Free.
+                </h3>
+                <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
+                  <ArrowUpRight className="w-6 h-6" />
+                </div>
               </div>
+              <p className="text-[14px] text-grey leading-[1.7] mt-3">
+                Begin instantly and take your first 3 sessions free — no credit card required.
+              </p>
             </div>
 
             <div className="flex-1 flex items-center justify-center">
@@ -63,15 +67,19 @@ export default function HowItWorks() {
             data-aos-delay="100"
             className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
-            <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
-                Watch.
-                <br />
-                Learn Daily.
-              </h3>
-              <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
-                <ArrowUpRight className="w-6 h-6" />
+            <div className="mb-8">
+              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-gold/70 mb-3">Step 02</div>
+              <div className="flex justify-between items-start">
+                <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
+                  Take the Test.
+                </h3>
+                <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
+                  <ArrowUpRight className="w-6 h-6" />
+                </div>
               </div>
+              <p className="text-[14px] text-grey leading-[1.7] mt-3">
+                After Session 3, a short, simple test confirms you&apos;re ready to go deeper.
+              </p>
             </div>
 
             <div className="flex-1 flex items-center justify-center relative w-full py-8">
@@ -101,7 +109,7 @@ export default function HowItWorks() {
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[9px] font-bold tracking-[0.15em] text-white uppercase drop-shadow-md">Session 01</span>
+                        <span className="text-[9px] font-bold tracking-[0.15em] text-white uppercase drop-shadow-md">Session 03</span>
                         <span className="text-[9px] font-medium text-white/70">12:04 / 30:00</span>
                       </div>
                       <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
@@ -124,15 +132,19 @@ export default function HowItWorks() {
             data-aos-delay="200"
             className="bg-white border border-card-border p-6 sm:p-12 min-h-[300px] sm:min-h-[460px] flex flex-col relative transition-all duration-500 hover:shadow-xl hover:-translate-y-1 group"
           >
-            <div className="flex justify-between items-start mb-8">
-              <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
-                Real Action
-                <br />
-                Steady Growth.
-              </h3>
-              <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
-                <ArrowUpRight className="w-6 h-6" />
+            <div className="mb-8">
+              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-gold/70 mb-3">Step 03</div>
+              <div className="flex justify-between items-start">
+                <h3 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-bold leading-tight text-navy tracking-tight">
+                  Go All In.
+                </h3>
+                <div className="w-12 h-12 rounded-full border border-card-border flex items-center justify-center shrink-0 transition-all group-hover:bg-gold group-hover:border-gold text-navy">
+                  <ArrowUpRight className="w-6 h-6" />
+                </div>
               </div>
+              <p className="text-[14px] text-grey leading-[1.7] mt-3">
+                Continue for $25/month and complete all 90 days — three one-month sessions.
+              </p>
             </div>
 
             <div className="flex-1 flex flex-col gap-4 justify-center">

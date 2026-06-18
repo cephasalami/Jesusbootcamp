@@ -293,7 +293,7 @@ export default function PowerForTheHourPage() {
 
             {/* ═══ SECTION 7: DECLINE LINK ═══ */}
             <div className={styles.declineSection} data-aos="fade-up">
-                <a href="/thank-you" className={styles.declineLink}>
+                <a href="/thank-you?order=handbook" className={styles.declineLink}>
                     No thanks — I don&apos;t want this offer. Just send me the free Handbook.
                 </a>
                 <p className={styles.declineNote}>

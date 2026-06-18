@@ -26,19 +26,15 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://jesusbootcamp.org"),
   title: "Jesus Boot Camp — 90-Day Discipleship Training by Paul Joseph",
   description: "Transform from passive believer to devoted disciple of Christ. Join the Jesus Boot Camp — 3 sessions free, then $25/month. Get your free Handbook today.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Jesus Boot Camp — 90-Day Discipleship Training",
     description: "From believer to disciple in 90 days. 3 sessions free, then $25/month. Free handbook. Global mission.",
     url: "https://jesusbootcamp.org",
     type: "website",
-    images: [
-      {
-        url: "/images/photo_2026-05-20_20-17-44.jpg",
-        width: 800,
-        height: 800,
-        alt: "Jesus Boot Camp Logo",
-      },
-    ],
+    // og:image / twitter:image are provided by app/opengraph-image.tsx (1200×630).
   },
 };
 

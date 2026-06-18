@@ -7,6 +7,18 @@ export const metadata: Metadata = {
         index: false,
         follow: false,
     },
+    openGraph: {
+        title: "Power for the Hour — $5 Today Only",
+        description: "The essential scriptures every disciple must memorize. One-time $5 offer, instant digital delivery.",
+        url: "https://jesusbootcamp.org/power-for-the-hour",
+        type: "website",
+        images: [
+            {
+                url: "/images/power-for-the-hour/power_book_mockup.png",
+                alt: "Power for the Hour by Paul Joseph",
+            },
+        ],
+    },
 };
 
 export default function PowerForTheHourLayout({

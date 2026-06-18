@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BookOpen, Church, Link2, Globe } from "lucide-react";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
 
@@ -8,10 +9,14 @@ export default function Handbook() {
         {/* Book Visual */}
         <div className="relative group">
           <div className="relative z-10 transition-transform duration-700 group-hover:-translate-y-4">
-            <img
+            <Image
               src="/images/ChatGPT Image May 10, 2026, 02_49_46 PM.png"
               alt="Handbook for a Disciple of Jesus"
-              className="w-full max-w-[450px] mx-auto drop-shadow-[0_32px_64px_rgba(0,0,0,0.12)] rounded-lg"
+              width={1086}
+              height={1448}
+              sizes="(max-width: 768px) 100vw, 450px"
+              style={{ width: "100%", height: "auto" }}
+              className="max-w-[450px] mx-auto drop-shadow-[0_32px_64px_rgba(0,0,0,0.12)] rounded-lg"
             />
           </div>
           {/* Subtle decoration */}
