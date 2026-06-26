@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     { path: "/", priority: 1 },
     { path: "/why-the-boot-camp", priority: 0.8 },
+    { path: "/blog", priority: 0.7 },
     { path: "/privacy", priority: 0.3 },
   ];
 
