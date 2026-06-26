@@ -7,6 +7,7 @@ const links = [
   { href: "/#how", label: "The Course" },
   { href: "/handbook", label: "The Handbook" },
   { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
+  { href: "/blog", label: "Blog" },
   { href: "/#testimonials", label: "Testimonials" },
   { href: JOIN_URL, label: "Start Your Free Trial", external: true },
 ];
