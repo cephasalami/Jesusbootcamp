@@ -14,7 +14,7 @@ export const metadata: Metadata = {
         type: "website",
         images: [
             {
-                url: "/images/power-for-the-hour/power_book_mockup.png",
+                url: "/images/power-for-the-hour/power-for-the-hour-3d.png",
                 alt: "Power for the Hour by Paul Joseph",
             },
         ],

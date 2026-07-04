@@ -83,12 +83,12 @@ export default function PowerForTheHourPage() {
                         {/* RIGHT — Book Mockup */}
                         <div className={styles.mockupImageWrapper} data-aos="fade-up" data-aos-delay="100">
                             <Image
-                                src="/images/power-for-the-hour/power_book_mockup.png"
+                                src="/images/power-for-the-hour/power-for-the-hour-3d.webp"
                                 alt="Power for the Hour by Paul Joseph — Book Mockup"
-                                width={420}
-                                height={540}
+                                width={768}
+                                height={601}
                                 className={styles.mockupImage}
-                                priority
+                                preload
                             />
                         </div>
                     </div>
