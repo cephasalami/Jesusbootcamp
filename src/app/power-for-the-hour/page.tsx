@@ -137,8 +137,8 @@ export default function PowerForTheHourPage() {
                                     <span className={styles.checkIcon}>
                                         <Check size={14} strokeWidth={3} />
                                     </span>
-                                    Instant digital download (PDF) — read it on your phone,
-                                    nothing ships to your door
+                                    A digital copy (PDF) to add to your phone&apos;s home
+                                    screen — for easy access when memorizing
                                 </li>
                             </ul>
 
@@ -183,10 +183,10 @@ export default function PowerForTheHourPage() {
                         >
                             <div className={styles.mockupGlow} aria-hidden="true" />
                             <Image
-                                src="/images/power-for-the-hour/power-for-the-hour-book.webp"
+                                src="/images/power-for-the-hour/power-for-the-hour-paperback.webp"
                                 alt="Power for the Hour by Paul Joseph — Book Mockup"
                                 width={900}
-                                height={1186}
+                                height={1179}
                                 className={styles.mockupImage}
                                 preload
                             />
@@ -196,8 +196,8 @@ export default function PowerForTheHourPage() {
                                 <span className={styles.badgeSmall}>TODAY</span>
                             </div>
                             <div className={styles.mockupCaption}>
-                                <Smartphone size={13} /> Digital edition · Instant PDF
-                                download — no physical book is shipped
+                                <Smartphone size={13} /> A digital copy to add to your
+                                phone&apos;s home screen — easy access while you memorize
                             </div>
                         </div>
                     </div>
@@ -432,10 +432,10 @@ export default function PowerForTheHourPage() {
                         <div className={styles.offerBoxBody}>
                             <div className={styles.offerBoxTop}>
                                 <Image
-                                    src="/images/power-for-the-hour/power-for-the-hour-book.webp"
+                                    src="/images/power-for-the-hour/power-for-the-hour-paperback.webp"
                                     alt="Power for the Hour — Digital Edition"
                                     width={900}
-                                    height={1186}
+                                    height={1179}
                                     className={styles.offerBoxImage}
                                 />
                                 <div className={styles.offerBoxTitleWrap}>
@@ -445,7 +445,7 @@ export default function PowerForTheHourPage() {
                                         Power for the Hour
                                     </div>
                                     <div className={styles.offerBoxSubtitle}>
-                                        Instant Digital Download · PDF
+                                        Instant Digital Copy · PDF
                                     </div>
                                 </div>
                             </div>
@@ -468,8 +468,8 @@ export default function PowerForTheHourPage() {
                                     <span className={styles.checkIcon}>
                                         <Check size={14} strokeWidth={3} />
                                     </span>
-                                    Instant digital download — read on any device (or print
-                                    your own copy). No physical book is shipped.
+                                    A digital copy to add to your phone&apos;s home screen —
+                                    easy access while you memorize
                                 </li>
                                 <li>
                                     <span className={styles.checkIcon}>
@@ -501,8 +501,8 @@ export default function PowerForTheHourPage() {
                             </a>
 
                             <p className={styles.securityLine}>
-                                🔒 Secure checkout · One-time $5 payment — no hidden fees ·
-                                Digital download only (no physical book shipped)
+                                🔒 Secure checkout · One-time $5 payment · Instant digital
+                                copy (PDF) for your phone
                             </p>
                         </div>
                     </div>
@@ -518,8 +518,8 @@ export default function PowerForTheHourPage() {
                             <p className={styles.guaranteeText}>
                                 If Power for the Hour doesn&apos;t strengthen your walk with
                                 God, reply to your delivery email within 30 days and we&apos;ll
-                                refund your $5 — no questions asked. And the download is
-                                yours to keep.
+                                refund your $5 — no questions asked. And the digital copy
+                                is yours to keep.
                             </p>
                         </div>
                     </div>
