@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, Compass, Shield, Globe, Smartphone, Key, Mail, Inbox, Download } from "lucide-react";
+import { BookOpen, Compass, Shield, Globe, Smartphone, Key, Mail, Inbox, Download, Check } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import styles from "./page.module.css";
@@ -20,6 +20,8 @@ export default function HandbookLandingPage() {
   const [success1, setSuccess1] = useState(false);
   const [success2, setSuccess2] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const heroInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     AOS.init({
@@ -27,6 +29,18 @@ export default function HandbookLandingPage() {
       duration: 700,
     });
   }, []);
+
+  useEffect(() => {
+    const onScroll = () => setShowStickyBar(window.scrollY > 640);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToHeroForm = () => {
+    heroInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => heroInputRef.current?.focus({ preventScroll: true }), 450);
+  };
 
   const validateEmail = (email: string) => {
     const re = /^\S+@\S+\.\S+$/;
@@ -101,25 +115,50 @@ export default function HandbookLandingPage() {
                 for every situation you face.
               </p>
 
-              <div className={styles.trustLine}>
-                ✓ Used in prisons &nbsp;&nbsp; ✓ Youth groups &nbsp;&nbsp; ✓ Churches worldwide &nbsp;&nbsp; ✓ 100% Free
+              <div className={styles.trustChips}>
+                <span className={styles.trustChip}>
+                  <span className={styles.trustCheck}><Check size={12} strokeWidth={3} /></span>
+                  Used in prisons
+                </span>
+                <span className={styles.trustChip}>
+                  <span className={styles.trustCheck}><Check size={12} strokeWidth={3} /></span>
+                  Youth groups
+                </span>
+                <span className={styles.trustChip}>
+                  <span className={styles.trustCheck}><Check size={12} strokeWidth={3} /></span>
+                  Churches worldwide
+                </span>
+                <span className={styles.trustChip}>
+                  <span className={styles.trustCheck}><Check size={12} strokeWidth={3} /></span>
+                  100% Free
+                </span>
               </div>
 
               <form
-                className={styles.emailForm}
+                className={`${styles.emailForm} ${styles.formCard}`}
                 onSubmit={(e) => handleFormSubmit(e, email1, setIsSubmitting1, setError1, setSuccess1)}
                 noValidate
               >
+                <div className={styles.formCardTitle}>
+                  Get instant access — tell us where to send it
+                </div>
                 <div>
                   <input
+                    ref={heroInputRef}
                     type="email"
+                    name="email"
                     placeholder="Enter your email address"
                     className={styles.inputField}
                     value={email1}
                     onChange={(e) => setEmail1(e.target.value)}
                     disabled={isSubmitting1 || success1}
+                    autoComplete="email"
+                    inputMode="email"
+                    enterKeyHint="go"
+                    aria-label="Email address"
+                    aria-invalid={!!error1}
                   />
-                  {error1 && <div className={styles.errorText}>{error1}</div>}
+                  {error1 && <div className={styles.errorText} role="alert">{error1}</div>}
                 </div>
 
                 <button
@@ -136,21 +175,26 @@ export default function HandbookLandingPage() {
                   )}
                 </button>
                 <div className={styles.formDisclaimer}>
-                  No spam. No credit card. Unsubscribe anytime.
+                  🔒 Your email stays private — 100% secure. Instant PDF · No credit card · Unsubscribe anytime.
                 </div>
               </form>
             </div>
 
             <div className={styles.mockupImageWrapper} data-aos="fade-up" data-aos-delay="100">
+              <div className={styles.mockupGlow} aria-hidden="true" />
               <Image
-                src="/images/ChatGPT Image May 13, 2026, 12_47_13 AM.png"
-                alt="Digital Handbook Mockup"
-                width={480}
-                height={600}
+                src="/images/handbook/handbook-book.webp"
+                alt="Handbook for a Disciple of Jesus by Paul Joseph — paperback mockup"
+                width={900}
+                height={1027}
                 className={styles.mockupImage}
-                style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
-                priority
+                preload
               />
+              <div className={styles.freeBadge} aria-hidden="true">
+                <span className={styles.freeBadgeSmall}>100%</span>
+                <span className={styles.freeBadgeBig}>FREE</span>
+                <span className={styles.freeBadgeSmall}>TODAY</span>
+              </div>
             </div>
           </div>
         </div>
@@ -196,7 +240,7 @@ export default function HandbookLandingPage() {
 
           <div className={styles.featuresGrid}>
             <div className={styles.featureCard} data-aos="fade-up">
-              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <div className={styles.featureIconWrap}>
                 <BookOpen size={32} color="var(--gold)" />
               </div>
               <h3 className={styles.featureCardTitle}>Scripture By Topic</h3>
@@ -209,7 +253,7 @@ export default function HandbookLandingPage() {
             </div>
 
             <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="50">
-              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <div className={styles.featureIconWrap}>
                 <Compass size={32} color="var(--gold)" />
               </div>
               <h3 className={styles.featureCardTitle}>Built For Disciples</h3>
@@ -221,7 +265,7 @@ export default function HandbookLandingPage() {
             </div>
 
             <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="100">
-              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <div className={styles.featureIconWrap}>
                 <Shield size={32} color="var(--gold)" />
               </div>
               <h3 className={styles.featureCardTitle}>For Every Battle</h3>
@@ -232,7 +276,7 @@ export default function HandbookLandingPage() {
             </div>
 
             <div className={styles.featureCard} data-aos="fade-up">
-              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <div className={styles.featureIconWrap}>
                 <Globe size={32} color="var(--gold)" />
               </div>
               <h3 className={styles.featureCardTitle}>Used Worldwide</h3>
@@ -243,7 +287,7 @@ export default function HandbookLandingPage() {
             </div>
 
             <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="50">
-              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <div className={styles.featureIconWrap}>
                 <Smartphone size={32} color="var(--gold)" />
               </div>
               <h3 className={styles.featureCardTitle}>Saves To Your Phone</h3>
@@ -254,7 +298,7 @@ export default function HandbookLandingPage() {
             </div>
 
             <div className={styles.featureCard} data-aos="fade-up" data-aos-delay="100">
-              <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <div className={styles.featureIconWrap}>
                 <Key size={32} color="var(--gold)" />
               </div>
               <h3 className={styles.featureCardTitle}>Completely Free</h3>
@@ -442,18 +486,24 @@ export default function HandbookLandingPage() {
                 <div>
                   <input
                     type="email"
+                    name="email"
                     placeholder="Enter your email address"
                     className={styles.inputField}
                     value={email2}
                     onChange={(e) => setEmail2(e.target.value)}
                     disabled={isSubmitting2 || success2}
+                    autoComplete="email"
+                    inputMode="email"
+                    enterKeyHint="go"
+                    aria-label="Email address"
+                    aria-invalid={!!error2}
                   />
-                  {error2 && <div className={styles.errorText}>{error2}</div>}
+                  {error2 && <div className={styles.errorText} role="alert">{error2}</div>}
                 </div>
 
                 <button
                   type="submit"
-                  className={`${styles.submitBtn} ${success2 ? styles.btnSuccess : ""}`}
+                  className={`${styles.submitBtn} ${styles.pulseBtn} ${success2 ? styles.btnSuccess : ""}`}
                   disabled={isSubmitting2 || success2}
                 >
                   {isSubmitting2 ? (
@@ -465,7 +515,7 @@ export default function HandbookLandingPage() {
                   )}
                 </button>
                 <div className={styles.formDisclaimer} style={{ color: '#666666' }}>
-                  No spam. No credit card. Unsubscribe anytime.
+                  🔒 Your email stays private — 100% secure. No credit card. Unsubscribe anytime.
                 </div>
               </form>
             </div>
@@ -481,6 +531,25 @@ export default function HandbookLandingPage() {
       <footer className={styles.footer}>
         © 2026 Jesus Boot Camp · All Rights Reserved · <Link href="/privacy">Privacy Policy</Link> · <Link href="/terms">Terms</Link>
       </footer>
+
+      {/* STICKY MOBILE CTA BAR */}
+      <div
+        className={`${styles.stickyBar} ${showStickyBar && !success1 && !success2 ? styles.stickyBarVisible : ""}`}
+        aria-hidden={!showStickyBar}
+      >
+        <div className={styles.stickyBarLabel}>
+          <span className={styles.stickyBarFree}>FREE</span>
+          <span className={styles.stickyBarText}>The Handbook</span>
+        </div>
+        <button
+          type="button"
+          onClick={scrollToHeroForm}
+          className={styles.stickyBarButton}
+          tabIndex={showStickyBar ? 0 : -1}
+        >
+          Get My Free Handbook →
+        </button>
+      </div>
     </div>
   );
 }

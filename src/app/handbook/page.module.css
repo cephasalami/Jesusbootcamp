@@ -24,10 +24,10 @@
 }
 
 .announcementBar {
-    background-color: var(--gold);
+    background: linear-gradient(90deg, #B8973D 0%, var(--gold) 50%, #B8973D 100%);
     color: var(--text-primary);
     font-size: clamp(10px, 2.5vw, 13px);
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     display: flex;
@@ -38,12 +38,19 @@
     padding: 10px 16px;
     width: 100%;
     line-height: 1.5;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 12px rgba(26, 26, 26, 0.15);
 }
 
 .heroSection {
     background-color: var(--bg-cream);
+    background-image: radial-gradient(ellipse 55% 60% at 76% 45%,
+            rgba(201, 168, 76, 0.14) 0%,
+            transparent 70%);
     min-height: 680px;
-    padding: 96px 24px;
+    padding: 80px 24px 88px 24px;
     display: flex;
     align-items: center;
 }
@@ -56,7 +63,7 @@
 
 .heroGrid {
     display: grid;
-    grid-template-columns: 1.1fr 1.3fr;
+    grid-template-columns: 1.15fr 0.85fr;
     gap: 64px;
     align-items: center;
 }
@@ -90,10 +97,34 @@
     margin-bottom: 32px;
 }
 
-.trustLine {
+.trustChips {
+    display: flex;
+    align-items: center;
+    gap: 10px 18px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.trustChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     font-size: 13px;
-    color: #9A9A9A;
-    margin-bottom: 24px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.trustCheck {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    background-color: rgba(45, 106, 79, 0.12);
+    color: #2D6A4F;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .emailForm {
@@ -101,6 +132,23 @@
     flex-direction: column;
     gap: 16px;
     width: 100%;
+}
+
+.formCard {
+    background-color: var(--white);
+    border: 1px solid rgba(201, 168, 76, 0.35);
+    border-radius: 16px;
+    padding: 26px 26px 22px 26px;
+    box-shadow: 0 16px 44px rgba(26, 26, 26, 0.1);
+    max-width: 480px;
+}
+
+.formCardTitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 2px;
 }
 
 .inputField {
@@ -123,26 +171,28 @@
 
 .submitBtn {
     width: 100%;
-    padding: 16px 36px;
-    background-color: var(--bg-dark);
-    color: var(--white);
+    padding: 17px 36px;
+    background: linear-gradient(180deg, #DFC06A 0%, var(--gold) 55%, #A98B33 100%);
+    color: var(--bg-dark);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     cursor: pointer;
-    transition: background 0.3s ease, color 0.3s ease;
+    transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
     font-family: inherit;
     display: flex;
     justify-content: center;
     align-items: center;
+    box-shadow: 0 8px 22px rgba(169, 139, 51, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .submitBtn:hover:not(:disabled) {
-    background-color: var(--gold);
-    color: var(--bg-dark);
+    filter: brightness(1.06);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(169, 139, 51, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .submitBtn:disabled {
@@ -160,16 +210,79 @@
 .mockupImageWrapper {
     position: relative;
     width: 100%;
-    max-width: 480px;
+    max-width: 440px;
     margin: 0 auto;
 }
 
+.mockupGlow {
+    position: absolute;
+    inset: -10%;
+    background: radial-gradient(ellipse 55% 48% at 50% 52%,
+            rgba(201, 168, 76, 0.3) 0%,
+            rgba(201, 168, 76, 0.1) 45%,
+            transparent 72%);
+    pointer-events: none;
+}
+
+@keyframes mockupFloat {
+
+    0%,
+    100% {
+        translate: 0 0;
+    }
+
+    50% {
+        translate: 0 -10px;
+    }
+}
+
 .mockupImage {
+    position: relative;
     width: 100%;
     height: auto;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
-    transform: rotate(-3deg);
-    border-radius: 4px;
+    display: block;
+    filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.28));
+    transform: rotate(-2deg);
+    transition: transform 0.4s ease;
+    animation: mockupFloat 6s ease-in-out infinite;
+}
+
+.mockupImage:hover {
+    transform: rotate(0deg) scale(1.02);
+    animation-play-state: paused;
+}
+
+.freeBadge {
+    position: absolute;
+    top: -14px;
+    right: -10px;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #DFC06A 0%, var(--gold) 55%, #A98B33 100%);
+    color: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(9deg);
+    box-shadow: 0 10px 26px rgba(169, 139, 51, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    z-index: 2;
+}
+
+.freeBadgeSmall {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    line-height: 1.2;
+}
+
+.freeBadgeBig {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.1;
 }
 
 .socialProofSection {
@@ -239,22 +352,27 @@
 
 .featureCard {
     background-color: var(--white);
-    border-radius: 12px;
+    border: 1px solid rgba(201, 168, 76, 0.22);
+    border-radius: 14px;
     padding: 32px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .featureCard:hover {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10);
     transform: translateY(-4px);
 }
 
-.featureIcon {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 24px;
-    border-radius: 50%;
+.featureIconWrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background-color: rgba(201, 168, 76, 0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
 }
 
 .featureCardTitle {
@@ -638,14 +756,22 @@
     box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
 }
 
-.ctaForm .submitBtn {
-    background-color: var(--gold);
-    color: var(--bg-dark);
+/* Final CTA button inherits the gold gradient from .submitBtn */
+
+.pulseBtn:not(:disabled) {
+    animation: goldPulse 2.6s ease-in-out infinite;
 }
 
-.ctaForm .submitBtn:hover:not(:disabled) {
-    background-color: var(--white);
-    color: var(--bg-dark);
+@keyframes goldPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 8px 22px rgba(169, 139, 51, 0.35), 0 0 0 0 rgba(201, 168, 76, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 8px 22px rgba(169, 139, 51, 0.35), 0 0 0 12px rgba(201, 168, 76, 0);
+    }
 }
 
 .skipLink {
@@ -715,6 +841,85 @@
     color: white !important;
 }
 
+/* Sticky Mobile CTA Bar */
+.stickyBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background-color: rgba(26, 26, 26, 0.97);
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateY(105%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.stickyBarVisible {
+    transform: translateY(0);
+}
+
+.stickyBarLabel {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.stickyBarFree {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+}
+
+.stickyBarText {
+    font-size: 11px;
+    color: #AAAAAA;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.stickyBarButton {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gold);
+    color: var(--bg-dark);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 18px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(201, 168, 76, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .stickyBar {
+        transition: none;
+    }
+
+    .mockupImage,
+    .pulseBtn:not(:disabled) {
+        animation: none;
+    }
+
+    .submitBtn,
+    .featureCard {
+        transition: none;
+    }
+}
+
 /* Mobile Adjustments */
 @media (max-width: 768px) {
 
@@ -734,11 +939,32 @@
     .heroGrid {
         display: flex;
         flex-direction: column-reverse;
-        gap: 40px;
+        gap: 36px;
+    }
+
+    .mockupImageWrapper {
+        max-width: 260px;
     }
 
     .mockupImage {
         transform: none;
+        animation: none;
+    }
+
+    .freeBadge {
+        width: 78px;
+        height: 78px;
+        top: -10px;
+        right: -8px;
+    }
+
+    .freeBadgeBig {
+        font-size: 21px;
+    }
+
+    .formCard {
+        max-width: 100%;
+        padding: 20px 18px 18px 18px;
     }
 
     .heroH1 {
@@ -789,5 +1015,14 @@
 
     .ctaH2 {
         font-size: 34px;
+    }
+
+    .stickyBar {
+        display: flex;
+    }
+
+    .footer {
+        /* keep footer links reachable above the sticky bar */
+        padding-bottom: 96px;
     }
 }

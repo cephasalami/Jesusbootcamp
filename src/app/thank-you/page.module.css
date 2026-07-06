@@ -24,6 +24,43 @@
     font-weight: 700;
 }
 
+/* ═══ FUNNEL PROGRESS BAR ═══ */
+.progressBar {
+    background-color: var(--bg-dark);
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 16px;
+    width: 100%;
+}
+
+.progressStep {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.stepCompleted {
+    color: var(--gold);
+}
+
+.stepCurrent {
+    color: var(--white);
+}
+
+.progressChevron {
+    color: #444444;
+    font-size: 14px;
+    user-select: none;
+}
+
 /* ═══ SECTION 1: SUCCESS CONFIRMATION (Hero) ═══ */
 .heroSection {
     background-color: var(--bg-cream);
@@ -399,6 +436,19 @@
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 768px) {
+    .progressBar {
+        gap: 10px;
+        height: auto;
+        min-height: 44px;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .progressStep {
+        font-size: 11px;
+    }
+
     .heroSection {
         padding: 64px 20px 48px 20px;
     }

@@ -31,6 +31,21 @@ function ThankYouContent() {
 
     return (
         <div className={styles.pageWrapper}>
+            {/* ═══ FUNNEL PROGRESS BAR ═══ */}
+            <div className={styles.progressBar}>
+                <div className={`${styles.progressStep} ${styles.stepCompleted}`}>
+                    ✓ Handbook Requested
+                </div>
+                <span className={styles.progressChevron}>›</span>
+                <div className={`${styles.progressStep} ${styles.stepCompleted}`}>
+                    ✓ Special Offer
+                </div>
+                <span className={styles.progressChevron}>›</span>
+                <div className={`${styles.progressStep} ${styles.stepCurrent}`}>
+                    → Download
+                </div>
+            </div>
+
             {/* ═══ SECTION 1: SUCCESS CONFIRMATION (Hero) ═══ */}
             <section className={styles.heroSection}>
                 <div className={styles.heroContainer} data-aos="fade-up">
@@ -42,7 +57,7 @@ function ThankYouContent() {
                                 width={120}
                                 height={120}
                                 className={styles.illustration}
-                                priority
+                                preload
                             />
                         ) : (
                             <Image
@@ -51,7 +66,7 @@ function ThankYouContent() {
                                 width={120}
                                 height={120}
                                 className={styles.illustration}
-                                priority
+                                preload
                             />
                         )}
                     </div>
@@ -186,8 +201,11 @@ function ThankYouContent() {
                             <p className={styles.upsellBody}>
                                 The special $5 offer has expired — but the book is still available at its standard price of $15. If you'd like to add it to your discipleship toolkit, you can get it here.
                             </p>
-                            {/* TODO: Replace with Gumroad $15 full-price URL */}
-                            <a href="#gumroad-full-price" className={styles.secondaryButton}>
+                            {/* Same product as the $5 OTO, without the BOOTCAMP5 coupon — charges standard price */}
+                            <a
+                                href="https://faithwithoutborders.us/cart/?add-to-cart=3229"
+                                className={styles.secondaryButton}
+                            >
                                 Get Power for the Hour — $15
                             </a>
                         </>
