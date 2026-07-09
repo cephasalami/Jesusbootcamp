@@ -109,7 +109,7 @@ export default function Navbar() {
             Start Your Free Trial <ArrowRight className="w-4 h-4" />
           </a>
           <p className="text-[12px] italic text-grey text-center mt-3">
-            First 3 sessions free · Then $25/month · Cancel anytime
+            First 3 sessions free
           </p>
         </div>
       </div>

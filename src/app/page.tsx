@@ -9,7 +9,6 @@ import CoursePreview from "@/components/CoursePreview";
 import Testimonials from "@/components/Testimonials";
 import Handbook from "@/components/Handbook";
 import About from "@/components/About";
-import Pricing from "@/components/Pricing";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 
@@ -30,15 +29,9 @@ const jsonLd = {
       "@type": "Course",
       name: "The Jesus Boot Camp",
       description:
-        "A structured 90-day discipleship training program. Your first 3 sessions are free, then $25/month to complete all 90 sessions.",
+        "A structured 90-day discipleship training program. Your first 3 sessions are free.",
       url: "https://jesusbootcamp.org",
       provider: { "@id": "https://jesusbootcamp.org/#organization" },
-      offers: {
-        "@type": "Offer",
-        category: "Subscription",
-        price: "25",
-        priceCurrency: "USD",
-      },
       hasCourseInstance: {
         "@type": "CourseInstance",
         courseMode: "online",
@@ -66,7 +59,6 @@ export default function Home() {
       <Testimonials />
       <Handbook />
       <About />
-      <Pricing />
       <FinalCTA />
       <Footer />
     </>

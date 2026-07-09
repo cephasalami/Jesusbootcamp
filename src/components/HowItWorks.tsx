@@ -1,10 +1,10 @@
-import { ArrowUpRight, Mail, Check, PlayCircle, Clock, Users } from "lucide-react";
+import { ArrowUpRight, Mail, Check, PlayCircle } from "lucide-react";
 import { SectionTag } from "./ui/Buttons";
 
-const floatLessons = [
+const floatLessons: { title: string; meta?: string }[] = [
   { title: "Month 1 — Sessions 1–30", meta: "First 3 sessions free" },
-  { title: "Month 2 — Sessions 31–60", meta: "$25 / month" },
-  { title: "Month 3 — Sessions 61–90", meta: "$25 / month" },
+  { title: "Month 2 — Sessions 31–60" },
+  { title: "Month 3 — Sessions 61–90" },
 ];
 
 export default function HowItWorks() {
@@ -38,7 +38,7 @@ export default function HowItWorks() {
                 </div>
               </div>
               <p className="text-[14px] text-grey leading-[1.7] mt-3">
-                Begin instantly and take your first 3 sessions free — no credit card required.
+                Begin instantly and take your first 3 sessions free.
               </p>
             </div>
 
@@ -143,7 +143,7 @@ export default function HowItWorks() {
                 </div>
               </div>
               <p className="text-[14px] text-grey leading-[1.7] mt-3">
-                Continue for $25/month and complete all 90 days — three one-month sessions.
+                Complete all 90 sessions across three months.
               </p>
             </div>
 
@@ -158,7 +158,9 @@ export default function HowItWorks() {
                   </div>
                   <div>
                     <div className="text-[15px] font-bold text-navy leading-tight mb-1">{l.title}</div>
-                    <div className="text-[11px] text-grey font-medium uppercase tracking-[0.05em]">{l.meta}</div>
+                    {l.meta && (
+                      <div className="text-[11px] text-grey font-medium uppercase tracking-[0.05em]">{l.meta}</div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -171,7 +173,7 @@ export default function HowItWorks() {
           className="text-center text-[14px] italic text-grey/80 mt-12 max-w-[560px] mx-auto leading-[1.7]"
           data-aos="fade-up"
         >
-          First 3 sessions free · Then $25/month · Cancel anytime
+          First 3 sessions free
         </p>
       </div>
     </section>

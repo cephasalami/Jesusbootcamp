@@ -128,8 +128,7 @@ export default function FinalCTA() {
 
         {/* Trial terms */}
         <p className="font-body text-[13px] italic text-grey mt-8 max-w-[540px] mx-auto leading-[1.7]">
-          First 3 sessions free — no credit card required. Continue for just $25/month
-          after your trial. Cancel anytime.
+          First 3 sessions free.
         </p>
 
         {/* Small print */}

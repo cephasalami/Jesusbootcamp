@@ -53,7 +53,7 @@ export default function OpengraphImage() {
             textAlign: "center",
           }}
         >
-          First 3 sessions free · then $25/month
+          First 3 sessions free
         </div>
         <div
           style={{
