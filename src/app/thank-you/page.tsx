@@ -146,7 +146,7 @@ function ThankYouContent() {
 
                     <p className={styles.bootcampBody} data-aos="fade-up">
                         The Jesus Boot Camp is a structured 90-day discipleship training program — built to train you to actually use everything in the Handbook.{"\n\n"}
-                        Your first 3 sessions are completely free. No credit card required to start. After Session 3, continue for just $25/month. Cancel anytime.
+                        Your first 3 sessions are completely free.
                     </p>
  
                     <div className={styles.statsRow} data-aos="fade-up" data-aos-delay="100">
@@ -169,7 +169,7 @@ function ThankYouContent() {
                             Start My Free Trial →
                         </a>
                         <p className={styles.ctaNote}>
-                            3 sessions free · Then $25/month · Cancel anytime
+                            First 3 sessions free
                         </p>
                     </div>
                 </div>
@@ -190,7 +190,7 @@ function ThankYouContent() {
                                 Start My Free Trial →
                             </a>
                             <p style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontStyle: "italic", color: "#5C5C5C", textAlign: "center", marginTop: "16px" }}>
-                                3 sessions free · Then $25/month · Cancel anytime
+                                First 3 sessions free
                             </p>
                         </>
                     ) : (
