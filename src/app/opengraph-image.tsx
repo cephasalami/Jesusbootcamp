@@ -53,7 +53,7 @@ export default function OpengraphImage() {
             textAlign: "center",
           }}
         >
-          First 3 sessions free
+          &ldquo;making disciples of all nations&rdquo;
         </div>
         <div
           style={{

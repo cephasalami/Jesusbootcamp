@@ -3,7 +3,6 @@
 import { Lock, Unlock } from "lucide-react";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
 import { JOIN_URL } from "@/config/links";
-import TrialNote from "./ui/TrialNote";
 
 const lessons = [
   { num: "SESSION 01", title: "What It Truly Means to Be Born Again", desc: "Establish the unshakeable foundation of your identity in Christ — not religion, but relationship.", available: true },
@@ -24,7 +23,7 @@ export default function CoursePreview() {
           A Glimpse Inside.
         </h2>
         <p className="text-[1.1rem] text-grey max-w-[600px]">
-          Scroll to the right to explore. All sessions unlock the moment you start your free trial.
+          Scroll to the right to explore. All sessions unlock as you progress through the course.
         </p>
       </div>
 
@@ -63,10 +62,7 @@ export default function CoursePreview() {
         <p className="text-[14px] text-grey italic font-medium">
           <strong className="text-navy not-italic">+84 more sessions</strong> waiting for you inside.
         </p>
-        <div className="flex flex-col items-start gap-3">
-          <ButtonGold href={JOIN_URL}>Start Your Free Trial →</ButtonGold>
-          <TrialNote />
-        </div>
+        <ButtonGold href={JOIN_URL}>Enter Now →</ButtonGold>
       </div>
     </section>
   );

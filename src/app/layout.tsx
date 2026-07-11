@@ -25,13 +25,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://jesusbootcamp.org"),
   title: "Jesus Boot Camp — 90-Day Discipleship Training by Paul Joseph",
-  description: "Transform from passive believer to devoted disciple of Christ. Join the Jesus Boot Camp — your first 3 sessions are free. Get your free Handbook today.",
+  description: "Transform from passive believer to devoted disciple of Christ. Join the Jesus Boot Camp and get your Handbook today.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Jesus Boot Camp — 90-Day Discipleship Training",
-    description: "From believer to disciple in 90 days. First 3 sessions free. Free handbook. Global mission.",
+    description: "From believer to disciple in 90 days. Global mission.",
     url: "https://jesusbootcamp.org",
     type: "website",
     // og:image / twitter:image are provided by app/opengraph-image.tsx (1200×630).
