@@ -1,13 +1,12 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import Stats from "@/components/Stats";
 import Problem from "@/components/Problem";
+import Mission from "@/components/Mission";
 import Solution from "@/components/Solution";
-import HowItWorks from "@/components/HowItWorks";
-import BentoFeatures from "@/components/BentoFeatures";
+import InsideSessions from "@/components/InsideSessions";
 import CoursePreview from "@/components/CoursePreview";
-import Testimonials from "@/components/Testimonials";
-import Handbook from "@/components/Handbook";
+import Community from "@/components/Community";
+import HowItWorks from "@/components/HowItWorks";
 import About from "@/components/About";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
@@ -29,7 +28,7 @@ const jsonLd = {
       "@type": "Course",
       name: "The Jesus Boot Camp",
       description:
-        "A structured 90-day discipleship training program. Your first 3 sessions are free.",
+        "A structured 90-day discipleship training program.",
       url: "https://jesusbootcamp.org",
       provider: { "@id": "https://jesusbootcamp.org/#organization" },
       hasCourseInstance: {
@@ -50,14 +49,13 @@ export default function Home() {
       />
       <Navbar />
       <Hero />
-      <Stats />
       <Problem />
+      <Mission />
       <Solution />
-      <HowItWorks />
-      <BentoFeatures />
+      <InsideSessions />
       <CoursePreview />
-      <Testimonials />
-      <Handbook />
+      <Community />
+      <HowItWorks />
       <About />
       <FinalCTA />
       <Footer />

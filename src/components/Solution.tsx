@@ -1,7 +1,6 @@
 import { Swords, BookOpen, Flame, Globe } from "lucide-react";
 import { SectionTag, ButtonGold } from "./ui/Buttons";
 import { JOIN_URL } from "@/config/links";
-import TrialNote from "./ui/TrialNote";
 
 const pillars = [
   {
@@ -32,18 +31,12 @@ const pillars = [
 
 export default function Solution() {
   return (
-    <section id="solution" className="bg-[#EDEAE2] py-24 px-8 overflow-hidden">
+    <section id="pillars" className="bg-cream py-24 px-5 sm:px-8 border-t border-card-border overflow-hidden">
       <div className="max-w-[1100px] mx-auto text-center" data-aos="fade-up">
-        <SectionTag className="border-navy/10 text-navy/60">The Mission</SectionTag>
-        <h2 className="font-display text-[2.8rem] font-bold text-navy leading-tight mt-6 mb-6 tracking-tight">
+        <SectionTag className="border-navy/10 text-navy/60">What You&apos;ll Master</SectionTag>
+        <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] font-bold text-navy leading-tight mt-6 mb-16 tracking-tight">
           A Blueprint for the Ambassador of Christ
         </h2>
-        <p className="text-[1.15rem] text-grey max-w-[600px] mx-auto mb-4 leading-[1.8]">
-          90 sessions. 30 minutes a day. Everything you need to become a committed disciple.
-        </p>
-        <p className="text-[1.1rem] text-gold italic font-semibold max-w-[600px] mx-auto mb-16">
-          “Follow me, and I will make you fishers of men” (Matthew 4:19)
-        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {pillars.map((p, i) => (
@@ -86,9 +79,8 @@ export default function Solution() {
           ))}
         </div>
 
-        <div className="flex flex-col items-center gap-3">
-          <ButtonGold href={JOIN_URL} className="h-[56px] px-10 rounded-sm">Start Your Free Trial →</ButtonGold>
-          <TrialNote className="text-center" />
+        <div className="flex flex-col items-center">
+          <ButtonGold href={JOIN_URL} className="h-[56px] px-10 rounded-sm">Enter Now →</ButtonGold>
         </div>
       </div>
     </section>
