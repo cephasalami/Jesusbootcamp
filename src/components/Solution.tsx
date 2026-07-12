@@ -80,7 +80,7 @@ export default function Solution() {
         </div>
 
         <div className="flex flex-col items-center">
-          <ButtonGold href={JOIN_URL} className="h-[56px] px-10 rounded-sm">Enter Now →</ButtonGold>
+          <ButtonGold href={JOIN_URL} className="h-[56px] px-10 rounded-sm">Get Started →</ButtonGold>
         </div>
       </div>
     </section>
