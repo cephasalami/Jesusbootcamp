@@ -63,7 +63,7 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className="hidden sm:inline-flex items-center gap-2 bg-navy text-white text-[13px] font-bold px-5 py-[11px] rounded-sm transition-all duration-300 hover:bg-gold hover:text-navy group/cta whitespace-nowrap shadow-sm hover:shadow-[0_8px_20px_rgba(201,168,76,0.2)]"
           >
-            Enter Now
+            Get Started
             <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover/cta:translate-x-1" />
           </a>
           <button
@@ -106,7 +106,7 @@ export default function Navbar() {
             onClick={() => setMenuOpen(false)}
             className="flex items-center justify-center gap-2 mt-4 bg-navy text-white text-sm font-bold py-4 rounded-sm hover:bg-gold hover:text-navy transition-all duration-300"
           >
-            Enter Now <ArrowRight className="w-4 h-4" />
+            Get Started <ArrowRight className="w-4 h-4" />
           </a>
         </div>
       </div>
