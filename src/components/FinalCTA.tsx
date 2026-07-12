@@ -104,7 +104,7 @@ export default function FinalCTA() {
                 </>
               ) : (
                 <>
-                  <span>Enter Now</span>
+                  <span>Get the Free Handbook</span>
                   <Send className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-0.5" />
                 </>
               )}
