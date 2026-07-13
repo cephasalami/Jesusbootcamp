@@ -62,7 +62,7 @@ export default function CoursePreview() {
         <p className="text-[14px] text-grey italic font-medium">
           <strong className="text-navy not-italic">+84 more sessions</strong> waiting for you inside.
         </p>
-        <ButtonGold href={JOIN_URL}>Get Started →</ButtonGold>
+        <ButtonGold href={JOIN_URL} className="w-full sm:w-auto justify-center">Get Started Now →</ButtonGold>
       </div>
     </section>
   );

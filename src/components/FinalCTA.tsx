@@ -104,7 +104,7 @@ export default function FinalCTA() {
                 </>
               ) : (
                 <>
-                  <span>Get the Free Handbook</span>
+                  <span>Get the free Handbook</span>
                   <Send className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-0.5" />
                 </>
               )}
@@ -121,7 +121,7 @@ export default function FinalCTA() {
           {status === "success" && (
             <div className="flex items-center gap-2 text-green-600 text-[15px] mt-4 font-bold justify-center animate-pulse">
               <Sparkles className="w-4 h-4 fill-green-600 text-green-600" />
-              <span>Welcome! Check your inbox for Session 1.</span>
+              <span>Welcome! Check your inbox for the Handbook.</span>
             </div>
           )}
         </div>

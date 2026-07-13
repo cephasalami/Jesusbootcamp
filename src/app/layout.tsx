@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import localFont from "next/font/local";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import AOSConfig from "@/components/AOSConfig";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
+// Vogun — custom display face for all headings / sub-headings.
+// Single-weight TTF aliased to 400 + 700 so `font-bold` headings render the
+// real glyphs instead of a synthesized faux-bold.
+const vogun = localFont({
+  src: [
+    { path: "./fonts/Vogun-Medium.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/Vogun-Medium.ttf", weight: "700", style: "normal" },
+  ],
   variable: "--font-display",
   display: "swap",
 });
 
-const inter = Inter({
+// Poppins — body copy.
+const poppins = Poppins({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
   variable: "--font-body",
   display: "swap",
 });
@@ -42,7 +52,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${vogun.variable} ${poppins.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <AOSConfig />
         {children}
