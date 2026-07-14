@@ -118,7 +118,7 @@ export default function HandbookLandingPage() {
               <div className={styles.trustChips}>
                 <span className={styles.trustChip}>
                   <span className={styles.trustCheck}><Check size={12} strokeWidth={3} /></span>
-                  Used in prisons
+                  Teachers &amp; preachers
                 </span>
                 <span className={styles.trustChip}>
                   <span className={styles.trustCheck}><Check size={12} strokeWidth={3} /></span>
@@ -281,8 +281,8 @@ export default function HandbookLandingPage() {
               </div>
               <h3 className={styles.featureCardTitle}>Used Worldwide</h3>
               <p className={styles.featureCardText}>
-                From prisons in the South to churches across the globe — the Handbook
-                has been used by ministries worldwide to train disciples and equip believers for real mission.
+                Used by teachers and preachers across the globe — the Handbook
+                has helped ministries worldwide train disciples and equip believers for real mission.
               </p>
             </div>
 
