@@ -321,8 +321,8 @@ export default function PowerForTheHourPage() {
                         </div>
                         <p className={styles.authorBio}>
                             &ldquo;When I wrote the{" "}
-                            <em>Handbook for a Disciple of Jesus</em> — now used in
-                            prisons, churches, and youth groups around the world — I kept
+                            <em>Handbook for a Disciple of Jesus</em> — now used by
+                            teachers, preachers, and churches around the world — I kept
                             seeing the same thing: many are born again, but few are made
                             into disciples. <strong>Power for the Hour</strong>{" "}
                             is my answer. These are the verses I believe every disciple should
