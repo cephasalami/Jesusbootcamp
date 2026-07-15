@@ -8,6 +8,7 @@ import { BookOpen, Compass, Shield, Globe, Smartphone, Key, Mail, Inbox, Downloa
 import AOS from "aos";
 import "aos/dist/aos.css";
 import styles from "./page.module.css";
+import { trackFbEvent } from "@/lib/fbq";
 
 export default function HandbookLandingPage() {
   const router = useRouter();
@@ -78,6 +79,9 @@ export default function HandbookLandingPage() {
 
       setSubmitting(false);
       setSuccess(true);
+
+      // Meta Pixel: the email capture is the page's primary conversion.
+      trackFbEvent("Lead", { content_name: "Handbook — Free Download" });
 
       setTimeout(() => {
         router.push("/power-for-the-hour");
