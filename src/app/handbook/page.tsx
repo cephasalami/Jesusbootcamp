@@ -8,7 +8,7 @@ import { BookOpen, Compass, Shield, Globe, Smartphone, Key, Mail, Inbox, Downloa
 import AOS from "aos";
 import "aos/dist/aos.css";
 import styles from "./page.module.css";
-import { trackFbEvent } from "@/lib/fbq";
+import { trackFbEvent, trackFbCustomEvent } from "@/lib/fbq";
 
 export default function HandbookLandingPage() {
   const router = useRouter();
@@ -20,9 +20,10 @@ export default function HandbookLandingPage() {
   const [isSubmitting2, setIsSubmitting2] = useState(false);
   const [success1, setSuccess1] = useState(false);
   const [success2, setSuccess2] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const heroInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     AOS.init({
@@ -41,6 +42,29 @@ export default function HandbookLandingPage() {
   const scrollToHeroForm = () => {
     heroInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(() => heroInputRef.current?.focus({ preventScroll: true }), 450);
+  };
+
+  // Kick off muted autoplay on mount. Browsers only allow autoplay when muted;
+  // if it's still blocked (e.g. data-saver mode) the first frame shows and the
+  // "Tap for sound" button lets the visitor start it with audio.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.play().catch(() => {});
+  }, []);
+
+  // Unmute: restart from the beginning so audio starts at the intro, show the
+  // native controls, and record the engagement as a Meta Pixel event.
+  const enableSound = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    v.loop = false;
+    v.currentTime = 0;
+    v.play().catch(() => {});
+    setSoundOn(true);
+    trackFbCustomEvent("VideoPlay", { content_name: "Handbook Overview" });
   };
 
   const validateEmail = (email: string) => {
@@ -230,6 +254,52 @@ export default function HandbookLandingPage() {
         </div>
       </section>
 
+      {/* SECTION 3.5 - VIDEO (moved up from the page bottom so more visitors see it) */}
+      <section className={styles.videoSection}>
+        <div className={styles.container}>
+          <h2 className={`${styles.headingDisplay} ${styles.sectionH2}`} data-aos="fade-up">
+            Hear What This Handbook Can Do For You
+          </h2>
+          <p className={styles.sectionSub} data-aos="fade-up" data-aos-delay="50" style={{ marginBottom: '40px' }}>
+            Paul shares why he wrote it — and how it can equip you
+            for every situation you face.
+          </p>
+
+          <div className={styles.videoWrapper} data-aos="fade-up">
+            <video
+              ref={videoRef}
+              src="/images/video_2026-05-20_20-16-28.mp4"
+              className={styles.videoEl}
+              playsInline
+              loop={!soundOn}
+              controls={soundOn}
+              preload="metadata"
+              onClick={() => {
+                if (!soundOn) enableSound();
+              }}
+            />
+            {!soundOn && (
+              <button
+                type="button"
+                className={styles.videoSoundBtn}
+                onClick={enableSound}
+                aria-label="Play video with sound"
+              >
+                <span className={styles.videoPlayCircle} aria-hidden="true">
+                  <svg className={styles.videoPlayIcon} viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+                <span className={styles.videoSoundLabel}>🔊 Tap for sound</span>
+              </button>
+            )}
+          </div>
+          <div className={styles.videoCaption}>
+            Watch time: under 2 minutes
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 4 - WHAT'S INSIDE */}
       <section className={styles.featuresSection}>
         <div className={styles.container}>
@@ -363,51 +433,6 @@ export default function HandbookLandingPage() {
 
       {/* SECTION 6 - TESTIMONIALS */}
       {/* TODO: Replace with real testimonials when available. Do not publish placeholder names — Paul's instructions. */}
-
-      {/* SECTION 7 - VIDEO SECTION */}
-      <section className={styles.videoSection}>
-        <div className={styles.container}>
-          <h2 className={`${styles.headingDisplay} ${styles.sectionH2}`} data-aos="fade-up">
-            Hear What This Handbook Can Do For You
-          </h2>
-          <p className={styles.sectionSub} data-aos="fade-up" data-aos-delay="50" style={{ marginBottom: '40px' }}>
-            Paul shares why he wrote it — and how it can equip you
-            for every situation you face.
-          </p>
-
-          <div
-            className={styles.videoWrapper}
-            data-aos="fade-up"
-            onClick={() => {
-              if (!isVideoPlaying) setIsVideoPlaying(true);
-            }}
-          >
-            {isVideoPlaying ? (
-              <video
-                src="/images/video_2026-05-20_20-16-28.mp4"
-                controls
-                autoPlay
-                className="w-full h-full object-cover relative z-10"
-              />
-            ) : (
-              <>
-                <div className={styles.videoOverlay} />
-                <div className={styles.videoPlayBtn}>
-                  <svg className={styles.videoPlayIcon} viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-                <div style={{ position: 'absolute', bottom: '24px', left: '24px', zIndex: 10, color: 'white', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 'bold' }}>
-                  Play Handbook Overview
-                </div>
-              </>
-            )}
-          </div>
-          <div className={styles.videoCaption}>
-            Watch time: approximately three minutes
-          </div>
-        </div>
-      </section>
 
       {/* SECTION 8 - HOW IT WORKS */}
       <section className={styles.stepsSection}>

@@ -20,3 +20,12 @@ export function trackFbEvent(
   if (typeof window === "undefined" || typeof window.fbq !== "function") return;
   window.fbq("track", event, params);
 }
+
+/** Fire a Meta Pixel custom event. No-ops if the pixel hasn't loaded. */
+export function trackFbCustomEvent(
+  event: string,
+  params?: Record<string, unknown>
+): void {
+  if (typeof window === "undefined" || typeof window.fbq !== "function") return;
+  window.fbq("trackCustom", event, params);
+}
