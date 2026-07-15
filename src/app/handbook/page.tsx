@@ -268,7 +268,7 @@ export default function HandbookLandingPage() {
           <div className={styles.videoWrapper} data-aos="fade-up">
             <video
               ref={videoRef}
-              src="/images/video_2026-05-20_20-16-28.mp4"
+              src="/images/handbook-overview.mp4"
               className={styles.videoEl}
               playsInline
               loop={!soundOn}
