@@ -15,6 +15,7 @@ import {
     Smartphone,
 } from "lucide-react";
 import styles from "./page.module.css";
+import { trackFbEvent } from "@/lib/fbq";
 
 const CHECKOUT_URL =
     "https://faithwithoutborders.us/cart/?add-to-cart=3229&code=BOOTCAMP5";
@@ -61,6 +62,18 @@ export default function PowerForTheHourPage() {
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
+
+    // Fire InitiateCheckout when a visitor clicks through to the external cart.
+    // The purchase completes off-site on faithwithoutborders.us, so a true
+    // Purchase event can't fire from here — this records accurate checkout intent.
+    // (The real Purchase event belongs on the store's order-confirmation page.)
+    const handleCheckoutClick = () => {
+        trackFbEvent("InitiateCheckout", {
+            value: 5,
+            currency: "USD",
+            content_name: "Power for the Hour",
+        });
+    };
 
     return (
         <div className={styles.pageWrapper}>
@@ -155,7 +168,7 @@ export default function PowerForTheHourPage() {
                                 subscription. This price is not available anywhere else.
                             </p>
 
-                            <a href={CHECKOUT_URL} className={styles.ctaButton} role="button">
+                            <a href={CHECKOUT_URL} onClick={handleCheckoutClick} className={styles.ctaButton} role="button">
                                 Yes — Add Power for the Hour for $5
                                 <span className={styles.ctaArrow} aria-hidden="true">
                                     →
@@ -491,6 +504,7 @@ export default function PowerForTheHourPage() {
 
                             <a
                                 href={CHECKOUT_URL}
+                                onClick={handleCheckoutClick}
                                 className={`${styles.ctaButton} ${styles.finalCtaButton}`}
                                 role="button"
                             >
@@ -551,6 +565,7 @@ export default function PowerForTheHourPage() {
                 </div>
                 <a
                     href={CHECKOUT_URL}
+                    onClick={handleCheckoutClick}
                     className={styles.stickyBarButton}
                     tabIndex={showStickyBar ? 0 : -1}
                 >
