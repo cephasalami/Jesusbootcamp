@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/", priority: 1 },
     { path: "/why-the-boot-camp", priority: 0.8 },
     { path: "/while-you-were-busy", priority: 0.8 },
+    { path: "/partner", priority: 0.7 },
     { path: "/blog", priority: 0.7 },
     { path: "/privacy", priority: 0.3 },
   ];
