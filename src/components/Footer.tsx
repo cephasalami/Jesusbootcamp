@@ -9,6 +9,7 @@ const links = [
   { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
   { href: "/blog", label: "Blog" },
   { href: "/#testimonials", label: "Testimonials" },
+  { href: "/partner", label: "Partner With Us" },
   { href: JOIN_URL, label: "Get Started Now", external: true },
 ];
 
