@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { JOIN_URL } from "@/config/links";
 
@@ -34,12 +35,12 @@ export default function Navbar() {
     >
       <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 sm:px-8 h-[76px]">
         {/* Brand wordmark (logo image removed — now used as the favicon) */}
-        <a href="/" className="flex items-center gap-3 group shrink-0">
+        <Link href="/" className="flex items-center gap-3 group shrink-0">
           <div className="font-display text-[1.15rem] font-bold text-navy tracking-tight leading-tight">
             JESUS<br />
             <span className="text-gold text-[0.9rem] font-semibold tracking-[0.1em]">BOOT CAMP</span>
           </div>
-        </a>
+        </Link>
 
         {/* Desktop Links */}
         <ul className="hidden lg:flex items-center gap-0 list-none">
