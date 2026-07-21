@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const TITLE =
     "While You Were Busy: How the System Replaced You, and How to Take Your Lead Back";
 const DESCRIPTION =
-    "The system is raising your kids while you're busy. While You Were Busy by Paul Joseph is a bold wake-up call to stop the drift, take your lead back, and rebuild your home. Instant PDF — $14.95.";
+    "The system is raising your kids while you're busy. While You Were Busy by Paul Joseph is a bold wake-up call to stop the drift, take your lead back, and rebuild your home. Instant PDF — $5.";
 const COVER = "/images/while-you-were-busy/while-you-were-busy-cover.png";
 const URL = "https://jesusbootcamp.org/while-you-were-busy";
 
@@ -44,7 +44,7 @@ const jsonLd = {
         "A bold call for parents to stop drifting and take their God-given place back in the home — the hidden labor of shaping a child's heart, character, and future.",
     offers: {
         "@type": "Offer",
-        price: "14.95",
+        price: "5.00",
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
         url: "https://faithwithoutborders.us/product/while-you-were-busy/",

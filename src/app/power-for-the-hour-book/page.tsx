@@ -18,11 +18,13 @@ import {
 import styles from "./page.module.css";
 import { trackFbEvent } from "@/lib/fbq";
 
-// Full-price, standalone sales page for cold ad traffic. Full price ($14.95),
-// no discount code — unlike the /power-for-the-hour upsell (which appends
-// &code=BOOTCAMP5 for the $5 Handbook-funnel offer). Do not merge the two.
-const CHECKOUT_URL = "https://faithwithoutborders.us/cart/?add-to-cart=3229";
-const PRICE = 14.95;
+// Standalone sales page for cold ad traffic. No discount code — unlike the
+// /power-for-the-hour upsell. Do not merge the two.
+//
+// Sells through the on-site embedded Stripe checkout so buyers never leave the
+// domain. Price matches the catalog $5 offer in BOOKS in src/config/products.ts.
+const CHECKOUT_URL = "/checkout/power-for-the-hour";
+const PRICE = 5;
 
 export default function PowerForTheHourBookPage() {
     const [showStickyBar, setShowStickyBar] = useState(false);
@@ -38,10 +40,9 @@ export default function PowerForTheHourBookPage() {
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
-    // Fire InitiateCheckout when a visitor clicks through to the external cart.
-    // The purchase completes off-site on faithwithoutborders.us, so a true
-    // Purchase event can't fire from here — this records accurate checkout intent.
-    // (The real Purchase event belongs on the store's order-confirmation page.)
+    // Fire InitiateCheckout when a visitor clicks through to the on-site checkout.
+    // The Purchase event fires later on the checkout confirmation page, so this
+    // records accurate checkout intent at the top of the funnel.
     const handleCheckoutClick = () => {
         trackFbEvent("InitiateCheckout", {
             value: PRICE,
@@ -101,7 +102,7 @@ export default function PowerForTheHourBookPage() {
 
                             <div className={styles.priceBlock}>
                                 <span className={`${styles.headingDisplay} ${styles.priceNow}`}>
-                                    $14.95
+                                    $5
                                 </span>
                                 <span className={styles.priceUnit}>
                                     One-time · Instant PDF
@@ -109,20 +110,20 @@ export default function PowerForTheHourBookPage() {
                             </div>
 
                             <p className={styles.savingsLine}>
-                                A one-time payment of $14.95 — no subscription, no hidden fees.
+                                A one-time payment of $5 — no subscription, no hidden fees.
                                 Instant digital delivery to any device.
                             </p>
 
-                            <a
+                            <Link
                                 href={CHECKOUT_URL}
                                 onClick={handleCheckoutClick}
                                 className={styles.ctaButton}
                             >
-                                Get Power for the Hour — $14.95
+                                Get Power for the Hour — $5
                                 <span className={styles.ctaArrow} aria-hidden="true">
                                     →
                                 </span>
-                            </a>
+                            </Link>
 
                             <div className={styles.trustRow}>
                                 <span className={styles.trustItem}>
@@ -295,88 +296,6 @@ export default function PowerForTheHourBookPage() {
                 </div>
             </section>
 
-            {/* ═══ SOCIAL PROOF ═══ */}
-            <section className={styles.socialSection}>
-                <div className={styles.socialContainer}>
-                    <h2
-                        className={`${styles.headingDisplay} ${styles.socialH2}`}
-                        data-aos="fade-up"
-                    >
-                        What Disciples Are Saying
-                    </h2>
-
-                    <div className={styles.socialGrid}>
-                        {/* Card 1 */}
-                        <div className={styles.quoteCard} data-aos="fade-up">
-                            <div className={styles.quoteStars}>★★★★★</div>
-                            <p className={styles.quoteText}>
-                                &ldquo;I read the Handbook first and it changed how I think about
-                                Scripture. Power for the Hour took it to another level — I have
-                                these verses in my heart now. I&apos;m a different man.&rdquo;
-                            </p>
-                            <div className={styles.quoteAuthor}>
-                                <Image
-                                    src="/images/power-for-the-hour/david_avatar.png"
-                                    alt="David T."
-                                    width={48}
-                                    height={48}
-                                    className={styles.avatar}
-                                />
-                                <div>
-                                    <div className={styles.authorNameSmall}>David T.</div>
-                                    <div className={styles.authorLocation}>Georgia, USA</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Card 2 */}
-                        <div className={styles.quoteCard} data-aos="fade-up" data-aos-delay="100">
-                            <div className={styles.quoteStars}>★★★★★</div>
-                            <p className={styles.quoteText}>
-                                &ldquo;We give both books to every new leader in our church.
-                                Together they create a disciple who knows the Word and knows how
-                                to use it. This kind of foundation is remarkable.&rdquo;
-                            </p>
-                            <div className={styles.quoteAuthor}>
-                                <Image
-                                    src="/images/power-for-the-hour/ruth_avatar.png"
-                                    alt="Pastor Ruth M."
-                                    width={48}
-                                    height={48}
-                                    className={styles.avatar}
-                                />
-                                <div>
-                                    <div className={styles.authorNameSmall}>Pastor Ruth M.</div>
-                                    <div className={styles.authorLocation}>Texas, USA</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Card 3 */}
-                        <div className={styles.quoteCard} data-aos="fade-up" data-aos-delay="200">
-                            <div className={styles.quoteStars}>★★★★★</div>
-                            <p className={styles.quoteText}>
-                                &ldquo;I almost passed on it. I am so glad I didn&apos;t. This
-                                book is the discipleship foundation I never had growing up.&rdquo;
-                            </p>
-                            <div className={styles.quoteAuthor}>
-                                <Image
-                                    src="/images/power-for-the-hour/marco_avatar.png"
-                                    alt="Marco R."
-                                    width={48}
-                                    height={48}
-                                    className={styles.avatar}
-                                />
-                                <div>
-                                    <div className={styles.authorNameSmall}>Marco R.</div>
-                                    <div className={styles.authorLocation}>California, USA</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             {/* ═══ FINAL CTA / OFFER BOX ═══ */}
             <section className={styles.finalCtaSection}>
                 <div className={styles.finalCtaContainer} data-aos="fade-up">
@@ -446,21 +365,21 @@ export default function PowerForTheHourBookPage() {
                                 <span
                                     className={`${styles.headingDisplay} ${styles.priceNow} ${styles.priceFinal}`}
                                 >
-                                    $14.95
+                                    $5
                                 </span>
                                 <span className={styles.priceUnit}>One-time payment</span>
                             </div>
 
-                            <a
+                            <Link
                                 href={CHECKOUT_URL}
                                 onClick={handleCheckoutClick}
                                 className={`${styles.ctaButton} ${styles.finalCtaButton}`}
                             >
-                                Get Power for the Hour — $14.95
+                                Get Power for the Hour — $5
                                 <span className={styles.ctaArrow} aria-hidden="true">
                                     →
                                 </span>
-                            </a>
+                            </Link>
 
                             <p className={styles.securityLine}>
                                 🔒 Secure checkout · One-time payment · Instant digital
@@ -480,7 +399,7 @@ export default function PowerForTheHourBookPage() {
                             <p className={styles.guaranteeText}>
                                 If Power for the Hour doesn&apos;t strengthen your walk with
                                 God, reply to your delivery email within 30 days and we&apos;ll
-                                refund your $14.95 — no questions asked. And the digital copy
+                                refund your $5 — no questions asked. And the digital copy
                                 is yours to keep.
                             </p>
                         </div>
@@ -505,17 +424,17 @@ export default function PowerForTheHourBookPage() {
             >
                 <div className={styles.stickyBarPrice}>
                     <span className={`${styles.headingDisplay} ${styles.stickyBarNew}`}>
-                        $14.95
+                        $5
                     </span>
                 </div>
-                <a
+                <Link
                     href={CHECKOUT_URL}
                     onClick={handleCheckoutClick}
                     className={styles.stickyBarButton}
                     tabIndex={showStickyBar ? 0 : -1}
                 >
                     Get the Book →
-                </a>
+                </Link>
             </div>
         </div>
     );

@@ -2,7 +2,9 @@
 
 import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { trackFbEvent } from "@/lib/fbq";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Link2, MessageCircle, Share2, Smartphone } from "lucide-react";
@@ -37,20 +39,26 @@ function ThankYouContent() {
                     ✓ Handbook Requested
                 </div>
                 <span className={styles.progressChevron}>›</span>
-                <div className={`${styles.progressStep} ${styles.stepCompleted}`}>
-                    ✓ Special Offer
-                </div>
+                {isVersionB ? (
+                    <div className={`${styles.progressStep} ${styles.stepCompleted}`}>
+                        ✓ Special Offer
+                    </div>
+                ) : (
+                    <div className={`${styles.progressStep} ${styles.stepCurrent}`}>
+                        → Special Offer
+                    </div>
+                )}
                 <span className={styles.progressChevron}>›</span>
                 <div className={`${styles.progressStep} ${styles.stepCurrent}`}>
                     → Download
                 </div>
             </div>
 
-            {/* ═══ SECTION 1: SUCCESS CONFIRMATION (Hero) ═══ */}
-            <section className={styles.heroSection}>
-                <div className={styles.heroContainer} data-aos="fade-up">
-                    <div className={styles.illustrationWrapper}>
-                        {isVersionB ? (
+            {isVersionB ? (
+                /* ═══ SUCCESS CONFIRMATION — paid path (both books) ═══ */
+                <section className={styles.heroSection}>
+                    <div className={styles.heroContainer} data-aos="fade-up">
+                        <div className={styles.illustrationWrapper}>
                             <Image
                                 src="/images/thank-you/two_books_illustration.png"
                                 alt="Two Books Confirmation"
@@ -59,40 +67,70 @@ function ThankYouContent() {
                                 className={styles.illustration}
                                 preload
                             />
-                        ) : (
-                            <Image
-                                src="/images/thank-you/envelope_illustration.png"
-                                alt="Email Delivery Confirmation"
-                                width={120}
-                                height={120}
-                                className={styles.illustration}
-                                preload
-                            />
-                        )}
-                    </div>
-
-                    <h1 className={`${styles.headingDisplay} ${styles.heroH1}`}>
-                        {isVersionB
-                            ? "You're All Set. Both Books Are On Their Way."
-                            : "You're In. Your Handbook Is On Its Way."}
-                    </h1>
-
-                    <p className={styles.heroSub}>
-                        {isVersionB
-                            ? "The Handbook for a Disciple of Jesus and Power for the Hour are both being delivered to your inbox right now. You've just taken a serious step in your discipleship journey."
-                            : "Check your inbox — the Handbook for a Disciple of Jesus is being delivered to your email right now. While you wait, here's exactly what to do next."}
-                    </p>
-
-                    <div className={styles.deliveryBox}>
-                        <div className={styles.deliveryIcon}>📧</div>
-                        <p className={styles.deliveryText}>
-                            {isVersionB
-                                ? "Both books are being sent to your email. Power for the Hour will come as a separate PDF from Gumroad — check for two emails. Both should arrive within 5 minutes. If you don't see them — check your Spam folder."
-                                : "Your Handbook PDF is being sent to the email address you entered. It should arrive within 5 minutes. If you don't see it — check your Spam or Promotions folder and mark it as Not Spam."}
+                        </div>
+                        <h1 className={`${styles.headingDisplay} ${styles.heroH1}`}>
+                            You&apos;re All Set. Both Books Are On Their Way.
+                        </h1>
+                        <p className={styles.heroSub}>
+                            The Handbook for a Disciple of Jesus and Power for the Hour are both
+                            being delivered to your inbox right now. You&apos;ve just taken a serious
+                            step in your discipleship journey.
                         </p>
+                        <div className={styles.deliveryBox}>
+                            <div className={styles.deliveryIcon}>📧</div>
+                            <p className={styles.deliveryText}>
+                                Both books are being sent to your email. Power for the Hour will come
+                                as a separate PDF by email — check for two emails. Both should arrive
+                                within 5 minutes. If you don&apos;t see them — check your Spam folder.
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            ) : (
+                <>
+                    {/* ═══ COMPACT CONFIRMATION — reassures the free Handbook is coming ═══ */}
+                    <section className={styles.confirmStrip}>
+                        <div className={styles.confirmStripInner}>
+                            <span className={styles.confirmCheck} aria-hidden="true">✓</span>
+                            <p className={styles.confirmText}>
+                                Success! Your free Handbook is on its way — it lands in your inbox
+                                within ~5 minutes. (Check Spam/Promotions if you don&apos;t see it.)
+                            </p>
+                        </div>
+                    </section>
+
+                    {/* ═══ $5 OFFER — pulled to the top so it's visible without scrolling ═══ */}
+                    <section className={styles.offerHero}>
+                        <div className={styles.offerCard}>
+                            <span className={styles.offerTag}>Exclusive new-subscriber offer</span>
+                            <h1 className={`${styles.headingDisplay} ${styles.offerH1}`}>
+                                Add Power for the Hour for just $5
+                            </h1>
+                            <p className={styles.offerSub}>
+                                You&apos;ve got the Handbook — now put the essential verses every
+                                disciple needs into your heart. Power for the Hour is the companion
+                                that turns Scripture into a daily practice you&apos;ll actually keep.
+                            </p>
+                            <Link
+                                href="/checkout/power-for-the-hour"
+                                className={styles.ctaButton}
+                                onClick={() =>
+                                    trackFbEvent("InitiateCheckout", {
+                                        value: 5,
+                                        currency: "USD",
+                                        content_name: "Power for the Hour",
+                                    })
+                                }
+                            >
+                                Yes — add it for $5 →
+                            </Link>
+                            <p className={styles.offerTrust}>
+                                🔒 Secure checkout · Instant PDF · 30-day money-back guarantee
+                            </p>
+                        </div>
+                    </section>
+                </>
+            )}
 
             {/* ═══ SECTION 2: HOW TO SAVE IT TO YOUR PHONE ═══ */}
             <section className={styles.savePhoneSection}>
@@ -146,7 +184,7 @@ function ThankYouContent() {
 
                     <p className={styles.bootcampBody} data-aos="fade-up">
                         The Jesus Boot Camp is a structured 90-day discipleship training program — built to train you to actually use everything in the Handbook.{"\n\n"}
-                        Your first 3 sessions are completely free.
+                        The first step of your discipleship training starts here.
                     </p>
  
                     <div className={styles.statsRow} data-aos="fade-up" data-aos-delay="100">
@@ -168,46 +206,49 @@ function ThankYouContent() {
                         <a href={JOIN_URL} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
                             Start My Free Trial →
                         </a>
-                        <p className={styles.ctaNote}>
-                            First 3 sessions free
-                        </p>
                     </div>
                 </div>
             </section>
  
-            {/* ═══ SECTION 4: SOFT UPSELL OR COMMUNITY INVITE ═══ */}
+            {/* ═══ SECTION 4: REPEAT $5 OFFER (free path) / COMMUNITY INVITE (paid) ═══ */}
             <section className={styles.upsellSection}>
                 <div className={styles.upsellContainer} data-aos="fade-up">
                     {isVersionB ? (
                         <>
                             <h2 className={`${styles.headingDisplay} ${styles.upsellH2}`}>
-                                You're Already Ahead.
+                                You&apos;re Already Ahead.
                             </h2>
                             <p className={styles.upsellBody}>
-                                Most believers never take a single step toward real training. You just took two. Start your free trial and connect with disciples who are on the same journey.
+                                Most believers never take a single step toward real training. You
+                                just took two. Start your free trial and connect with disciples who
+                                are on the same journey.
                             </p>
                             <a href={JOIN_URL} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
                                 Start My Free Trial →
                             </a>
-                            <p style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", fontStyle: "italic", color: "#5C5C5C", textAlign: "center", marginTop: "16px" }}>
-                                First 3 sessions free
-                            </p>
                         </>
                     ) : (
                         <>
                             <h2 className={`${styles.headingDisplay} ${styles.upsellH2}`}>
-                                Still Interested in Power for the Hour?
+                                Still thinking about Power for the Hour?
                             </h2>
                             <p className={styles.upsellBody}>
-                                The special $5 offer has expired — but the book is still available at its standard price of $15. If you'd like to add it to your discipleship toolkit, you can get it here.
+                                It&apos;s just $5, delivered instantly — the essential verses every
+                                disciple should carry in their heart. Add it before you go.
                             </p>
-                            {/* Same product as the $5 OTO, without the BOOTCAMP5 coupon — charges standard price */}
-                            <a
-                                href="https://faithwithoutborders.us/cart/?add-to-cart=3229"
-                                className={styles.secondaryButton}
+                            <Link
+                                href="/checkout/power-for-the-hour"
+                                className={styles.ctaButton}
+                                onClick={() =>
+                                    trackFbEvent("InitiateCheckout", {
+                                        value: 5,
+                                        currency: "USD",
+                                        content_name: "Power for the Hour",
+                                    })
+                                }
                             >
-                                Get Power for the Hour — $15
-                            </a>
+                                Add Power for the Hour — $5 →
+                            </Link>
                         </>
                     )}
                 </div>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { SectionTag } from "./ui/Buttons";
+import { trackFbEvent } from "@/lib/fbq";
 
 export default function LeadMagnet() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,6 +37,11 @@ export default function LeadMagnet() {
 
       setStatus("success");
       setEmail("");
+      // Count the form fill (mirrors to Meta + first-party /api/track).
+      trackFbEvent("Lead", { content_name: "Handbook — Lead Magnet", form: "lead-magnet" });
+      // Route the new subscriber into the funnel: the thank-you page confirms
+      // delivery and presents the $5 Power for the Hour tripwire.
+      setTimeout(() => router.push("/thank-you?order=handbook"), 1200);
     } catch (err: any) {
       setStatus("error");
       setErrorMessage(err.message || "Something went wrong.");

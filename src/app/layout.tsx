@@ -4,6 +4,8 @@ import localFont from "next/font/local";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import AOSConfig from "@/components/AOSConfig";
+import TrackPageView from "@/components/TrackPageView";
+import { META_PIXEL_ID } from "@/config/pixels";
 
 // Vogun — custom display face for all headings / sub-headings.
 // Single-weight TTF aliased to 400 + 700 so `font-bold` headings render the
@@ -65,7 +67,7 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1551632843016917');
+fbq('init', '${META_PIXEL_ID}');
 fbq('track', 'PageView');`}
         </Script>
         <noscript>
@@ -74,11 +76,13 @@ fbq('track', 'PageView');`}
             height="1"
             width="1"
             style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=1551632843016917&ev=PageView&noscript=1"
+            src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
             alt=""
           />
         </noscript>
         {/* End Meta Pixel Code */}
+        {/* First-party page-view tracker (logs to /api/track when a store is configured) */}
+        <TrackPageView />
         <AOSConfig />
         {children}
       </body>

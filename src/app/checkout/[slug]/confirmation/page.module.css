@@ -1,0 +1,217 @@
+/* src/app/checkout/[slug]/confirmation/page.module.css */
+
+.pageWrapper {
+    --bg-cream: #F5F0E8;
+    --bg-cream-alt: #EDEAE2;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --gold: #C9A84C;
+    --gold-soft: rgba(201, 168, 76, 0.14);
+    --green: #2D6A4F;
+    --white: #FFFFFF;
+    --line: #E6DFD1;
+
+    min-height: 100vh;
+    font-family: var(--font-body), "Inter", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-cream);
+    background-image: radial-gradient(ellipse 80% 55% at 50% 0%, rgba(45, 106, 79, 0.1) 0%, transparent 60%);
+    padding: 56px 18px 72px;
+    line-height: 1.65;
+}
+
+.headingDisplay {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-weight: 700;
+}
+
+.container {
+    max-width: 540px;
+    margin: 0 auto;
+    width: 100%;
+    text-align: center;
+}
+
+.iconWrap {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background-color: rgba(45, 106, 79, 0.12);
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.h1 {
+    font-size: clamp(1.9rem, 6vw, 40px);
+    line-height: 1.1;
+    margin: 0 0 12px;
+}
+
+.lead {
+    font-size: 17px;
+    color: var(--text-secondary);
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+.lead strong {
+    color: var(--text-primary);
+}
+
+/* ── Instant download ── */
+.downloads {
+    margin: 24px auto 0;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.downloadButton {
+    display: block;
+    width: 100%;
+    background: linear-gradient(180deg, #E0BF6F 0%, var(--gold) 55%, #B7952F 100%);
+    color: #1A1A1A;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 8px 20px rgba(201, 168, 76, 0.32);
+    transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.downloadButton:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+.downloadNote {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+}
+
+/* ── One-click upsell ── */
+.upsell {
+    margin: 32px auto 0;
+    max-width: 460px;
+    text-align: left;
+    background-color: var(--white);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    box-shadow: 0 16px 44px rgba(26, 26, 26, 0.1);
+    padding: 24px 26px;
+}
+
+.upsellTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--green);
+    margin-bottom: 10px;
+}
+
+.placeholderNote {
+    background-color: #FFF6E0;
+    border: 1px dashed var(--gold);
+    color: #7A5F16;
+    font-size: 11.5px;
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin-bottom: 12px;
+}
+
+.placeholderNote code {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+    padding: 0 3px;
+}
+
+.upsellTitle {
+    font-size: 21px;
+    line-height: 1.25;
+    margin-bottom: 6px;
+}
+
+.upsellBlurb {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    margin: 0 0 6px;
+}
+
+.upsellOneClick {
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 600;
+    margin: 0 0 16px;
+}
+
+.upsellButton {
+    display: block;
+    width: 100%;
+    background: linear-gradient(180deg, #35795B 0%, var(--green) 55%, #275C45 100%);
+    color: var(--white);
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(45, 106, 79, 0.3);
+    transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.upsellButton:hover:not(:disabled) {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+}
+
+.upsellButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.upsellFail {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 12px 0 0;
+    text-align: center;
+}
+
+.upsellAdded {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 28px auto 0;
+    background-color: rgba(45, 106, 79, 0.1);
+    border: 1px solid rgba(45, 106, 79, 0.3);
+    color: var(--green);
+    font-size: 14.5px;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 12px 18px;
+}
+
+.homeLink {
+    display: inline-block;
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(201, 168, 76, 0.6);
+}
+
+.homeLink:hover {
+    color: var(--green);
+}

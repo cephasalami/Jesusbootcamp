@@ -1,0 +1,360 @@
+/* Internal analytics dashboard — brand tokens from globals.css (@theme). */
+
+.page {
+  min-height: 100vh;
+  background: var(--color-cream);
+  padding: 2rem 1.25rem 4rem;
+}
+
+.shell {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.header {
+  margin-bottom: 1.75rem;
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--color-grey);
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+  max-width: 62ch;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--color-navy);
+  background: var(--color-navy);
+  color: var(--color-cream);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.btn:hover { opacity: 0.85; }
+
+.btnGhost {
+  background: transparent;
+  color: var(--color-navy);
+  border: 1px solid var(--color-card-border);
+}
+.btnGhost:hover { border-color: var(--color-navy); opacity: 1; }
+
+/* ── Legend ─────────────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-card-border);
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-grey);
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dotLive { background: #2e9e5b; }
+.dotOff { background: #c9a84c; }
+.dotErr { background: #c0533f; }
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
+.section {
+  margin-top: 2rem;
+}
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+.sectionTitle {
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  font-size: 1.15rem;
+  margin: 0;
+}
+.sourceTag {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-grey);
+  font-weight: 600;
+}
+
+/* Status chips */
+.chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.chipLive { background: rgba(46, 158, 91, 0.12); color: #1f7a45; }
+.chipOff { background: rgba(201, 168, 76, 0.16); color: #8a6d20; }
+.chipErr { background: rgba(192, 83, 63, 0.14); color: #9c3f2e; }
+
+/* ── KPI grid ───────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+.kpi {
+  background: #fff;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.15rem;
+}
+.kpiLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-grey);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+.kpiValue {
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  font-size: 1.9rem;
+  line-height: 1;
+  margin: 0;
+}
+.kpiValueMuted { color: var(--color-card-border); }
+.kpiSub {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--color-grey);
+}
+.kpiAccent { color: var(--color-gold); }
+
+/* ── Card / connect prompt ──────────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.35rem;
+}
+.notConnected {
+  background: #fff;
+  border: 1px dashed var(--color-card-border);
+  border-radius: var(--radius-md);
+  padding: 1.35rem 1.4rem;
+}
+.notConnectedTitle {
+  color: var(--color-navy);
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+.connectHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-grey);
+  line-height: 1.6;
+}
+.connectHint code {
+  background: var(--color-cream-dark);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--color-navy);
+}
+
+.errorBanner {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: #9c3f2e;
+  background: rgba(192, 83, 63, 0.08);
+  border: 1px solid rgba(192, 83, 63, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.75rem;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  min-width: 480px;
+}
+.table th {
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-grey);
+  font-weight: 600;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-card-border);
+  background: var(--color-cream-dark);
+}
+.table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-card-border);
+  color: var(--color-navy);
+}
+.table tr:last-child td { border-bottom: none; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.muted { color: var(--color-grey); }
+.mono { font-variant-numeric: tabular-nums; }
+
+/* Small provider badge in event table */
+.pill {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: var(--color-cream-dark);
+  color: var(--color-navy);
+}
+
+/* ── Sparkline ──────────────────────────────────────────────────────────── */
+.spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 60px;
+  margin-top: 0.25rem;
+}
+.sparkBar {
+  flex: 1;
+  min-height: 2px;
+  background: var(--color-gold);
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+.sparkLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--color-grey);
+  margin-top: 0.4rem;
+}
+
+.footerNote {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-card-border);
+  font-size: 0.78rem;
+  color: var(--color-grey);
+  line-height: 1.7;
+}
+
+/* ── Login ──────────────────────────────────────────────────────────────── */
+.loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cream);
+  padding: 1.5rem;
+}
+.loginCard {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  text-align: center;
+}
+.loginTitle {
+  font-family: var(--font-display);
+  color: var(--color-navy);
+  font-size: 1.5rem;
+  margin: 0 0 0.25rem;
+}
+.loginSub {
+  color: var(--color-grey);
+  font-size: 0.88rem;
+  margin: 0 0 1.5rem;
+}
+.loginForm { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
+.label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+.input {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  color: var(--color-navy);
+  background: var(--color-cream);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18);
+}
+.loginBtn {
+  margin-top: 0.35rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-navy);
+  color: var(--color-cream);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.loginBtn:disabled { opacity: 0.6; cursor: default; }
+.loginError {
+  color: #9c3f2e;
+  font-size: 0.82rem;
+  margin: 0;
+}
