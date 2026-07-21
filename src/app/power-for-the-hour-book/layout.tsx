@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title:
         "Power for the Hour — Scriptures Every Disciple Must Memorize | Jesus Boot Camp",
     description:
-        "The essential scriptures every disciple must memorize — for identity, evangelism, and standing firm. Power for the Hour by Paul Joseph. Instant PDF download, $14.95.",
+        "The essential scriptures every disciple must memorize — for identity, evangelism, and standing firm. Power for the Hour by Paul Joseph. Instant PDF download, $5.",
     robots: {
         index: false,
         follow: false,
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Power for the Hour — Scriptures Every Disciple Must Memorize",
         description:
-            "The essential verses every disciple should carry by heart, organized to memorize, use, and teach. Instant digital PDF — $14.95.",
+            "The essential verses every disciple should carry by heart, organized to memorize, use, and teach. Instant digital PDF — $5.",
         url: "https://jesusbootcamp.org/power-for-the-hour-book",
         type: "website",
     },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "Power for the Hour — Scriptures Every Disciple Must Memorize",
         description:
-            "The essential verses every disciple should carry by heart. Instant digital PDF — $14.95.",
+            "The essential verses every disciple should carry by heart. Instant digital PDF — $5.",
     },
 };
 

@@ -14,11 +14,11 @@ import {
     Zap,
     Smartphone,
 } from "lucide-react";
+import Link from "next/link";
 import styles from "./page.module.css";
 import { trackFbEvent } from "@/lib/fbq";
 
-const CHECKOUT_URL =
-    "https://faithwithoutborders.us/cart/?add-to-cart=3229&code=BOOTCAMP5";
+const CHECKOUT_URL = "/checkout/power-for-the-hour";
 const OFFER_MINUTES = 15;
 
 /** Session-persisted countdown so a refresh doesn't reset the clock. */
@@ -97,7 +97,7 @@ export default function PowerForTheHourPage() {
                 <span>⚡ ONE-TIME OFFER</span>
                 <span className={styles.bannerDivider}>·</span>
                 {secondsLeft === null ? (
-                    <span>This special price disappears when you leave this page</span>
+                    <span>This offer is only shown here, as part of this step</span>
                 ) : secondsLeft > 0 ? (
                     <span>
                         This page expires in{" "}
@@ -156,24 +156,22 @@ export default function PowerForTheHourPage() {
                             </ul>
 
                             <div className={styles.priceBlock}>
-                                <span className={styles.priceOriginal}>$15</span>
                                 <span className={`${styles.headingDisplay} ${styles.priceNow}`}>
                                     $5
                                 </span>
-                                <span className={styles.priceTag}>Save 67% Today</span>
                             </div>
 
                             <p className={styles.savingsLine}>
                                 One-time payment of $5 — total. No hidden fees, no
-                                subscription. This price is not available anywhere else.
+                                subscription.
                             </p>
 
-                            <a href={CHECKOUT_URL} onClick={handleCheckoutClick} className={styles.ctaButton} role="button">
+                            <Link href={CHECKOUT_URL} onClick={handleCheckoutClick} className={styles.ctaButton} role="button">
                                 Yes — Add Power for the Hour for $5
                                 <span className={styles.ctaArrow} aria-hidden="true">
                                     →
                                 </span>
-                            </a>
+                            </Link>
 
                             <div className={styles.trustRow}>
                                 <span className={styles.trustItem}>
@@ -436,8 +434,8 @@ export default function PowerForTheHourPage() {
                         Get Both Books Working Together.
                     </h2>
                     <p className={styles.finalSub}>
-                        This $5 offer is only available right now — on this page, this one
-                        time. Once you leave, the price returns to $15.
+                        Add Power for the Hour to your Handbook right now — while
+                        you&apos;re here, as part of this step.
                     </p>
 
                     <div className={styles.offerBox}>
@@ -493,7 +491,6 @@ export default function PowerForTheHourPage() {
                             </ul>
 
                             <div className={styles.finalPriceBlock}>
-                                <span className={styles.priceOriginal}>$15</span>
                                 <span
                                     className={`${styles.headingDisplay} ${styles.priceNow} ${styles.priceFinal}`}
                                 >
@@ -502,7 +499,7 @@ export default function PowerForTheHourPage() {
                                 <span className={styles.priceTag}>One-Time Offer</span>
                             </div>
 
-                            <a
+                            <Link
                                 href={CHECKOUT_URL}
                                 onClick={handleCheckoutClick}
                                 className={`${styles.ctaButton} ${styles.finalCtaButton}`}
@@ -512,7 +509,7 @@ export default function PowerForTheHourPage() {
                                 <span className={styles.ctaArrow} aria-hidden="true">
                                     →
                                 </span>
-                            </a>
+                            </Link>
 
                             <p className={styles.securityLine}>
                                 🔒 Secure checkout · One-time $5 payment · Instant digital
@@ -558,19 +555,18 @@ export default function PowerForTheHourPage() {
                 aria-hidden={!showStickyBar}
             >
                 <div className={styles.stickyBarPrice}>
-                    <span className={styles.stickyBarOld}>$15</span>
                     <span className={`${styles.headingDisplay} ${styles.stickyBarNew}`}>
                         $5
                     </span>
                 </div>
-                <a
+                <Link
                     href={CHECKOUT_URL}
                     onClick={handleCheckoutClick}
                     className={styles.stickyBarButton}
                     tabIndex={showStickyBar ? 0 : -1}
                 >
                     Get the Book →
-                </a>
+                </Link>
             </div>
         </div>
     );

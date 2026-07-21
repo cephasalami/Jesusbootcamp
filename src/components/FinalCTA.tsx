@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { SectionTag } from "./ui/Buttons";
 import { Send, Sparkles, Check, AlertCircle } from "lucide-react";
+import { trackFbEvent } from "@/lib/fbq";
 
 export default function FinalCTA() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -35,6 +38,10 @@ export default function FinalCTA() {
 
       setStatus("success");
       setEmail("");
+      // Count the form fill (mirrors to Meta + first-party /api/track).
+      trackFbEvent("Lead", { content_name: "Handbook — Final CTA", form: "cta-final" });
+      // Route the new subscriber into the funnel (thank-you + $5 tripwire).
+      setTimeout(() => router.push("/thank-you?order=handbook"), 1200);
     } catch (err: any) {
       setStatus("error");
       setErrorMessage(err.message || "Something went wrong.");

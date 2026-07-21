@@ -25,11 +25,11 @@ import { trackFbEvent, trackFbCustomEvent } from "@/lib/fbq";
 
 // The book is a WooCommerce simple product (#5090) on the Faith Without Borders
 // store. Adding it straight to the cart mirrors the Power for the Hour flow.
-const CHECKOUT_URL = "https://faithwithoutborders.us/cart/?add-to-cart=5090";
-// Product page carries both the $14.95 download and the "give any amount" gift
-// option — link here for readers who want to donate instead of pay full price.
+const CHECKOUT_URL = "/checkout/while-you-were-busy";
+// External product page hosts the "give any amount" pay-what-you-can gift option
+// — link here for readers who want to donate instead of paying the $5 price.
 const PRODUCT_URL = "https://faithwithoutborders.us/product/while-you-were-busy/";
-const PRICE = 14.95;
+const PRICE = 5;
 
 // What the system quietly teaches while parents are busy (from the book's
 // wake-up premise). Rendered as a row of chips.
@@ -149,12 +149,12 @@ export default function WhileYouWereBusyPage() {
 
                             <div className={styles.priceBlock}>
                                 <span className={`${styles.headingDisplay} ${styles.priceNow}`}>
-                                    $14.95
+                                    $5
                                 </span>
                                 <span className={styles.priceUnit}>· Instant PDF download</span>
                             </div>
 
-                            <a
+                            <Link
                                 href={CHECKOUT_URL}
                                 onClick={handleCheckoutClick}
                                 className={styles.ctaButton}
@@ -163,7 +163,7 @@ export default function WhileYouWereBusyPage() {
                                 <span className={styles.ctaArrow} aria-hidden="true">
                                     →
                                 </span>
-                            </a>
+                            </Link>
 
                             <div>
                                 <a
@@ -482,12 +482,12 @@ export default function WhileYouWereBusyPage() {
                                 <span
                                     className={`${styles.headingDisplay} ${styles.priceNow} ${styles.priceFinal}`}
                                 >
-                                    $14.95
+                                    $5
                                 </span>
                                 <span className={styles.priceUnit}>one-time</span>
                             </div>
 
-                            <a
+                            <Link
                                 href={CHECKOUT_URL}
                                 onClick={handleCheckoutClick}
                                 className={`${styles.ctaButton} ${styles.finalCtaButton}`}
@@ -496,7 +496,7 @@ export default function WhileYouWereBusyPage() {
                                 <span className={styles.ctaArrow} aria-hidden="true">
                                     →
                                 </span>
-                            </a>
+                            </Link>
 
                             <p className={styles.donateRow}>
                                 Money tight right now?{" "}
@@ -606,18 +606,18 @@ export default function WhileYouWereBusyPage() {
             >
                 <div className={styles.stickyBarPrice}>
                     <span className={`${styles.headingDisplay} ${styles.stickyBarNew}`}>
-                        $14.95
+                        $5
                     </span>
                     <span className={styles.stickyBarUnit}>PDF</span>
                 </div>
-                <a
+                <Link
                     href={CHECKOUT_URL}
                     onClick={handleCheckoutClick}
                     className={styles.stickyBarButton}
                     tabIndex={showStickyBar ? 0 : -1}
                 >
                     Get the Book →
-                </a>
+                </Link>
             </div>
         </div>
     );

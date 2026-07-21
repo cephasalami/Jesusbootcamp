@@ -443,94 +443,7 @@
     line-height: 1.7;
 }
 
-/* ═══ SECTION 6: SOCIAL PROOF ═══ */
-.socialSection {
-    background-color: var(--bg-dark);
-    padding: 72px 24px;
-}
-
-.socialContainer {
-    max-width: 980px;
-    margin: 0 auto;
-}
-
-.socialH2 {
-    font-size: clamp(1.5rem, 4vw, 32px);
-    color: var(--white);
-    text-align: center;
-    margin-bottom: 44px;
-    line-height: 1.2;
-}
-
-.socialGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-}
-
-.quoteCard {
-    position: relative;
-    background: linear-gradient(180deg, #262626 0%, #212121 100%);
-    border-radius: 14px;
-    padding: 30px 28px;
-    border: 1px solid rgba(201, 168, 76, 0.18);
-    border-top: 3px solid var(--gold);
-    overflow: hidden;
-}
-
-.quoteCard::before {
-    content: "\201C";
-    position: absolute;
-    top: 6px;
-    right: 18px;
-    font-family: var(--font-display), "Playfair Display", serif;
-    font-size: 84px;
-    line-height: 1;
-    color: rgba(201, 168, 76, 0.16);
-    pointer-events: none;
-}
-
-.quoteStars {
-    color: var(--gold);
-    font-size: 16px;
-    margin-bottom: 16px;
-    letter-spacing: 2px;
-}
-
-.quoteText {
-    font-size: 15px;
-    color: #CCCCCC;
-    line-height: 1.65;
-    font-style: italic;
-    margin-bottom: 20px;
-}
-
-.quoteAuthor {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid rgba(201, 168, 76, 0.4);
-}
-
-.authorNameSmall {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--white);
-}
-
-.authorLocation {
-    font-size: 12px;
-    color: #888888;
-}
-
-/* ═══ SECTION 7: FINAL CTA / OFFER BOX ═══ */
+/* ═══ FINAL CTA / OFFER BOX ═══ */
 .finalCtaSection {
     background-color: var(--bg-cream);
     background-image: radial-gradient(ellipse 70% 50% at 50% 30%,
@@ -872,15 +785,6 @@
         width: 110px;
         height: 110px;
         min-width: 110px;
-    }
-
-    .socialSection {
-        padding: 56px 20px;
-    }
-
-    .socialGrid {
-        grid-template-columns: 1fr;
-        gap: 20px;
     }
 
     .finalCtaSection {
