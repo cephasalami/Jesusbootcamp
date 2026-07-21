@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import localFont from "next/font/local";
 import { Poppins } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import AOSConfig from "@/components/AOSConfig";
 import TrackPageView from "@/components/TrackPageView";
@@ -85,6 +86,7 @@ fbq('track', 'PageView');`}
         <TrackPageView />
         <AOSConfig />
         {children}
+        <Analytics />
       </body>
     </html>
   );
