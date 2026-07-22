@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     loadStripe,
 } from "@stripe/stripe-js";
@@ -18,10 +18,28 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 // Loaded once at module scope (Stripe recommends this).
 const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 
+// If the Payment Element hasn't reported `ready` within this window, we assume a
+// mount hiccup and rebuild it (same PaymentIntent, so no extra charge). Stripe's
+// element usually paints in well under a second; a generous timeout avoids
+// remounting a form that's merely on a slow connection.
+const READY_TIMEOUT_MS = 8000;
+// How many automatic rebuilds before we fall back to a manual "reload" prompt.
+const MAX_ATTEMPTS = 2;
+
 export default function CheckoutClient({ view }: { view: CheckoutView }) {
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
     const [initError, setInitError] = useState<string | null>(null);
+
+    // Bumping `attempt` re-keys <Elements>, which tears down and rebuilds the
+    // Stripe element from scratch — our recovery path when a load paints blank.
+    const [attempt, setAttempt] = useState(0);
+
+    // Buyer-entered state lives here (above <Elements>) so a recovery remount
+    // never wipes what they've already typed.
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [bump, setBump] = useState(false);
 
     // Create the PaymentIntent (base price) as soon as the page loads.
     useEffect(() => {
@@ -46,6 +64,10 @@ export default function CheckoutClient({ view }: { view: CheckoutView }) {
             cancelled = true;
         };
     }, [view.slug]);
+
+    const requestRemount = useCallback(() => {
+        setAttempt((a) => a + 1);
+    }, []);
 
     if (!stripePromise) {
         return (
@@ -80,20 +102,37 @@ export default function CheckoutClient({ view }: { view: CheckoutView }) {
                     <div className={styles.loading}>Loading secure checkout…</div>
                 ) : (
                     <Elements
+                        key={attempt}
                         stripe={stripePromise}
                         options={{
                             clientSecret,
                             appearance: {
                                 theme: "stripe",
                                 variables: {
+                                    // NOTE: no custom `fontFamily` here on purpose — the
+                                    // Stripe element runs in its own cross-origin iframe and
+                                    // can't see the page's Poppins @font-face, so referencing
+                                    // it only added a font-load timing dependency for a font
+                                    // that always fell back anyway.
                                     colorPrimary: "#2D6A4F",
-                                    fontFamily: "Poppins, system-ui, sans-serif",
                                     borderRadius: "10px",
                                 },
                             },
                         }}
                     >
-                        <CheckoutForm view={view} paymentIntentId={paymentIntentId as string} />
+                        <CheckoutForm
+                            view={view}
+                            paymentIntentId={paymentIntentId as string}
+                            attempt={attempt}
+                            canRetry={attempt < MAX_ATTEMPTS}
+                            onRequestRemount={requestRemount}
+                            name={name}
+                            setName={setName}
+                            email={email}
+                            setEmail={setEmail}
+                            bump={bump}
+                            setBump={setBump}
+                        />
                     </Elements>
                 )}
             </div>
@@ -104,9 +143,27 @@ export default function CheckoutClient({ view }: { view: CheckoutView }) {
 function CheckoutForm({
     view,
     paymentIntentId,
+    attempt,
+    canRetry,
+    onRequestRemount,
+    name,
+    setName,
+    email,
+    setEmail,
+    bump,
+    setBump,
 }: {
     view: CheckoutView;
     paymentIntentId: string;
+    attempt: number;
+    canRetry: boolean;
+    onRequestRemount: () => void;
+    name: string;
+    setName: (v: string) => void;
+    email: string;
+    setEmail: (v: string) => void;
+    bump: boolean;
+    setBump: (v: boolean) => void;
 }) {
     const stripe = useStripe();
     const elements = useElements();
@@ -116,15 +173,67 @@ function CheckoutForm({
     const hasBump = Boolean(view.bump);
     const CONFIRMATION_PATH = `/checkout/${view.slug}/confirmation`;
 
-    const [bump, setBump] = useState(false);
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [bumpUpdating, setBumpUpdating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Payment Element render lifecycle. `paymentReady` gates the Pay button and
+    // hides the skeleton; `hardFailed` shows a manual reload prompt once we've
+    // exhausted automatic rebuilds.
+    const [paymentReady, setPaymentReady] = useState(false);
+    const [hardFailed, setHardFailed] = useState(false);
+    const paymentWrapRef = useRef<HTMLDivElement | null>(null);
+
     const total = BASE + (bump ? BUMP : 0);
     const itemCount = bump ? 2 : 1;
+
+    // ── Blank-render safety net ────────────────────────────────────────────
+    // The Stripe Payment Element occasionally lays out (reserves height) but
+    // never paints its inputs — an intermittent cross-origin-iframe compositor
+    // bug that surfaces no console error. We defend on two fronts:
+    //   1) a watchdog that rebuilds the element if `ready` never fires, and
+    //   2) a repaint "nudge" once it IS ready, to force the browser to
+    //      re-composite the iframe in case it painted blank.
+
+    // Watchdog: if the element hasn't reported `ready` shortly after mount,
+    // rebuild it (or surface a reload prompt once retries are spent).
+    useEffect(() => {
+        if (paymentReady) return;
+        const t = setTimeout(() => {
+            if (canRetry) onRequestRemount();
+            else setHardFailed(true);
+        }, READY_TIMEOUT_MS);
+        return () => clearTimeout(t);
+        // Re-arm per mount attempt.
+    }, [attempt, paymentReady, canRetry, onRequestRemount]);
+
+    // Force the browser to re-rasterize the Stripe iframe's layer. Toggling a
+    // GPU transform (not display) re-composites without making Stripe re-measure
+    // to a zero-height container, so it can't itself cause a blank render.
+    const nudgeRepaint = useCallback(() => {
+        const el = paymentWrapRef.current;
+        if (!el) return;
+        el.style.transform = "translateZ(0)";
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (paymentWrapRef.current) paymentWrapRef.current.style.transform = "";
+            });
+        });
+    }, []);
+
+    function handlePaymentReady() {
+        setPaymentReady(true);
+        setHardFailed(false);
+        // Nudge immediately and once more shortly after, covering both a paint
+        // that lands late and one that arrived blank.
+        nudgeRepaint();
+        setTimeout(nudgeRepaint, 400);
+    }
+
+    function handlePaymentLoadError() {
+        if (canRetry) onRequestRemount();
+        else setHardFailed(true);
+    }
 
     // Toggling the bump updates the SAME PaymentIntent's amount server-side, so
     // the whole order is a single charge.
@@ -270,14 +379,39 @@ function CheckoutForm({
             </div>
 
             {/* ── Embedded Payment Element (card / Apple Pay / Google Pay) ── */}
-            <div className={styles.paymentWrap}>
-                <PaymentElement
-                    options={{
-                        layout: "tabs",
-                        // We collect name + email in our own two fields above.
-                        fields: { billingDetails: { name: "never", email: "never" } },
-                    }}
-                />
+            <div className={styles.paymentWrap} ref={paymentWrapRef}>
+                {!paymentReady && !hardFailed && (
+                    <div className={styles.paymentSkeleton} aria-hidden="true">
+                        <span className={styles.paymentSkeletonText}>
+                            Loading secure card form…
+                        </span>
+                    </div>
+                )}
+                {hardFailed ? (
+                    <div className={styles.retryBox} role="alert">
+                        <p className={styles.retryText}>
+                            The secure card form didn&apos;t load. Reload the page to try
+                            again — your details are safe and you won&apos;t be charged twice.
+                        </p>
+                        <button
+                            type="button"
+                            className={styles.retryButton}
+                            onClick={() => window.location.reload()}
+                        >
+                            Reload checkout
+                        </button>
+                    </div>
+                ) : (
+                    <PaymentElement
+                        onReady={handlePaymentReady}
+                        onLoadError={handlePaymentLoadError}
+                        options={{
+                            layout: "tabs",
+                            // We collect name + email in our own two fields above.
+                            fields: { billingDetails: { name: "never", email: "never" } },
+                        }}
+                    />
+                )}
             </div>
 
             {error && (
@@ -297,9 +431,13 @@ function CheckoutForm({
             <button
                 type="submit"
                 className={styles.payButton}
-                disabled={!stripe || submitting || bumpUpdating}
+                disabled={!stripe || !paymentReady || submitting || bumpUpdating}
             >
-                {submitting ? "Processing…" : `Pay ${formatUsd(total)}`}
+                {submitting
+                    ? "Processing…"
+                    : !paymentReady
+                    ? "Loading…"
+                    : `Pay ${formatUsd(total)}`}
             </button>
 
             <div className={styles.trustRow}>
