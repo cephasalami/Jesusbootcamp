@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
-import { tagPurchase } from "@/lib/mailchimp";
+import { tagPurchase, activatePartner, deactivatePartner } from "@/lib/mailchimp";
 import { sendCapiPurchase } from "@/lib/meta-capi";
 
 // PART 5 — Fulfillment. Verify the Stripe signature, then on a successful
@@ -35,30 +35,100 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: `Signature verification failed: ${message}` }, { status: 400 });
     }
 
+    // ── Book checkout (one-time) ─────────────────────────────────────────────
+    // Only genuine book intents (`kind` main/upsell) are book orders. A
+    // partnership subscription's first invoice ALSO emits payment_intent.succeeded
+    // — we must NOT fulfill or fire a Meta "Purchase" for those; they're handled
+    // by the invoice.paid branch below.
     if (event.type === "payment_intent.succeeded") {
         const pi = event.data.object as Stripe.PaymentIntent;
-        const email = pi.receipt_email ?? pi.metadata?.email ?? "";
-        const name = pi.metadata?.name;
-        const tags = String(pi.metadata?.tags ?? "")
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean);
+        const kind = pi.metadata?.kind;
+        if (kind === "main" || kind === "upsell") {
+            const email = pi.receipt_email ?? pi.metadata?.email ?? "";
+            const name = pi.metadata?.name;
+            const tags = String(pi.metadata?.tags ?? "")
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean);
 
-        // Server-side Meta Purchase (Conversions API). Best-effort, deduped
-        // against the browser pixel by event_id = PI id. Fires for BOTH the main
-        // order and the one-click upsell (both emit payment_intent.succeeded).
-        // Also recovers conversions the client pixel misses (ad blockers, delayed
-        // payments where the buyer already left the confirmation page).
-        await sendCapiPurchase(pi);
+            // Server-side Meta Purchase (Conversions API). Best-effort, deduped
+            // against the browser pixel by event_id = PI id. Fires for BOTH the
+            // main order and the one-click upsell. Also recovers conversions the
+            // client pixel misses (ad blockers, delayed payments where the buyer
+            // already left the confirmation page).
+            await sendCapiPurchase(pi);
 
-        if (email && tags.length) {
-            try {
-                await tagPurchase({ email, name, tags });
-            } catch (err) {
-                // 500 tells Stripe to retry so a transient Mailchimp failure
-                // doesn't silently drop a delivery.
-                const message = err instanceof Error ? err.message : "fulfillment error";
-                return NextResponse.json({ error: message }, { status: 500 });
+            if (email && tags.length) {
+                try {
+                    await tagPurchase({ email, name, tags });
+                } catch (err) {
+                    // 500 tells Stripe to retry so a transient Mailchimp failure
+                    // doesn't silently drop a delivery.
+                    const message = err instanceof Error ? err.message : "fulfillment error";
+                    return NextResponse.json({ error: message }, { status: 500 });
+                }
+            }
+        }
+    }
+
+    // ── Partnership subscription: ACTIVATE ───────────────────────────────────
+    // invoice.paid fires for the first charge (billing_reason
+    // "subscription_create") AND every renewal ("subscription_cycle"). Re-asserting
+    // the tags each cycle is intentional and idempotent — it also self-heals a
+    // partner who was revoked after a failed payment and has now paid again.
+    if (event.type === "invoice.paid") {
+        const invoice = event.data.object as Stripe.Invoice;
+        const details = invoice.parent?.subscription_details;
+        const meta = details?.metadata ?? null;
+        if (meta?.source === "partner") {
+            const email = (meta.email || invoice.customer_email || "").trim();
+            const tier = meta.tier || "";
+            const name = meta.name || invoice.customer_name || undefined;
+            const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+            if (email && tier) {
+                try {
+                    await activatePartner({ email, name, tier, stripeCustomerId: customerId });
+                } catch (err) {
+                    const message = err instanceof Error ? err.message : "partner activation error";
+                    return NextResponse.json({ error: message }, { status: 500 });
+                }
+            }
+        }
+    }
+
+    // ── Partnership subscription: REVOKE on cancellation ─────────────────────
+    if (event.type === "customer.subscription.deleted") {
+        const sub = event.data.object as Stripe.Subscription;
+        if (sub.metadata?.source === "partner") {
+            const email = (sub.metadata.email || "").trim();
+            if (email) {
+                try {
+                    await deactivatePartner({ email });
+                } catch (err) {
+                    const message = err instanceof Error ? err.message : "partner revoke error";
+                    return NextResponse.json({ error: message }, { status: 500 });
+                }
+            }
+        }
+    }
+
+    // ── Partnership subscription: REVOKE on terminal payment failure ─────────
+    // invoice.payment_failed fires on EACH failed attempt. We only revoke once
+    // Stripe has exhausted its retries (next_payment_attempt === null) — the
+    // spec's "repeated failure", not a single soft decline mid-dunning.
+    if (event.type === "invoice.payment_failed") {
+        const invoice = event.data.object as Stripe.Invoice;
+        const details = invoice.parent?.subscription_details;
+        const meta = details?.metadata ?? null;
+        if (meta?.source === "partner" && invoice.next_payment_attempt === null) {
+            const email = (meta.email || invoice.customer_email || "").trim();
+            if (email) {
+                try {
+                    await deactivatePartner({ email });
+                } catch (err) {
+                    const message = err instanceof Error ? err.message : "partner revoke error";
+                    return NextResponse.json({ error: message }, { status: 500 });
+                }
             }
         }
     }

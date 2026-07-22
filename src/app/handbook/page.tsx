@@ -9,6 +9,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import styles from "./page.module.css";
 import { trackFbEvent, trackFbCustomEvent } from "@/lib/fbq";
+import PartnerCTA from "@/components/PartnerCTA";
 
 export default function HandbookLandingPage() {
   const router = useRouter();
@@ -555,6 +556,15 @@ export default function HandbookLandingPage() {
           </div>
         </div>
       </section>
+
+      {/* PARTNER CTA — placed AFTER the main free-download CTA so it never
+          competes with it; someone who just grabbed the Handbook is a warm
+          audience for partnership. */}
+      <div style={{ backgroundColor: "#FFFFFF", padding: "56px 24px" }}>
+        <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+          <PartnerCTA variant="short" />
+        </div>
+      </div>
 
       {/* FOOTER */}
       <footer className={styles.footer}>

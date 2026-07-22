@@ -8,6 +8,7 @@ import CoursePreview from "@/components/CoursePreview";
 import Community from "@/components/Community";
 import HowItWorks from "@/components/HowItWorks";
 import About from "@/components/About";
+import PartnerCTA from "@/components/PartnerCTA";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 
@@ -57,6 +58,7 @@ export default function Home() {
       <Community />
       <HowItWorks />
       <About />
+      <PartnerCTA variant="long" />
       <FinalCTA />
       <Footer />
     </>

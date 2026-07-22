@@ -1,0 +1,101 @@
+/* src/app/partner/join/confirmation/page.module.css */
+
+.pageWrapper {
+    --bg-cream: #F5F0E8;
+    --bg-cream-alt: #EDEAE2;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --green: #2D6A4F;
+    --white: #FFFFFF;
+    --line: #E6DFD1;
+
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body), "Inter", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-cream);
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201, 168, 76, 0.12) 0%, transparent 60%);
+    padding: 40px 18px;
+    line-height: 1.6;
+}
+
+.card {
+    max-width: 540px;
+    width: 100%;
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(26, 26, 26, 0.1);
+    padding: 40px 32px;
+    text-align: center;
+}
+
+.badge {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background-color: rgba(45, 106, 79, 0.12);
+    color: var(--green);
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.title {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.15;
+    margin: 0 0 12px;
+}
+
+.lead {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0 auto 28px;
+    max-width: 440px;
+}
+
+.next {
+    text-align: left;
+    background-color: var(--bg-cream-alt);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 28px;
+}
+
+.nextTitle {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    margin: 0 0 12px;
+}
+
+.nextList {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14.5px;
+    color: var(--text-primary);
+}
+
+.homeLink {
+    display: inline-block;
+    color: var(--green);
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.homeLink:hover {
+    text-decoration: underline;
+}

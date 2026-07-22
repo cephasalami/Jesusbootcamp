@@ -22,7 +22,9 @@ export default function Navbar() {
     { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
     { href: "/blog", label: "Blog" },
     { href: "/#testimonials", label: "Testimonials" },
-    { href: "/partner", label: "Partner" },
+    // Repointed from the PayPal /partner page to the embedded subscription flow.
+    // The PayPal page stays live at /partner; revert this href to restore it here.
+    { href: "/partner/join", label: "Partner" },
   ];
 
   return (
