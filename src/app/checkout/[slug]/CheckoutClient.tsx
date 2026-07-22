@@ -2,9 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    loadStripe,
-} from "@stripe/stripe-js";
-import {
     Elements,
     PaymentElement,
     useStripe,
@@ -13,10 +10,11 @@ import {
 import { Lock, ShieldCheck, Zap } from "lucide-react";
 import styles from "./page.module.css";
 import { formatUsd, type CheckoutView } from "@/config/products";
+import { getStripePromise } from "@/lib/stripe-client";
+import { consumeCheckoutIntent, type PrewarmedIntent } from "@/lib/checkout-prewarm";
 
-const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-// Loaded once at module scope (Stripe recommends this).
-const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
+// Shared Stripe.js singleton — reuses the instance the landing page pre-warmed.
+const stripePromise = getStripePromise();
 
 // Recovery is NON-DESTRUCTIVE and paced for real mobile (Facebook in-app
 // browser on cellular can take many seconds to initialize the Payment Element
@@ -45,25 +43,39 @@ export default function CheckoutClient({ view }: { view: CheckoutView }) {
     const [email, setEmail] = useState("");
     const [bump, setBump] = useState(false);
 
-    // Create the PaymentIntent (base price) as soon as the page loads.
+    // Get the PaymentIntent (base price) as soon as the page loads. If a landing
+    // page pre-warmed one on buy-intent, consume that in-flight request instead
+    // of starting a fresh round-trip; otherwise create it here as before.
     useEffect(() => {
         let cancelled = false;
-        fetch("/api/checkout/create-intent", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ slug: view.slug, bump: false }),
-        })
-            .then((r) => r.json())
-            .then((d) => {
+
+        const prewarmed = consumeCheckoutIntent(view.slug);
+        const source: Promise<PrewarmedIntent | null> =
+            prewarmed ??
+            fetch("/api/checkout/create-intent", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ slug: view.slug, bump: false }),
+            })
+                .then((r) => r.json())
+                .then((d) =>
+                    d?.clientSecret
+                        ? { clientSecret: d.clientSecret, paymentIntentId: d.paymentIntentId }
+                        : null
+                );
+
+        source
+            .then((intent) => {
                 if (cancelled) return;
-                if (d.clientSecret) {
-                    setClientSecret(d.clientSecret);
-                    setPaymentIntentId(d.paymentIntentId);
+                if (intent?.clientSecret) {
+                    setClientSecret(intent.clientSecret);
+                    setPaymentIntentId(intent.paymentIntentId);
                 } else {
-                    setInitError(d.error || "Could not start checkout.");
+                    setInitError("Could not start checkout.");
                 }
             })
             .catch(() => !cancelled && setInitError("Could not start checkout."));
+
         return () => {
             cancelled = true;
         };

@@ -17,6 +17,8 @@ import {
 import Link from "next/link";
 import styles from "./page.module.css";
 import { trackFbEvent } from "@/lib/fbq";
+import StripePrewarm from "@/components/StripePrewarm";
+import { prewarmCheckoutIntent } from "@/lib/checkout-prewarm";
 
 const CHECKOUT_URL = "/checkout/power-for-the-hour";
 const OFFER_MINUTES = 15;
@@ -68,6 +70,9 @@ export default function PowerForTheHourPage() {
     // Purchase event can't fire from here — this records accurate checkout intent.
     // (The real Purchase event belongs on the store's order-confirmation page.)
     const handleCheckoutClick = () => {
+        // Buy-intent: start creating the PaymentIntent now so the checkout page
+        // can consume it instead of waiting for a fresh round-trip on mount.
+        prewarmCheckoutIntent("power-for-the-hour");
         trackFbEvent("InitiateCheckout", {
             value: 5,
             currency: "USD",
@@ -77,6 +82,8 @@ export default function PowerForTheHourPage() {
 
     return (
         <div className={styles.pageWrapper}>
+            {/* Pre-warm Stripe.js while the visitor reads, so checkout mounts fast. */}
+            <StripePrewarm />
             {/* ═══ SECTION 1: PROGRESS BAR ═══ */}
             <div className={styles.progressBar}>
                 <div className={`${styles.progressStep} ${styles.stepCompleted}`}>

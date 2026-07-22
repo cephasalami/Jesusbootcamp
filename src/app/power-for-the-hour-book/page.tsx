@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import styles from "./page.module.css";
 import { trackFbEvent } from "@/lib/fbq";
+import StripePrewarm from "@/components/StripePrewarm";
+import { prewarmCheckoutIntent } from "@/lib/checkout-prewarm";
 
 // Standalone sales page for cold ad traffic. No discount code — unlike the
 // /power-for-the-hour upsell. Do not merge the two.
@@ -44,6 +46,9 @@ export default function PowerForTheHourBookPage() {
     // The Purchase event fires later on the checkout confirmation page, so this
     // records accurate checkout intent at the top of the funnel.
     const handleCheckoutClick = () => {
+        // Buy-intent: start creating the PaymentIntent now so the checkout page
+        // can consume it instead of waiting for a fresh round-trip on mount.
+        prewarmCheckoutIntent("power-for-the-hour");
         trackFbEvent("InitiateCheckout", {
             value: PRICE,
             currency: "USD",
@@ -55,6 +60,8 @@ export default function PowerForTheHourBookPage() {
 
     return (
         <div className={styles.pageWrapper}>
+            {/* Pre-warm Stripe.js while the visitor reads, so checkout mounts fast. */}
+            <StripePrewarm />
             {/* ═══ HERO / CORE OFFER ═══ */}
             <section className={styles.heroSection}>
                 <div className={styles.container}>
