@@ -12,9 +12,13 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 // Loaded once at module scope (Stripe recommends this).
 const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 
-// Blank-render safety net (same rationale as the book checkout): the Stripe
-// Payment Element occasionally lays out but paints blank on some loads.
-const READY_TIMEOUT_MS = 8000;
+// Blank-render safety net (same NON-DESTRUCTIVE approach as the book checkout):
+// never rebuild the element on a timer (that destroys a slow-but-working mobile
+// load and causes resize churn + blank collapse). Nudge a repaint if it's slow,
+// offer a MANUAL reload only after a long wait, and rebuild ONLY on a real
+// `loaderror`.
+const NUDGE_AT_MS = 6000;
+const HARD_FAIL_MS = 22000;
 const MAX_ATTEMPTS = 2;
 
 // Copy below is taken VERBATIM from Paul's "Global Expansion" letter — do not
@@ -222,17 +226,6 @@ function PartnerPaymentSection({
         if (elements) elements.update({ amount: selectedTier.amountCents });
     }, [elements, selectedTier.amountCents]);
 
-    // Watchdog: rebuild the element if `ready` never fires; manual reload once
-    // retries are spent.
-    useEffect(() => {
-        if (paymentReady) return;
-        const t = setTimeout(() => {
-            if (canRetry) onRequestRemount();
-            else setHardFailed(true);
-        }, READY_TIMEOUT_MS);
-        return () => clearTimeout(t);
-    }, [attempt, paymentReady, canRetry, onRequestRemount]);
-
     // Force the browser to re-rasterize the Stripe iframe's layer if it painted
     // blank. Toggling a GPU transform (not display) can't make Stripe re-measure
     // to a zero-height container, so it can't itself cause a blank render.
@@ -247,11 +240,25 @@ function PartnerPaymentSection({
         });
     }, []);
 
+    // Slow-load handling: nudge a repaint if it hasn't painted, then (much later)
+    // offer a MANUAL reload. Never auto-rebuilds — a slow mobile load finishes on
+    // its own; only a genuine `loaderror` triggers a rebuild.
+    useEffect(() => {
+        if (paymentReady) return;
+        const nudge = setTimeout(nudgeRepaint, NUDGE_AT_MS);
+        const fail = setTimeout(() => setHardFailed(true), HARD_FAIL_MS);
+        return () => {
+            clearTimeout(nudge);
+            clearTimeout(fail);
+        };
+    }, [attempt, paymentReady, nudgeRepaint]);
+
     function handlePaymentReady() {
         setPaymentReady(true);
         setHardFailed(false);
         nudgeRepaint();
         setTimeout(nudgeRepaint, 400);
+        setTimeout(nudgeRepaint, 1500);
     }
 
     function handlePaymentLoadError() {

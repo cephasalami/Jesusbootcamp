@@ -18,12 +18,16 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 // Loaded once at module scope (Stripe recommends this).
 const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 
-// If the Payment Element hasn't reported `ready` within this window, we assume a
-// mount hiccup and rebuild it (same PaymentIntent, so no extra charge). Stripe's
-// element usually paints in well under a second; a generous timeout avoids
-// remounting a form that's merely on a slow connection.
-const READY_TIMEOUT_MS = 8000;
-// How many automatic rebuilds before we fall back to a manual "reload" prompt.
+// Recovery is NON-DESTRUCTIVE and paced for real mobile (Facebook in-app
+// browser on cellular can take many seconds to initialize the Payment Element
+// with wallets). We never rebuild the element on a timeout — that would destroy
+// a slow-but-working load and cause exactly the resize churn + blank collapse we
+// saw on mobile. Instead: nudge a repaint if it's slow, and only offer a MANUAL
+// reload after a genuinely long wait. A rebuild happens ONLY on a real
+// `loaderror` event (see MAX_ATTEMPTS).
+const NUDGE_AT_MS = 6000; // if not painted by now, gently force a repaint
+const HARD_FAIL_MS = 22000; // if still not ready, show a manual reload prompt (no auto-rebuild)
+// How many rebuilds on a genuine loaderror before the manual "reload" prompt.
 const MAX_ATTEMPTS = 2;
 
 export default function CheckoutClient({ view }: { view: CheckoutView }) {
@@ -178,8 +182,8 @@ function CheckoutForm({
     const [error, setError] = useState<string | null>(null);
 
     // Payment Element render lifecycle. `paymentReady` gates the Pay button and
-    // hides the skeleton; `hardFailed` shows a manual reload prompt once we've
-    // exhausted automatic rebuilds.
+    // hides the skeleton; `hardFailed` shows a manual reload prompt after a long
+    // wait or a genuine load error.
     const [paymentReady, setPaymentReady] = useState(false);
     const [hardFailed, setHardFailed] = useState(false);
     const paymentWrapRef = useRef<HTMLDivElement | null>(null);
@@ -187,25 +191,13 @@ function CheckoutForm({
     const total = BASE + (bump ? BUMP : 0);
     const itemCount = bump ? 2 : 1;
 
-    // ── Blank-render safety net ────────────────────────────────────────────
+    // ── Blank-render safety net (NON-DESTRUCTIVE) ──────────────────────────
     // The Stripe Payment Element occasionally lays out (reserves height) but
-    // never paints its inputs — an intermittent cross-origin-iframe compositor
-    // bug that surfaces no console error. We defend on two fronts:
-    //   1) a watchdog that rebuilds the element if `ready` never fires, and
-    //   2) a repaint "nudge" once it IS ready, to force the browser to
-    //      re-composite the iframe in case it painted blank.
-
-    // Watchdog: if the element hasn't reported `ready` shortly after mount,
-    // rebuild it (or surface a reload prompt once retries are spent).
-    useEffect(() => {
-        if (paymentReady) return;
-        const t = setTimeout(() => {
-            if (canRetry) onRequestRemount();
-            else setHardFailed(true);
-        }, READY_TIMEOUT_MS);
-        return () => clearTimeout(t);
-        // Re-arm per mount attempt.
-    }, [attempt, paymentReady, canRetry, onRequestRemount]);
+    // never paints its inputs — a cross-origin-iframe compositor bug with no
+    // console error, and worse on mobile. We recover WITHOUT ever rebuilding the
+    // element on a timer, because a rebuild destroys a slow-but-working load and
+    // causes the resize churn + blank collapse seen in the Facebook in-app
+    // browser. A rebuild happens ONLY on a genuine `loaderror`.
 
     // Force the browser to re-rasterize the Stripe iframe's layer. Toggling a
     // GPU transform (not display) re-composites without making Stripe re-measure
@@ -221,13 +213,27 @@ function CheckoutForm({
         });
     }, []);
 
+    // Slow-load handling: if it hasn't painted yet, nudge a repaint (harmless);
+    // only after a long wait offer a MANUAL reload. Never auto-rebuilds — a slow
+    // mobile load is allowed to finish on its own.
+    useEffect(() => {
+        if (paymentReady) return;
+        const nudge = setTimeout(nudgeRepaint, NUDGE_AT_MS);
+        const fail = setTimeout(() => setHardFailed(true), HARD_FAIL_MS);
+        return () => {
+            clearTimeout(nudge);
+            clearTimeout(fail);
+        };
+    }, [attempt, paymentReady, nudgeRepaint]);
+
     function handlePaymentReady() {
         setPaymentReady(true);
         setHardFailed(false);
-        // Nudge immediately and once more shortly after, covering both a paint
-        // that lands late and one that arrived blank.
+        // Nudge a few times after ready — covers a paint that lands late or
+        // arrives blank, including slower mobile devices where it settles later.
         nudgeRepaint();
         setTimeout(nudgeRepaint, 400);
+        setTimeout(nudgeRepaint, 1500);
     }
 
     function handlePaymentLoadError() {
