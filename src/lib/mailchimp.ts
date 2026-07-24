@@ -12,6 +12,9 @@ const AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID;
 /** Tag applied to everyone who opts in for the free Handbook (segments leads). */
 export const SUBSCRIBER_TAG = "handbook-subscriber";
 
+/** Trigger tag for the 90-day class sequence — must match the Mailchimp journey. */
+export const COURSE_START_TAG = "jbc-course-start";
+
 /** Mailchimp identifies members by the MD5 of the lower-cased email. */
 function subscriberHash(email: string): string {
     return createHash("md5").update(email.trim().toLowerCase()).digest("hex");
@@ -53,6 +56,17 @@ export function subscribeToHandbook(opts: {
     name?: string;
 }): Promise<void> {
     return upsertAndTag({ email: opts.email, name: opts.name, tags: [SUBSCRIBER_TAG] });
+}
+
+/**
+ * Add a contact from the /join page and apply `jbc-course-start` — the trigger
+ * tag for the 90-day Jesus Boot Camp class sequence.
+ */
+export function subscribeToCourse(opts: {
+    email: string;
+    name?: string;
+}): Promise<void> {
+    return upsertAndTag({ email: opts.email, name: opts.name, tags: [COURSE_START_TAG] });
 }
 
 /**
@@ -164,11 +178,14 @@ async function updateTags(email: string, add: string[], remove: string[]): Promi
 export async function activatePartner(opts: {
     email: string;
     name?: string;
-    /** "25" | "50" | "100" */
+    /** "25" | "50" | "100" | "custom" */
     tier: string;
+    /** The ACTUAL monthly amount in whole dollars, for the PTIER merge field.
+     *  Falls back to `tier` when absent. */
+    amount?: string;
     stripeCustomerId?: string;
 }): Promise<void> {
-    const { email, name, tier, stripeCustomerId } = opts;
+    const { email, name, tier, amount, stripeCustomerId } = opts;
     const { base, headers } = memberEndpoint(email);
 
     // Upsert the member first so tags/merge-fields have a target.
@@ -187,13 +204,15 @@ export async function activatePartner(opts: {
         throw new Error(`Mailchimp upsert failed (${putRes.status}): ${detail}`);
     }
 
-    const activeTierTag = `partner-${tier}`;
-    const staleTierTags = ["partner-25", "partner-50", "partner-100"].filter((t) => t !== activeTierTag);
+    const activeTierTag = tier === "custom" ? "partner-custom" : `partner-${tier}`;
+    const allTierTags = ["partner-25", "partner-50", "partner-100", "partner-custom"];
+    const staleTierTags = allTierTags.filter((t) => t !== activeTierTag);
     await updateTags(email, ["partner-active", activeTierTag], staleTierTags);
 
     await setMergeFieldsBestEffort(email, {
         PARTNER: "true",
-        PTIER: tier,
+        // Record the ACTUAL monthly gift (dollars), not a preset fallback.
+        PTIER: amount ?? tier,
         ...(stripeCustomerId ? { STRIPEID: stripeCustomerId } : {}),
     });
 }
@@ -205,6 +224,12 @@ export async function activatePartner(opts: {
  */
 export async function deactivatePartner(opts: { email: string }): Promise<void> {
     const { email } = opts;
-    await updateTags(email, [], ["partner-active", "partner-25", "partner-50", "partner-100"]);
+    await updateTags(email, [], [
+        "partner-active",
+        "partner-25",
+        "partner-50",
+        "partner-100",
+        "partner-custom",
+    ]);
     await setMergeFieldsBestEffort(email, { PARTNER: "false", PTIER: "" });
 }

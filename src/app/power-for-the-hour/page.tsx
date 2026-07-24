@@ -18,6 +18,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { trackFbEvent } from "@/lib/fbq";
 import StripePrewarm from "@/components/StripePrewarm";
+import DigitalFormatNote from "@/components/DigitalFormatNote";
 import { prewarmCheckoutIntent } from "@/lib/checkout-prewarm";
 
 const CHECKOUT_URL = "/checkout/power-for-the-hour";
@@ -179,6 +180,8 @@ export default function PowerForTheHourPage() {
                                     →
                                 </span>
                             </Link>
+
+                            <DigitalFormatNote className="mt-4 max-w-[440px]" />
 
                             <div className={styles.trustRow}>
                                 <span className={styles.trustItem}>

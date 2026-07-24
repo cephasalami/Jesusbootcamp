@@ -52,6 +52,20 @@ async function ensurePrice(tier) {
     return { priceId: price.id, reused: false, productId: product.id };
 }
 
+// Shared product used for CUSTOM ("any amount") monthly partnerships — the
+// subscription is created with an inline price_data referencing this product.
+async function ensurePartnershipProduct() {
+    const search = await stripe.products
+        .search({ query: "metadata['jbc_partner_product']:'1'", limit: 1 })
+        .catch(() => null);
+    if (search?.data?.length) return { productId: search.data[0].id, reused: true };
+    const product = await stripe.products.create({
+        name: "Jesus Boot Camp Monthly Partnership",
+        metadata: { jbc_partner_product: "1" },
+    });
+    return { productId: product.id, reused: false };
+}
+
 async function probeClientSecretShape(priceId) {
     const customer = await stripe.customers.create({ metadata: { jbc_probe: "true" } });
     const sub = await stripe.subscriptions.create({
@@ -90,11 +104,15 @@ async function probeClientSecretShape(priceId) {
         console.log(`  $${tier.amountCents / 100}/mo  ${r.reused ? "reused" : "created"}  ${r.priceId}`);
     }
 
+    const product = await ensurePartnershipProduct();
+    console.log(`\n  partnership product  ${product.reused ? "reused" : "created"}  ${product.productId}`);
+
     console.log("\n== Paste these into .env.local ==\n");
     const envByTier = Object.fromEntries(results.map((r) => [r.tier, r.priceId]));
     console.log(`STRIPE_PARTNER_PRICE_25=${envByTier["25"]}`);
     console.log(`STRIPE_PARTNER_PRICE_50=${envByTier["50"]}`);
     console.log(`STRIPE_PARTNER_PRICE_100=${envByTier["100"]}`);
+    console.log(`STRIPE_PARTNER_PRODUCT=${product.productId}`);
 
     console.log("\n== Probe: where does the first-invoice client_secret live? ==\n");
     const probe = await probeClientSecretShape(envByTier["25"]);

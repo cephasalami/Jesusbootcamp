@@ -25,6 +25,11 @@ import { formatUsd } from "./products";
 export const PARTNER_CURRENCY = "usd";
 export const PARTNER_INTERVAL = "month" as const;
 
+// FIX 8 — custom ("any amount") monthly gifts. Amounts outside this range are
+// rejected server-side.
+export const PARTNER_MIN_CENTS = 100; // $1 minimum
+export const PARTNER_MAX_CENTS = 100_000; // $1,000 sanity cap
+
 export type PartnerTierId = "25" | "50" | "100";
 
 export type PartnerTier = {
@@ -77,6 +82,21 @@ export function tierByPriceId(priceId: string): PartnerTier | undefined {
 /** True when all three tier prices are wired up (server-side guard). */
 export function isPartnerConfigured(): boolean {
     return PARTNER_TIERS.every((t) => Boolean(process.env[t.priceEnv]));
+}
+
+/** Server-only: the shared Stripe product id for custom ("any amount") gifts. */
+export function partnerProductId(): string | undefined {
+    return process.env.STRIPE_PARTNER_PRODUCT;
+}
+
+/** Validate a custom monthly amount, in cents. */
+export function isValidCustomAmountCents(cents: unknown): cents is number {
+    return (
+        typeof cents === "number" &&
+        Number.isInteger(cents) &&
+        cents >= PARTNER_MIN_CENTS &&
+        cents <= PARTNER_MAX_CENTS
+    );
 }
 
 // ── Client-safe display DTO (no env, no secrets) ─────────────────────────────

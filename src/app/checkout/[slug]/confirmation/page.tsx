@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { CheckCircle2, Sparkles, Download } from "lucide-react";
 import { trackFbEvent } from "@/lib/fbq";
 import styles from "./page.module.css";
 
@@ -19,6 +20,7 @@ type OrderInfo = {
         slug: string | null;
         title: string | null;
         blurb: string | null;
+        description: string | null;
         price: string | null;
         image: string | null;
     };
@@ -150,14 +152,22 @@ export default function ConfirmationPage() {
                                 {downloads.length > 1
                                     ? `Your ${itemList} are ready — download them below.`
                                     : `Your ${itemList} is ready — download it below.`}{" "}
-                                We&apos;ve also emailed a copy to{" "}
-                                {order.email ? <strong>{order.email}</strong> : "you"}.
+                                We&apos;re also sending{" "}
+                                {order.email ? (
+                                    <>
+                                        a copy to <strong>{order.email}</strong>
+                                    </>
+                                ) : (
+                                    "a copy to your email"
+                                )}
+                                . If it hasn&apos;t arrived in a few minutes, check your spam folder
+                                or just use the download button above.
                             </p>
                         ) : (
                             <p className={styles.lead}>
-                                {itemList} will be delivered to{" "}
-                                {order.email ? <strong>{order.email}</strong> : "your email"} shortly.
-                                Keep an eye on your inbox — it&apos;s on the way.
+                                Your payment went through. We&apos;re sending {itemList} to{" "}
+                                {order.email ? <strong>{order.email}</strong> : "your email"} — if it
+                                hasn&apos;t arrived in a few minutes, check your spam folder.
                             </p>
                         )}
                         {downloads.length > 0 && (
@@ -166,11 +176,10 @@ export default function ConfirmationPage() {
                                     <a
                                         key={d.url}
                                         href={d.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                        download
                                         className={styles.downloadButton}
                                     >
-                                        Download {d.title} →
+                                        <Download size={17} /> Download {d.title}
                                     </a>
                                 ))}
                                 <p className={styles.downloadNote}>
@@ -191,7 +200,9 @@ export default function ConfirmationPage() {
                     <>
                         <h1 className={`${styles.headingDisplay} ${styles.h1}`}>Thank you.</h1>
                         <p className={styles.lead}>
-                            If your payment went through, your book will arrive by email shortly.
+                            If your payment went through, you&apos;ll have a Stripe receipt. If your
+                            book doesn&apos;t reach you shortly, just reply to that receipt and
+                            we&apos;ll send it right over.
                         </p>
                     </>
                 ) : (
@@ -202,12 +213,42 @@ export default function ConfirmationPage() {
                 {showUpsell && order && upsell !== "added" && (
                     <div className={styles.upsell}>
                         <div className={styles.upsellTag}>
-                            <Sparkles size={13} /> One more thing
+                            <Sparkles size={13} /> Wait — one more thing
                         </div>
-                        <div className={`${styles.headingDisplay} ${styles.upsellTitle}`}>
-                            Add {order.upsell.title} to your library for {order.upsell.price}
+                        <p className={styles.upsellHook}>
+                            Don&apos;t close this page just yet. You don&apos;t want to miss the book
+                            that pairs with what you just grabbed — and you can add it in a single
+                            click.
+                        </p>
+
+                        <div className={styles.upsellCard}>
+                            {order.upsell.image && (
+                                <div className={styles.upsellCover}>
+                                    <Image
+                                        src={order.upsell.image}
+                                        alt={`${order.upsell.title} cover`}
+                                        width={150}
+                                        height={200}
+                                        className={styles.upsellCoverImg}
+                                    />
+                                </div>
+                            )}
+                            <div className={styles.upsellBody}>
+                                <h2 className={`${styles.headingDisplay} ${styles.upsellTitle}`}>
+                                    {order.upsell.title}
+                                </h2>
+                                <div className={styles.upsellPrice}>
+                                    <span className={styles.upsellPriceAmount}>
+                                        {order.upsell.price}
+                                    </span>
+                                    <span className={styles.upsellPriceUnit}>
+                                        one-time · instant PDF
+                                    </span>
+                                </div>
+                                <p className={styles.upsellDesc}>{order.upsell.description}</p>
+                            </div>
                         </div>
-                        <p className={styles.upsellBlurb}>{order.upsell.blurb}</p>
+
                         <p className={styles.upsellOneClick}>
                             One click, using the card you already entered — no forms, nothing to
                             re-enter.
@@ -220,13 +261,23 @@ export default function ConfirmationPage() {
                         >
                             {upsell === "charging"
                                 ? "Adding…"
-                                : `Yes — add it for ${order.upsell.price}`}
+                                : `Yes — add ${order.upsell.title} for ${order.upsell.price}`}
                         </button>
                         {upsell === "failed" && (
-                            <p className={styles.upsellFail} role="alert">
-                                That didn&apos;t go through, no worries — your first order is all
-                                set and unaffected.
-                            </p>
+                            <div className={styles.upsellFail} role="alert">
+                                <p className={styles.upsellFailText}>
+                                    That charge didn&apos;t go through — your first order is all set
+                                    and unaffected. You can still grab {order.upsell.title}:
+                                </p>
+                                {order.upsell.slug && (
+                                    <Link
+                                        href={`/checkout/${order.upsell.slug}`}
+                                        className={styles.upsellFallbackLink}
+                                    >
+                                        Get {order.upsell.title} for {order.upsell.price} →
+                                    </Link>
+                                )}
+                            </div>
                         )}
                     </div>
                 )}
@@ -235,18 +286,13 @@ export default function ConfirmationPage() {
                 {upsell === "added" && order && (
                     <>
                         <div className={styles.upsellAdded}>
-                            <CheckCircle2 size={18} /> Added! {order.upsell.title} is on its way to
-                            your email too.
+                            <CheckCircle2 size={18} /> Added — {order.upsell.title} is yours.
+                            Download it below; we&apos;re sending it to your email too.
                         </div>
                         {upsellDownload && (
                             <div className={styles.downloads} style={{ marginTop: 14 }}>
-                                <a
-                                    href={upsellDownload}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={styles.downloadButton}
-                                >
-                                    Download {order.upsell.title} →
+                                <a href={upsellDownload} download className={styles.downloadButton}>
+                                    <Download size={17} /> Download {order.upsell.title}
                                 </a>
                             </div>
                         )}

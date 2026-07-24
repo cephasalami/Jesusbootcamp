@@ -1,0 +1,272 @@
+/* src/app/join/page.module.css */
+
+.pageWrapper {
+    --bg-cream: #F5F0E8;
+    --bg-cream-alt: #EDEAE2;
+    --navy: #0A1F44;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --gold: #C9A84C;
+    --green: #2D6A4F;
+    --white: #FFFFFF;
+    --line: #E6DFD1;
+
+    font-family: var(--font-body), "Inter", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-cream);
+    background-image: radial-gradient(ellipse 90% 45% at 50% 0%, rgba(201, 168, 76, 0.12) 0%, transparent 62%);
+    line-height: 1.7;
+}
+
+.headingDisplay {
+    font-family: var(--font-display), "Playfair Display", serif;
+    font-weight: 700;
+}
+
+.hero {
+    padding: 120px 20px 80px;
+}
+
+.container {
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--green);
+    margin-bottom: 14px;
+}
+
+.h1 {
+    font-size: clamp(2.2rem, 7vw, 3.4rem);
+    line-height: 1.08;
+    margin: 0 0 24px;
+    color: var(--navy);
+}
+
+.prose p {
+    font-size: 1.12rem;
+    color: var(--text-secondary);
+    margin: 0 0 18px;
+}
+
+/* ── Three pillars ── */
+.pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 32px 0;
+}
+
+.pillar {
+    position: relative;
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    border-radius: 14px;
+    padding: 26px 20px 22px;
+    box-shadow: 0 12px 30px rgba(10, 31, 68, 0.06);
+    overflow: hidden;
+}
+
+.pillarNum {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-family: var(--font-display), serif;
+    font-weight: 700;
+    font-size: 30px;
+    color: rgba(201, 168, 76, 0.28);
+    line-height: 1;
+}
+
+.pillarIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background-color: rgba(45, 106, 79, 0.1);
+    color: var(--green);
+    margin-bottom: 14px;
+}
+
+.pillarName {
+    font-size: 22px;
+    color: var(--navy);
+    margin: 0 0 6px;
+}
+
+.pillarLine {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+    .pillars {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .hero {
+        padding: 104px 18px 64px;
+    }
+}
+
+.closingProse {
+    font-size: 1.12rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin: 0 0 36px;
+}
+
+/* ── Signup form ── */
+.form {
+    background-color: var(--navy);
+    border-radius: 18px;
+    padding: 28px 26px;
+    box-shadow: 0 20px 50px rgba(10, 31, 68, 0.22);
+}
+
+.formHead {
+    color: var(--white);
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.formRow {
+    display: flex;
+    gap: 12px;
+}
+
+.input {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--text-primary);
+    background-color: var(--white);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 14px 15px;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+}
+
+.input:focus {
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.5);
+}
+
+@media (max-width: 520px) {
+    .formRow {
+        flex-direction: column;
+    }
+}
+
+.error {
+    color: #FFC9C9;
+    font-size: 13px;
+    margin: 10px 2px 0;
+}
+
+.submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+    background: linear-gradient(180deg, #E0BF6F 0%, var(--gold) 55%, #B7952F 100%);
+    color: #1A1A1A;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 11px;
+    cursor: pointer;
+    transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.submit:hover:not(:disabled) {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+.submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.spin {
+    animation: joinSpin 0.9s linear infinite;
+}
+
+@keyframes joinSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.formNote {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12.5px;
+    text-align: center;
+    margin: 12px 0 0;
+}
+
+/* ── Success ── */
+.success {
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 36px 28px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(10, 31, 68, 0.1);
+}
+
+.successIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(45, 106, 79, 0.12);
+    color: var(--green);
+    margin-bottom: 16px;
+}
+
+.successTitle {
+    font-size: 26px;
+    color: var(--navy);
+    margin: 0 0 12px;
+}
+
+.successText {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 520px;
+    margin: 0 auto 16px;
+}
+
+.successShare {
+    font-size: 14.5px;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.successShareUrl {
+    font-weight: 700;
+    color: var(--green);
+    white-space: nowrap;
+}

@@ -119,6 +119,29 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* ── Digital-only clarification (FIX 6) ── */
+.digitalNote {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background-color: rgba(45, 106, 79, 0.06);
+    border: 1px solid rgba(45, 106, 79, 0.18);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.digitalNoteMeta {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.digitalNoteMeta strong {
+    font-weight: 700;
+}
+
 /* ── Order bump ── */
 .bump {
     display: flex;

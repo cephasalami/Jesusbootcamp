@@ -16,6 +16,9 @@ export type Book = {
     title: string;
     /** One short line: what the book offers. */
     blurb: string;
+    /** 2–3 line description used where the offer needs real selling copy (e.g. the
+     *  post-purchase upsell card). Falls back to `blurb` when absent. */
+    description?: string;
     /** Price in cents. */
     priceCents: number;
     /** Public product image (path under /public). Optional. */
@@ -41,6 +44,8 @@ export const BOOKS: Record<string, Book> = {
         slug: "power-for-the-hour",
         title: "Power For The Hour",
         blurb: "The essential scriptures every disciple must memorize.",
+        description:
+            "A pocket arsenal of the exact verses that hold you steady under pressure — for your identity in Christ, for sharing your faith, and for standing firm when it's hard. Organized so you can find the right scripture in seconds, memorize it, and actually use it when the moment comes.",
         priceCents: BOOK_PRICE_CENTS,
         image: "/images/power-for-the-hour/power-for-the-hour-paperback.webp",
         mailchimpTag: "purchased-power-for-hour",
@@ -51,6 +56,8 @@ export const BOOKS: Record<string, Book> = {
         slug: "while-you-were-busy",
         title: "While You Were Busy",
         blurb: "Take your lead back in the home before the culture takes it.",
+        description:
+            "A wake-up call for anyone who has let the culture quietly take the lead at home. It shows you how to reclaim your God-given role and disciple your own household with confidence — practical, direct, and hard to unsee once you've read it.",
         priceCents: BOOK_PRICE_CENTS,
         image: "/images/while-you-were-busy/while-you-were-busy-cover.png",
         mailchimpTag: "purchased-while-you-were-busy",
@@ -99,6 +106,23 @@ export function getCheckout(slug: string): Checkout | undefined {
 /** Format cents as `$X.XX`, or `$5` when it's a whole dollar amount. */
 export function formatUsd(cents: number): string {
     return cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`;
+}
+
+/**
+ * Human-readable download filename for a book, e.g. "Power-For-The-Hour.pdf".
+ * Used by the download proxy so buyers get a clean name, not the raw dated
+ * upload filename.
+ */
+export function bookDownloadFilename(book: Book): string {
+    const base = book.title
+        .replace(/[^\p{L}\p{N}]+/gu, "-")
+        .replace(/^-+|-+$/g, "");
+    return `${base || "Book"}.pdf`;
+}
+
+/** Same-origin proxy path that force-downloads a book's PDF (see /api/download). */
+export function bookDownloadPath(slug: string): string {
+    return `/api/download/${slug}`;
 }
 
 // ── Server-authoritative pricing (NEVER trust a client-supplied amount) ───────

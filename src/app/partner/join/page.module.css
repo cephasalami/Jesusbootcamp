@@ -208,6 +208,84 @@
     }
 }
 
+/* ── Any-amount (FIX 8) ── */
+.anyAmountLine {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin: 0;
+}
+
+.anyAmountLine strong {
+    color: var(--text-primary);
+}
+
+.otherCard {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background-color: var(--bg-cream-alt);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.otherCardActive {
+    border-color: var(--green);
+    background-color: rgba(45, 106, 79, 0.07);
+}
+
+.customWrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #D9D2C4;
+    border-radius: 10px;
+    padding: 2px 14px;
+    background-color: var(--white);
+}
+
+.customWrap:focus-within {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.14);
+}
+
+.customCurrency {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.customInput {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 12px 0;
+    color: var(--text-primary);
+}
+
+.customPer {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
 /* ── Fields ── */
 .fields {
     display: flex;

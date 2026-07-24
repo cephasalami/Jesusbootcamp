@@ -19,6 +19,14 @@ export default async function PartnerConfirmationPage({
     const firstName = rawName.replace(/[^\p{L}\p{M}'\- ]/gu, "").slice(0, 40).trim();
     const tierId = (typeof params.tier === "string" ? params.tier : "") as PartnerTierId;
     const tier = getPartnerTier(tierId);
+    // Amount to display: a preset's amount, or the actual custom amount (dollars)
+    // passed through the return URL. Validated to a sane positive number.
+    const rawAmount = typeof params.amount === "string" ? Number(params.amount) : NaN;
+    const amountLabel = tier
+        ? `${formatUsd(tier.amountCents)}/month`
+        : Number.isFinite(rawAmount) && rawAmount > 0
+        ? `${formatUsd(Math.round(rawAmount * 100))}/month`
+        : null;
 
     return (
         <div className={styles.pageWrapper}>
@@ -29,9 +37,9 @@ export default async function PartnerConfirmationPage({
                 </h1>
                 <p className={styles.lead}>
                     You&apos;re now a Kingdom Partner
-                    {tier ? (
+                    {amountLabel ? (
                         <>
-                            {" "}at <strong>{formatUsd(tier.amountCents)}/month</strong>
+                            {" "}at <strong>{amountLabel}</strong>
                         </>
                     ) : null}
                     . Your partnership puts real wind in the sails of the mission — thank you for

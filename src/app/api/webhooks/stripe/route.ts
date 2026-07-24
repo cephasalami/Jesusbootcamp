@@ -35,6 +35,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: `Signature verification failed: ${message}` }, { status: 400 });
     }
 
+    // Confirms the endpoint is actually reached in prod (the #1 suspect for the
+    // "paid but no email" bug). Visible in Vercel logs and Stripe's event dashboard.
+    console.log(`[webhook] received ${event.type} (${event.id})`);
+
     // ── Book checkout (one-time) ─────────────────────────────────────────────
     // Only genuine book intents (`kind` main/upsell) are book orders. A
     // partnership subscription's first invoice ALSO emits payment_intent.succeeded
@@ -61,12 +65,19 @@ export async function POST(req: Request) {
             if (email && tags.length) {
                 try {
                     await tagPurchase({ email, name, tags });
+                    console.log(`[webhook] tagged ${email} with [${tags.join(", ")}] (kind=${kind})`);
                 } catch (err) {
                     // 500 tells Stripe to retry so a transient Mailchimp failure
-                    // doesn't silently drop a delivery.
+                    // doesn't silently drop a delivery. Logged loudly so a failed
+                    // tag write is never swallowed.
                     const message = err instanceof Error ? err.message : "fulfillment error";
+                    console.error(`[webhook] Mailchimp tag write FAILED for ${email}: ${message}`);
                     return NextResponse.json({ error: message }, { status: 500 });
                 }
+            } else {
+                console.warn(
+                    `[webhook] ${kind} PI ${pi.id} not tagged — email=${Boolean(email)} tags=${tags.length}`
+                );
             }
         }
     }
@@ -84,10 +95,14 @@ export async function POST(req: Request) {
             const email = (meta.email || invoice.customer_email || "").trim();
             const tier = meta.tier || "";
             const name = meta.name || invoice.customer_name || undefined;
+            // `amount` metadata is in cents — record the actual monthly gift in dollars.
+            const amountCents = meta.amount ? Number(meta.amount) : NaN;
+            const amount = Number.isFinite(amountCents) ? String(amountCents / 100) : undefined;
             const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
             if (email && tier) {
                 try {
-                    await activatePartner({ email, name, tier, stripeCustomerId: customerId });
+                    await activatePartner({ email, name, tier, amount, stripeCustomerId: customerId });
+                    console.log(`[webhook] partner activated ${email} tier=${tier} amount=${amount}`);
                 } catch (err) {
                     const message = err instanceof Error ? err.message : "partner activation error";
                     return NextResponse.json({ error: message }, { status: 500 });

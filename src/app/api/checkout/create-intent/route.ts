@@ -41,6 +41,14 @@ export async function POST(req: Request) {
             currency: CURRENCY,
             customer: customer.id,
             setup_future_usage: "off_session",
+            // FIX 5 (dashboard route): keep automatic payment methods so Apple/
+            // Google Pay stay available — they tokenize to CARDS, so they're
+            // off-session compatible and don't break the one-click upsell (FIX 2).
+            // Stripe LINK is disabled account-wide in the Stripe Dashboard instead:
+            // that removes both the wrong-account prefill AND the bank/ACH method
+            // that can't be re-charged off-session, without costing one-tap mobile
+            // checkout. The buyer's typed email is passed as the billing email at
+            // confirm so the two never disagree.
             automatic_payment_methods: { enabled: true },
             metadata: {
                 kind: "main",

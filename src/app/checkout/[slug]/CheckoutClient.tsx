@@ -347,6 +347,17 @@ function CheckoutForm({
                 </div>
             </section>
 
+            {/* ── Digital-only clarification (FIX 6) ── */}
+            <div className={styles.digitalNote}>
+                <span className={styles.digitalNoteMeta}>
+                    <strong>Format:</strong> PDF <span aria-hidden="true">·</span>{" "}
+                    <strong>Delivery:</strong> Instant download
+                </span>
+                <span>
+                    No printed copy will be shipped, but you can always print the PDF ebook.
+                </span>
+            </div>
+
             {/* ── Optional order bump ── */}
             {hasBump && view.bump && (
                 <label className={`${styles.bump} ${bump ? styles.bumpOn : ""}`}>

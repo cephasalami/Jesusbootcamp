@@ -20,6 +20,9 @@ const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 const NUDGE_AT_MS = 6000;
 const HARD_FAIL_MS = 22000;
 const MAX_ATTEMPTS = 2;
+const CUSTOM_MIN_CENTS = 100; // $1 — mirrors PARTNER_MIN_CENTS server-side
+
+type Selection = PartnerTierId | "custom";
 
 // Copy below is taken VERBATIM from Paul's "Global Expansion" letter — do not
 // reword. The paywall framing (extra material at $25+/mo; core classes always
@@ -34,11 +37,18 @@ const UNLOCKS = [
     "A targeted topical list of ALL scripture verses on the topic",
 ];
 
+/** Parse a dollar string to whole cents, or 0 when invalid/empty. */
+function dollarsToCents(v: string): number {
+    const n = parseFloat(v);
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
+}
+
 export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] }) {
-    // Default to the middle tier so the Payment Element has an amount at mount;
-    // the giver can change it freely.
+    // Default to the middle preset so the Payment Element has an amount at mount;
+    // the giver can change it freely (including "Other amount").
     const defaultTier = tiers[Math.floor(tiers.length / 2)] ?? tiers[0];
-    const [tierId, setTierId] = useState<PartnerTierId>(defaultTier.id);
+    const [selection, setSelection] = useState<Selection>(defaultTier.id);
+    const [customDollars, setCustomDollars] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
 
@@ -48,12 +58,14 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
     const [attempt, setAttempt] = useState(0);
     const requestRemount = useCallback(() => setAttempt((a) => a + 1), []);
 
-    const selectedTier = tiers.find((t) => t.id === tierId) ?? defaultTier;
+    const customCents = dollarsToCents(customDollars);
+    const presetTier = selection === "custom" ? undefined : tiers.find((t) => t.id === selection);
+    const effectiveCents = selection === "custom" ? customCents : presetTier?.amountCents ?? 0;
 
     // Elements is created in deferred `subscription` mode with a FIXED initial
-    // amount; tier changes are applied imperatively via elements.update() inside
-    // the child, so the element never remounts on a tier switch.
-    const initialAmount = useRef(selectedTier.amountCents).current;
+    // amount; amount changes are applied imperatively via elements.update() inside
+    // the child, so the element never remounts on a selection change.
+    const initialAmount = useRef(defaultTier.amountCents).current;
     const elementsOptions = useMemo(
         () =>
             ({
@@ -121,10 +133,19 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                 </section>
 
                 <div className={styles.card}>
-                    {/* ── Tier selection (a values decision, shown as cards) ── */}
-                    <div className={styles.tierGroup} role="radiogroup" aria-label="Choose your monthly partnership">
+                    <p className={styles.anyAmountLine}>
+                        Partner with a monthly donation of <strong>any amount</strong> — every gift
+                        fuels the mission.
+                    </p>
+
+                    {/* ── Amount selection: presets + "Other amount" ── */}
+                    <div
+                        className={styles.tierGroup}
+                        role="radiogroup"
+                        aria-label="Choose your monthly partnership"
+                    >
                         {tiers.map((t) => {
-                            const active = t.id === tierId;
+                            const active = selection === t.id;
                             return (
                                 <button
                                     key={t.id}
@@ -132,7 +153,7 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                                     role="radio"
                                     aria-checked={active}
                                     className={`${styles.tierCard} ${active ? styles.tierCardActive : ""}`}
-                                    onClick={() => setTierId(t.id)}
+                                    onClick={() => setSelection(t.id)}
                                 >
                                     <span className={styles.tierAmount}>{t.amountLabel}</span>
                                     <span className={styles.tierPer}>/month</span>
@@ -142,6 +163,36 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                             );
                         })}
                     </div>
+
+                    <button
+                        type="button"
+                        role="radio"
+                        aria-checked={selection === "custom"}
+                        className={`${styles.otherCard} ${selection === "custom" ? styles.otherCardActive : ""}`}
+                        onClick={() => setSelection("custom")}
+                    >
+                        <span>Other amount</span>
+                        {selection === "custom" && <Check size={16} className={styles.tierCheck} />}
+                    </button>
+
+                    {selection === "custom" && (
+                        <label className={styles.customWrap}>
+                            <span className={styles.customCurrency}>$</span>
+                            <input
+                                type="number"
+                                inputMode="decimal"
+                                min={1}
+                                step={1}
+                                className={styles.customInput}
+                                value={customDollars}
+                                onChange={(e) => setCustomDollars(e.target.value)}
+                                placeholder="Enter amount"
+                                aria-label="Custom monthly amount in dollars"
+                                autoFocus
+                            />
+                            <span className={styles.customPer}>/month</span>
+                        </label>
+                    )}
 
                     {/* ── Two fields only ── */}
                     <div className={styles.fields}>
@@ -175,8 +226,10 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
 
                     <Elements key={attempt} stripe={stripePromise} options={elementsOptions}>
                         <PartnerPaymentSection
-                            selectedTier={selectedTier}
-                            tierId={tierId}
+                            selection={selection}
+                            tierId={selection === "custom" ? null : selection}
+                            customCents={customCents}
+                            effectiveCents={effectiveCents}
                             name={name}
                             email={email}
                             attempt={attempt}
@@ -191,16 +244,20 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
 }
 
 function PartnerPaymentSection({
-    selectedTier,
+    selection,
     tierId,
+    customCents,
+    effectiveCents,
     name,
     email,
     attempt,
     canRetry,
     onRequestRemount,
 }: {
-    selectedTier: PartnerTierView;
-    tierId: PartnerTierId;
+    selection: Selection;
+    tierId: PartnerTierId | null;
+    customCents: number;
+    effectiveCents: number;
     name: string;
     email: string;
     attempt: number;
@@ -217,14 +274,16 @@ function PartnerPaymentSection({
     const paymentWrapRef = useRef<HTMLDivElement | null>(null);
 
     const CONFIRMATION_PATH = "/partner/join/confirmation";
-    const amountLabel = formatUsd(selectedTier.amountCents);
+    const customTooLow = selection === "custom" && customCents < CUSTOM_MIN_CENTS;
+    const amountLabel = effectiveCents > 0 ? formatUsd(effectiveCents) : "$0";
 
-    // Keep the deferred Elements amount in sync when the giver switches tier, so
-    // the Payment Element (and any wallet buttons) reflect the right figure. The
-    // server still re-resolves the real amount from the tier at submit.
+    // Keep the deferred Elements amount in sync as the giver changes their choice.
+    // Guard against invalid (< $1) amounts so we never push 0 into Stripe.
     useEffect(() => {
-        if (elements) elements.update({ amount: selectedTier.amountCents });
-    }, [elements, selectedTier.amountCents]);
+        if (elements && effectiveCents >= CUSTOM_MIN_CENTS) {
+            elements.update({ amount: effectiveCents });
+        }
+    }, [elements, effectiveCents]);
 
     // Force the browser to re-rasterize the Stripe iframe's layer if it painted
     // blank. Toggling a GPU transform (not display) can't make Stripe re-measure
@@ -273,11 +332,14 @@ function PartnerPaymentSection({
 
         if (!name.trim()) return setError("Please enter your full name.");
         if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Please enter a valid email address.");
+        if (selection === "custom" && customCents < CUSTOM_MIN_CENTS) {
+            return setError("Please enter a monthly amount of at least $1.");
+        }
 
         setSubmitting(true);
 
         // Deferred flow: validate the element, create the subscription server-side
-        // (amount resolved authoritatively from the tier), then confirm the first
+        // (amount re-validated authoritatively there), then confirm the first
         // invoice's payment inline.
         const { error: submitError } = await elements.submit();
         if (submitError) {
@@ -286,12 +348,17 @@ function PartnerPaymentSection({
             return;
         }
 
+        const payload =
+            selection === "custom"
+                ? { customAmountCents: customCents, name, email }
+                : { tier: tierId, name, email };
+
         let clientSecret: string;
         try {
             const res = await fetch("/api/partner/create-subscription", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ tier: tierId, name, email }),
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
             if (!res.ok || !data.clientSecret) {
@@ -305,7 +372,11 @@ function PartnerPaymentSection({
         }
 
         const firstName = name.trim().split(/\s+/)[0] || "";
-        const returnQs = new URLSearchParams({ tier: tierId, name: firstName });
+        const returnQs = new URLSearchParams({
+            tier: selection,
+            amount: String(effectiveCents / 100),
+            name: firstName,
+        });
         const { error: confirmErr } = await stripe.confirmPayment({
             elements,
             clientSecret,
@@ -375,12 +446,14 @@ function PartnerPaymentSection({
             <button
                 type="submit"
                 className={styles.payButton}
-                disabled={!stripe || !paymentReady || submitting}
+                disabled={!stripe || !paymentReady || submitting || customTooLow}
             >
                 {submitting
                     ? "Processing…"
                     : !paymentReady
                     ? "Loading…"
+                    : customTooLow
+                    ? "Enter an amount ($1 min)"
                     : `Partner With Us at ${amountLabel}/month`}
             </button>
 

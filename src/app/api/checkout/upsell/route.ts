@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
-import { getUpsell, CURRENCY } from "@/config/products";
+import { getUpsell, CURRENCY, bookDownloadPath } from "@/config/products";
 
 // One-click post-purchase upsell. Stripe has no built-in "upsell" toggle; this
 // is the documented save-and-reuse pattern: create a NEW PaymentIntent against
@@ -60,6 +60,10 @@ export async function POST(req: Request) {
         const name = original.metadata?.name ?? undefined;
 
         try {
+            console.log(
+                `[upsell] creating off_session charge for ${upsell.book.slug} ($${upsell.priceCents / 100}) ` +
+                    `customer=${customer} pm=${paymentMethod} parent=${paymentIntentId}`
+            );
             const upsellPi = await stripe.paymentIntents.create(
                 {
                     amount: upsell.priceCents,
@@ -82,6 +86,8 @@ export async function POST(req: Request) {
                 { idempotencyKey: `upsell_${paymentIntentId}` }
             );
 
+            console.log(`[upsell] PaymentIntent ${upsellPi.id} status=${upsellPi.status}`);
+
             if (upsellPi.status === "succeeded") {
                 // Permanently record that this order has been upsold, so a reload
                 // / re-POST can never charge again (best-effort — the idempotency
@@ -103,11 +109,13 @@ export async function POST(req: Request) {
                     amountCents: upsell.priceCents,
                     contentId: upsell.book.slug,
                     title: upsell.book.title,
-                    downloadUrl: upsell.book.downloadUrl || null,
+                    downloadUrl: upsell.book.downloadUrl ? bookDownloadPath(upsell.book.slug) : null,
                 });
             }
-            // e.g. requires_action — the bank wants step-up auth. We don't block
-            // or retry; the first purchase is untouched.
+            // e.g. requires_action — the card/bank wants step-up auth, which can't
+            // happen off-session. We don't block or retry; the first purchase is
+            // untouched and the UI offers a normal checkout fallback.
+            console.warn(`[upsell] not charged — status=${upsellPi.status} (authentication required)`);
             return NextResponse.json({ ok: false, reason: "authentication_required" });
         } catch (chargeErr) {
             // Declines / off-session authentication errors land here. This is a
@@ -116,6 +124,7 @@ export async function POST(req: Request) {
                 typeof chargeErr === "object" && chargeErr && "code" in chargeErr
                     ? String((chargeErr as { code?: string }).code)
                     : "charge_failed";
+            console.error(`[upsell] charge failed reason=${code}`, chargeErr);
             return NextResponse.json({ ok: false, reason: code });
         }
     } catch (err) {

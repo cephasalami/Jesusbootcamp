@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
-import { getBook, getUpsell, formatUsd, BOOK_BY_TAG } from "@/config/products";
+import { getBook, getUpsell, formatUsd, BOOK_BY_TAG, bookDownloadPath } from "@/config/products";
 
 // Read-only summary for the confirmation page: what was purchased, whether a
 // one-click upsell can be offered, and machine values (amount, content ids) so
@@ -51,7 +51,9 @@ export async function GET(req: Request) {
         const downloads = ownsOrder
             ? books
                   .filter((b) => b.downloadUrl)
-                  .map((b) => ({ title: b.title, url: b.downloadUrl as string }))
+                  // Same-origin proxy path (force-downloads via Content-Disposition),
+                  // NOT the raw cross-origin URL which the browser would just open.
+                  .map((b) => ({ title: b.title, url: bookDownloadPath(b.slug) }))
             : [];
 
         const upsell = getUpsell(slug);
@@ -73,10 +75,19 @@ export async function GET(req: Request) {
                       slug: upsell.book.slug,
                       title: upsell.book.title,
                       blurb: upsell.book.blurb,
+                      description: upsell.book.description ?? upsell.book.blurb,
                       price: formatUsd(upsell.priceCents),
                       image: upsell.book.image ?? null,
                   }
-                : { available: false, slug: null, title: null, blurb: null, price: null, image: null },
+                : {
+                      available: false,
+                      slug: null,
+                      title: null,
+                      blurb: null,
+                      description: null,
+                      price: null,
+                      image: null,
+                  },
         });
     } catch (err) {
         const message = err instanceof Error ? err.message : "Server error";

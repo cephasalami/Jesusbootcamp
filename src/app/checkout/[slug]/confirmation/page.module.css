@@ -71,7 +71,10 @@
 }
 
 .downloadButton {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
     background: linear-gradient(180deg, #E0BF6F 0%, var(--gold) 55%, #B7952F 100%);
     color: #1A1A1A;
@@ -136,16 +139,73 @@
     padding: 0 3px;
 }
 
-.upsellTitle {
-    font-size: 21px;
-    line-height: 1.25;
-    margin-bottom: 6px;
+.upsellHook {
+    font-size: 15px;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin: 0 0 16px;
 }
 
-.upsellBlurb {
-    font-size: 14.5px;
+/* Book cover + details */
+.upsellCard {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background-color: var(--bg-cream-alt);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.upsellCover {
+    flex-shrink: 0;
+    line-height: 0;
+}
+
+.upsellCoverImg {
+    width: 96px;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(26, 26, 26, 0.22);
+}
+
+.upsellBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.upsellTitle {
+    font-size: 22px;
+    line-height: 1.2;
+    margin: 0 0 8px;
+}
+
+.upsellPrice {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.upsellPriceAmount {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--green);
+    font-variant-numeric: tabular-nums;
+}
+
+.upsellPriceUnit {
+    font-size: 12px;
     color: var(--text-secondary);
-    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.upsellDesc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
 }
 
 .upsellOneClick {
@@ -153,6 +213,18 @@
     color: var(--green);
     font-weight: 600;
     margin: 0 0 16px;
+    text-align: center;
+}
+
+@media (max-width: 420px) {
+    .upsellCard {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .upsellPrice {
+        justify-content: center;
+    }
 }
 
 .upsellButton {
@@ -182,10 +254,33 @@
 }
 
 .upsellFail {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 12px 0 0;
+    margin: 14px 0 0;
     text-align: center;
+    background-color: #FBF3E6;
+    border: 1px solid #E7D3A6;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.upsellFailText {
+    font-size: 13.5px;
+    color: #7A5F16;
+    margin: 0 0 10px;
+    line-height: 1.5;
+}
+
+.upsellFallbackLink {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green);
+    text-decoration: none;
+    border-bottom: 2px solid rgba(45, 106, 79, 0.35);
+    padding-bottom: 1px;
+}
+
+.upsellFallbackLink:hover {
+    border-bottom-color: var(--green);
 }
 
 .upsellAdded {

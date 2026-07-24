@@ -17,6 +17,7 @@ export default function Navbar() {
 
   const links = [
     { href: "/#problem", label: "About" },
+    { href: "/join", label: "Join Free" },
     { href: "/#how", label: "The Course" },
     { href: "/handbook", label: "The Handbook" },
     { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },

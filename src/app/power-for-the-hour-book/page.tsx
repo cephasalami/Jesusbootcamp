@@ -18,6 +18,7 @@ import {
 import styles from "./page.module.css";
 import { trackFbEvent } from "@/lib/fbq";
 import StripePrewarm from "@/components/StripePrewarm";
+import DigitalFormatNote from "@/components/DigitalFormatNote";
 import { prewarmCheckoutIntent } from "@/lib/checkout-prewarm";
 
 // Standalone sales page for cold ad traffic. No discount code — unlike the
@@ -131,6 +132,8 @@ export default function PowerForTheHourBookPage() {
                                     →
                                 </span>
                             </Link>
+
+                            <DigitalFormatNote className="mt-4 max-w-[440px]" />
 
                             <div className={styles.trustRow}>
                                 <span className={styles.trustItem}>
