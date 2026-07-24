@@ -50,10 +50,10 @@ export default function JoinPage() {
                                 it out.
                             </p>
                             <p>
-                                The Jesus Boot Camp is the missing bridge between Christian knowledge
-                                and active commission. Over 90 days, this intensive discipleship
-                                journey systematically activates your faith through three core
-                                pillars:
+                                The Jesus Boot Camp is the missing bridge between Christian{" "}
+                                <em>knowledge</em> and <em>active commission</em>. Over 90 days,
+                                this intensive discipleship journey systematically{" "}
+                                <em>activates</em> your faith through three core pillars:
                             </p>
                         </div>
 

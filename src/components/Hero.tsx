@@ -1,6 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight, BookOpen, Users, CalendarCheck } from "lucide-react";
-import { JOIN_URL } from "@/config/links";
 
 const TRUST_MARKERS = [
   { icon: BookOpen, label: "Rooted in the Word" },
@@ -64,15 +64,13 @@ export default function Hero() {
           data-aos-duration="1000"
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <a
-            href={JOIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/join"
             className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-navy text-white text-[14px] sm:text-[16px] font-bold px-6 sm:px-8 py-3.5 sm:py-4 rounded-full shadow-[0_15px_40px_rgba(26,26,26,0.35)] transition-all duration-300 hover:bg-gold hover:text-navy hover:-translate-y-0.5"
           >
-            Get Started Now
+            Enlist in the Jesus Boot Camp
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </a>
+          </Link>
           <a
             href="/handbook"
             className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md border border-white/60 text-navy text-[14px] sm:text-[15px] font-bold px-6 sm:px-7 py-3.5 sm:py-4 rounded-full transition-all duration-300 hover:bg-white/90 hover:-translate-y-0.5"

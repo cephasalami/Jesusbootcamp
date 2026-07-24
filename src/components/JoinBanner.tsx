@@ -18,10 +18,10 @@ export default function JoinBanner() {
                 </p>
                 <Link
                     href="/join"
-                    className="inline-flex items-center gap-2 bg-navy text-white text-[15px] font-bold px-8 py-4 rounded-sm transition-all duration-300 hover:bg-gold hover:text-navy"
+                    className="group inline-flex items-center gap-3 bg-navy text-white text-[15px] font-bold px-8 py-4 rounded-full shadow-[0_15px_40px_rgba(10,31,68,0.28)] transition-all duration-300 hover:bg-gold hover:text-navy hover:-translate-y-0.5"
                 >
-                    Join the Jesus Boot Camp
-                    <ArrowRight className="w-4 h-4" />
+                    Enlist in the Jesus Boot Camp
+                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
             </div>
         </section>

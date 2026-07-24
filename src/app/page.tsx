@@ -8,6 +8,7 @@ import CoursePreview from "@/components/CoursePreview";
 import Community from "@/components/Community";
 import HowItWorks from "@/components/HowItWorks";
 import About from "@/components/About";
+import EnlistBanner from "@/components/EnlistBanner";
 import JoinBanner from "@/components/JoinBanner";
 import PartnerCTA from "@/components/PartnerCTA";
 import FinalCTA from "@/components/FinalCTA";
@@ -56,6 +57,7 @@ export default function Home() {
       <Solution />
       <InsideSessions />
       <CoursePreview />
+      <EnlistBanner />
       <Community />
       <HowItWorks />
       <About />
