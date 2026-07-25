@@ -110,15 +110,12 @@ export default function TermsPage() {
 
             <h2 className="font-display text-2xl font-bold text-navy pt-6">Contact</h2>
             <p>
-              If you have any questions about these terms, please reach out to us through
-              our{" "}
+              If you have any questions about these terms, please reach out to us{" "}
               <a
-                href="https://www.skool.com/jesus-boot-camp-9143"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/join"
                 className="text-gold font-semibold underline decoration-gold/30 underline-offset-2 hover:decoration-gold"
               >
-                community page
+                here
               </a>
               .
             </p>

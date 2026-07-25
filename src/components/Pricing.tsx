@@ -63,12 +63,8 @@ export default function Pricing() {
           </ul>
 
           {/* CTA button */}
-          {/* TODO: Replace with Skool paid join link */}
-          {/* skool.com/jesus-boot-camp-9143 */}
           <a
             href={JOIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
             className="w-full inline-flex items-center justify-center gap-2 bg-navy text-white text-[16px] font-bold px-8 py-4 rounded-sm border border-navy/20 transition-all duration-300 hover:bg-gold hover:text-navy hover:-translate-y-0.5"
           >
             Start Your Free Trial →

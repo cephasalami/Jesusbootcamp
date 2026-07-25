@@ -203,7 +203,7 @@ function ThankYouContent() {
                     </div>
  
                     <div data-aos="fade-up" data-aos-delay="200">
-                        <a href={JOIN_URL} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
+                        <a href={JOIN_URL} className={styles.ctaButton}>
                             Start My Free Trial →
                         </a>
                     </div>
@@ -223,7 +223,7 @@ function ThankYouContent() {
                                 just took two. Start your free trial and connect with disciples who
                                 are on the same journey.
                             </p>
-                            <a href={JOIN_URL} target="_blank" rel="noopener noreferrer" className={styles.ctaButton}>
+                            <a href={JOIN_URL} className={styles.ctaButton}>
                                 Start My Free Trial →
                             </a>
                         </>

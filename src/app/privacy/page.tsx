@@ -80,14 +80,12 @@ export default function PrivacyPage() {
             <h2 className="font-display text-2xl font-bold text-navy pt-6">Contact</h2>
             <p>
               If you have any questions about this policy or would like your information
-              removed, please reach out to us through our{" "}
+              removed, please reach out to us{" "}
               <a
-                href="https://www.skool.com/jesus-boot-camp-9143"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/join"
                 className="text-gold font-semibold underline decoration-gold/30 underline-offset-2 hover:decoration-gold"
               >
-                community page
+                here
               </a>
               .
             </p>

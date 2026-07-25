@@ -11,7 +11,7 @@ const links = [
   { href: "/#testimonials", label: "Testimonials" },
   // Repointed to the embedded subscription flow; PayPal page stays live at /partner.
   { href: "/partner/join", label: "Partner With Us" },
-  { href: JOIN_URL, label: "Get Started Now", external: true },
+  { href: JOIN_URL, label: "Get Started Now" },
 ];
 
 export default function Footer() {
@@ -62,7 +62,6 @@ export default function Footer() {
               <a
                 key={link.href}
                 href={link.href}
-                {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200 flex items-center gap-1 group"
               >
                 <span>{link.label}</span>

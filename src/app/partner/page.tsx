@@ -211,8 +211,6 @@ export default function PartnerPage() {
                                 </p>
                                 <a
                                     href={JOIN_URL}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                     className={`${styles.trackCta} ${styles.trackCtaOutline}`}
                                 >
                                     Start the Training Free

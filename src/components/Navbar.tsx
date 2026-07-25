@@ -64,8 +64,6 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <a
             href={JOIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
             className="hidden sm:inline-flex items-center gap-2 bg-navy text-white text-[13px] font-bold px-5 py-[11px] rounded-sm transition-all duration-300 hover:bg-gold hover:text-navy group/cta whitespace-nowrap shadow-sm hover:shadow-[0_8px_20px_rgba(201,168,76,0.2)]"
           >
             Get Started Now
@@ -106,8 +104,6 @@ export default function Navbar() {
           ))}
           <a
             href={JOIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
             onClick={() => setMenuOpen(false)}
             className="flex items-center justify-center gap-2 mt-4 bg-navy text-white text-sm font-bold py-4 rounded-sm hover:bg-gold hover:text-navy transition-all duration-300"
           >
