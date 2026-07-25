@@ -204,7 +204,7 @@ function ThankYouContent() {
  
                     <div data-aos="fade-up" data-aos-delay="200">
                         <a href={JOIN_URL} className={styles.ctaButton}>
-                            Start My Free Trial →
+                            Enlist in the Jesus Boot Camp →
                         </a>
                     </div>
                 </div>
@@ -220,11 +220,11 @@ function ThankYouContent() {
                             </h2>
                             <p className={styles.upsellBody}>
                                 Most believers never take a single step toward real training. You
-                                just took two. Start your free trial and connect with disciples who
-                                are on the same journey.
+                                just took two. Enlist today and your first class arrives free —
+                                no credit card required.
                             </p>
                             <a href={JOIN_URL} className={styles.ctaButton}>
-                                Start My Free Trial →
+                                Enlist in the Jesus Boot Camp →
                             </a>
                         </>
                     ) : (
