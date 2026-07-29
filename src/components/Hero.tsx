@@ -66,10 +66,10 @@ export default function Hero() {
         >
           <Link
             href="/join"
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-navy text-white text-[14px] sm:text-[16px] font-bold px-6 sm:px-8 py-3.5 sm:py-4 rounded-full shadow-[0_15px_40px_rgba(26,26,26,0.35)] transition-all duration-300 hover:bg-gold hover:text-navy hover:-translate-y-0.5"
+            className="group w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-3 whitespace-nowrap text-[13px] sm:text-[16px] bg-navy text-white font-bold px-4 sm:px-8 py-3.5 sm:py-4 rounded-full shadow-[0_15px_40px_rgba(26,26,26,0.35)] transition-all duration-300 hover:bg-gold hover:text-navy hover:-translate-y-0.5"
           >
             Enlist in the Jesus Boot Camp
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            <ArrowRight className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
           <a
             href="/handbook"
