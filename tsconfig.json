@@ -11,6 +11,11 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Node's built-in test runner executes the .mts/.ts sources directly (type
+    // stripping), and ESM requires a full specifier — so the pure, unit-tested
+    // modules import each other with an explicit .ts extension. Safe here: we
+    // are noEmit, and Next/Turbopack resolves the extension fine.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { subscribeToCourse } from "@/lib/mailchimp";
+import { issueToken } from "@/lib/subscriber";
 import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 
 // FIX 7 — /join signup. Upserts the contact into the audience (subscribed if
@@ -29,6 +30,20 @@ export async function POST(req: Request) {
         }
 
         await subscribeToCourse({ email, name: firstName || undefined });
+
+        // Issue the class-access token at the same moment `jbc-course-start` is
+        // applied, and stamp COURSESTART so the drip clock starts today. Both
+        // live on the contact as merge fields (CTOKEN / COURSESTART).
+        //
+        // Best-effort: the signup itself has already succeeded and the email
+        // journey is driven by the tag, so a token hiccup must not fail the
+        // form. Anyone who lands without a token is recovered by the email
+        // fallback on the class page, which issues one on the spot.
+        try {
+            await issueToken(email, { setCourseStartIfMissing: true });
+        } catch (err) {
+            console.error(`[join] token issuance failed for ${email} (signup still succeeded):`, err);
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

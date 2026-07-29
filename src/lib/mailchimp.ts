@@ -4,10 +4,13 @@
 // TAGS here; a Mailchimp automation keyed on those tags sends the actual
 // delivery email with the download link.
 import { createHash } from "crypto";
+import { invalidateSubscriberCache } from "./kv";
 
 const API_KEY = process.env.MAILCHIMP_API_KEY;
 const API_SERVER = process.env.MAILCHIMP_API_SERVER;
 const AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID;
+
+export const isMailchimpConfigured = Boolean(API_KEY && API_SERVER && AUDIENCE_ID);
 
 /** Tag applied to everyone who opts in for the free Handbook (segments leads). */
 export const SUBSCRIBER_TAG = "handbook-subscriber";
@@ -215,6 +218,9 @@ export async function activatePartner(opts: {
         PTIER: amount ?? tier,
         ...(stripeCustomerId ? { STRIPEID: stripeCustomerId } : {}),
     });
+    // Drop the cached class-page snapshot so a new partner's formats unlock on
+    // their very next request. (Mirrors deactivatePartner — Part 6.)
+    await invalidateSubscriberCache(email);
 }
 
 /**
@@ -232,4 +238,101 @@ export async function deactivatePartner(opts: { email: string }): Promise<void> 
         "partner-custom",
     ]);
     await setMergeFieldsBestEffort(email, { PARTNER: "false", PTIER: "" });
+    // Drop the cached class-page snapshot so the revoke lands on the subscriber's
+    // VERY NEXT request rather than after the cache TTL. (Part 6.)
+    await invalidateSubscriberCache(email);
+}
+
+// ── Class delivery system ────────────────────────────────────────────────────
+// Merge fields used by /class/[slug]:
+//   PARTNER   "true" | "false"  — the live partner gate (already in use)
+//   CTOKEN    per-subscriber access token for the ?t= URL contract
+//   CSTART    YYYY-MM-DD, the drip clock's origin
+//
+// ⚠️ Mailchimp SILENTLY TRUNCATES merge-field tags to 10 characters. The
+// obvious name `COURSESTART` (11 chars) is stored as `COURSESTAR`, so writes to
+// `COURSESTART` are discarded and reads come back undefined — which would fail
+// every subscriber safe to classes 1-4a forever, with no visible error. Hence
+// the short tag. Keep any new tag <= 10 chars.
+export const COURSE_START_FIELD = "CSTART";
+export const COURSE_TOKEN_FIELD = "CTOKEN";
+//
+// NOTE: Mailchimp exposes no per-contact "when was this tag applied" timestamp,
+// and `timestamp_opt` is the AUDIENCE join date — for the 1,361 contacts bulk
+// imported in 2021 that is years before their course start, which would hand
+// them the entire 90-class archive at once. COURSESTART is therefore the only
+// safe source of the drip clock, and its absence must fail SAFE (see access.ts).
+
+/** The subset of a Mailchimp member the class system needs. */
+export type MailchimpMember = {
+    email: string;
+    status: string;
+    tags: string[];
+    mergeFields: Record<string, string>;
+};
+
+/**
+ * Read a member by email. Returns null when they aren't on the audience (404),
+ * which the caller treats as "unknown subscriber".
+ */
+export async function getMember(email: string): Promise<MailchimpMember | null> {
+    const { base, headers } = memberEndpoint(email);
+    const res = await fetch(
+        `${base}?fields=email_address,status,tags,merge_fields`,
+        { headers, cache: "no-store" }
+    );
+    if (res.status === 404) return null;
+    if (res.status >= 400) {
+        const detail = await res.text();
+        throw new Error(`Mailchimp member read failed (${res.status}): ${detail}`);
+    }
+    const json = (await res.json()) as {
+        email_address: string;
+        status: string;
+        tags?: Array<{ name: string }>;
+        merge_fields?: Record<string, unknown>;
+    };
+    const mergeFields: Record<string, string> = {};
+    for (const [k, v] of Object.entries(json.merge_fields ?? {})) {
+        mergeFields[k] = v == null ? "" : String(v);
+    }
+    return {
+        email: json.email_address,
+        status: json.status,
+        tags: (json.tags ?? []).map((t) => t.name),
+        mergeFields,
+    };
+}
+
+/**
+ * Persist the class-access token (and optionally the course start date) onto the
+ * contact. Best-effort on the merge-field write itself, but we surface failure
+ * to the caller so a token that never persisted isn't treated as durable.
+ */
+export async function setCourseFields(opts: {
+    email: string;
+    token?: string;
+    courseStart?: string;
+}): Promise<void> {
+    const fields: Record<string, string> = {};
+    if (opts.token) fields[COURSE_TOKEN_FIELD] = opts.token;
+    if (opts.courseStart) fields[COURSE_START_FIELD] = opts.courseStart;
+    if (!Object.keys(fields).length) return;
+
+    const { base, headers } = memberEndpoint(opts.email);
+    const res = await fetch(base, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ merge_fields: fields }),
+    });
+    if (res.status >= 400) {
+        const detail = await res.text();
+        // Loud: a missing CTOKEN/COURSESTART merge field in the audience breaks
+        // the whole class flow, so this must never be silently swallowed.
+        console.error(
+            `[mailchimp] setCourseFields FAILED for ${opts.email} (${res.status}): ${detail}`
+        );
+        throw new Error(`Mailchimp merge-field write failed (${res.status})`);
+    }
+    await invalidateSubscriberCache(opts.email);
 }

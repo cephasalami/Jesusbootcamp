@@ -1,0 +1,520 @@
+/* src/app/class/[slug]/page.module.css
+   Matches the established site design system (see /partner/join): cream/warm
+   palette, display serif for headings, gold/brown accents. Mobile-first — the
+   overwhelming majority of traffic is a link tapped inside an email on a phone. */
+
+.page {
+    --bg-cream: #f5f0e8;
+    --bg-cream-alt: #edeae2;
+    --text-primary: #1a1a1a;
+    --text-secondary: #5c5c5c;
+    --gold: #c9a84c;
+    --brown: #8a6d2f;
+    --green: #2d6a4f;
+    --white: #fff;
+    --line: #e6dfd1;
+
+    min-height: 100vh;
+    font-family: var(--font-body), "Inter", sans-serif;
+    color: var(--text-primary);
+    background-color: var(--bg-cream);
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201, 168, 76, 0.1) 0%, transparent 60%);
+    padding: 26px 16px 56px;
+    line-height: 1.6;
+}
+
+.shell {
+    max-width: 640px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.eyebrow {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--brown);
+    margin-bottom: 8px;
+}
+
+.title {
+    font-family: var(--font-display), "Playfair Display", Georgia, serif;
+    font-weight: 700;
+    font-size: 27px;
+    line-height: 1.18;
+    margin: 0 0 22px;
+}
+
+/* ── Format rows ── */
+.formats {
+    list-style: none;
+    margin: 0 0 24px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    flex-wrap: wrap;
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    padding: 14px 15px;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.row:hover {
+    border-color: #d9cfb8;
+    box-shadow: 0 6px 20px rgba(26, 26, 26, 0.05);
+}
+
+.rowLocked {
+    background-color: #fbf8f1;
+    border-style: dashed;
+}
+
+.rowSoon {
+    opacity: 0.62;
+}
+
+.rowIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background-color: var(--bg-cream-alt);
+    color: var(--brown);
+}
+
+.rowLocked .rowIcon {
+    color: #9a8a5f;
+}
+
+.rowBody {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.rowLabel {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.rowBlurb {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.rowAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.openBtn,
+.dlBtn,
+.unlockBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: filter 0.16s ease, background-color 0.16s ease;
+}
+
+.openBtn {
+    background-color: var(--green);
+    color: var(--white);
+}
+
+.openBtn:hover {
+    filter: brightness(1.07);
+}
+
+.dlBtn {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--line);
+}
+
+.dlBtn:hover {
+    background-color: var(--bg-cream-alt);
+    color: var(--text-primary);
+}
+
+.unlockBtn {
+    background-color: var(--gold);
+    color: #1a1a1a;
+}
+
+.unlockBtn:hover {
+    filter: brightness(1.06);
+}
+
+.soonTag {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Inline Drive player (video / podcast) */
+.playerFrame {
+    flex: 1 1 100%;
+    width: 100%;
+    margin-top: 12px;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.playerFrame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+/* ── Time-locked state ── */
+.lockedCard {
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    padding: 30px 22px;
+    text-align: center;
+}
+
+.lockedIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 999px;
+    background-color: var(--bg-cream-alt);
+    color: var(--brown);
+    margin-bottom: 14px;
+}
+
+.lockedTitle {
+    font-family: var(--font-display), "Playfair Display", Georgia, serif;
+    font-size: 21px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.lockedText {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0 auto 20px;
+    max-width: 420px;
+}
+
+.lockedCta {
+    display: inline-block;
+    background-color: var(--green);
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 22px;
+    border-radius: 9px;
+    text-decoration: none;
+}
+
+/* ── Partner prompt ── */
+.partnerPrompt {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background-color: #1f1c16;
+    color: var(--white);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 22px;
+}
+
+.promptTitle {
+    font-family: var(--font-display), "Playfair Display", Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    color: var(--white);
+}
+
+.promptText {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.72);
+    margin: 0;
+}
+
+.promptCta {
+    display: inline-block;
+    flex-shrink: 0;
+    background-color: var(--gold);
+    color: #1a1a1a;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 9px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* ── Share ── */
+.share {
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+}
+
+.share p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 12px;
+}
+
+.share > div {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.shareWa,
+.shareBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 11px 17px;
+    border-radius: 9px;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    background-color: var(--white);
+    color: var(--text-primary);
+}
+
+.shareWa {
+    background-color: #25d366;
+    border-color: #25d366;
+    color: #06331a;
+}
+
+/* ── Notices / fallback form ── */
+.notice {
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    padding: 26px 22px;
+}
+
+.noticeTitle {
+    font-family: var(--font-display), "Playfair Display", Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.noticeText {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    margin: 0 0 18px;
+}
+
+.noticeFoot {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 16px 0 0;
+}
+
+.noticeFoot a {
+    color: var(--green);
+    font-weight: 600;
+}
+
+.identifyForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.identifyInput {
+    font-family: inherit;
+    font-size: 15px;
+    padding: 13px 14px;
+    border: 1px solid #d9d2c4;
+    border-radius: 10px;
+    outline: none;
+    background-color: var(--white);
+    color: var(--text-primary);
+}
+
+.identifyInput:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.14);
+}
+
+.identifyBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: var(--green);
+    color: var(--white);
+    cursor: pointer;
+}
+
+.identifyBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.identifyError {
+    font-size: 13px;
+    color: #8a2b2b;
+    margin: 0;
+}
+
+.identifyNote {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Loading skeleton ── */
+.skel {
+    display: block;
+    border-radius: 8px;
+    background: linear-gradient(100deg, var(--bg-cream-alt) 20%, #f3eee4 40%, var(--bg-cream-alt) 60%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skelEyebrow {
+    width: 120px;
+    height: 12px;
+    margin-bottom: 12px;
+}
+
+.skelTitle {
+    width: min(100%, 380px);
+    height: 30px;
+    margin-bottom: 24px;
+}
+
+.skelIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.skelLine {
+    width: 55%;
+    height: 13px;
+    margin-bottom: 7px;
+}
+
+.skelLineSm {
+    width: 78%;
+    height: 10px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 150% 0;
+    }
+    100% {
+        background-position: -50% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skel,
+    .spin {
+        animation: none;
+    }
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ── Wider screens ── */
+@media (min-width: 600px) {
+    .page {
+        padding: 40px 24px 72px;
+    }
+    .title {
+        font-size: 34px;
+    }
+    .row {
+        padding: 16px 18px;
+    }
+}
+
+/* Narrow phones: let the action buttons drop under the label rather than squash it. */
+@media (max-width: 420px) {
+    .rowAction {
+        margin-left: 51px;
+        width: 100%;
+    }
+    .partnerPrompt {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .promptCta {
+        width: 100%;
+        text-align: center;
+    }
+}
