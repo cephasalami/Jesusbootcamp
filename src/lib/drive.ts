@@ -72,6 +72,16 @@ async function driveFailure(res: Response, fileId: string): Promise<DriveUnavail
         console.error(`[drive] THROTTLED on ${fileId} (${res.status}): ${detail}`);
         return new DriveUnavailableError(FRIENDLY_BUSY, 429, detail);
     }
+    // A Docs Editors file reached via alt=media. Should no longer happen (we
+    // route those through /export) but log it distinctly rather than burying it
+    // in the generic message, since that is what hid this bug the first time.
+    if (res.status === 403 && /binary content|Use Export/i.test(detail)) {
+        console.error(
+            `[drive] ${fileId} is a Docs Editors file and cannot be downloaded with alt=media — ` +
+                `it must be exported. Detail: ${detail.slice(0, 200)}`
+        );
+        return new DriveUnavailableError(FRIENDLY_GENERIC, 502, detail);
+    }
     if (res.status === 404) {
         console.error(`[drive] file not found: ${fileId}`);
         return new DriveUnavailableError("This file isn't available yet.", 404, detail);
@@ -152,17 +162,57 @@ export function chooseDelivery(
     if (meta && meta.size != null) {
         return meta.size <= PROXY_MAX_BYTES ? "proxy" : "preview";
     }
-    return format === "video" || format === "podcast" ? "preview" : "proxy";
+    // Unknown size: fall back by format. `brief` belongs here too — the real
+    // class-1 brief is a 40 MB mp4, and guessing "proxy" for it would try to
+    // push 40 MB through a serverless function.
+    return MEDIA_FORMATS.has(format) ? "preview" : "proxy";
+}
+
+/** Formats that are video/audio, and so are never safe to guess as proxyable. */
+const MEDIA_FORMATS = new Set(["video", "podcast", "brief"]);
+
+/**
+ * Google-native files (Docs / Sheets / Slides) hold no binary content, so
+ * `alt=media` answers 403 "Only files with binary content can be downloaded.
+ * Use Export with Docs Editors files." They must go through /export instead.
+ *
+ * The real class-1 scripture list is a Google Doc, which is why it failed with
+ * the same generic message as the em-dash bug but for a completely different
+ * reason.
+ */
+export function isGoogleNative(mimeType: string | undefined | null): boolean {
+    return Boolean(mimeType && mimeType.startsWith("application/vnd.google-apps."));
+}
+
+/** What we export each Docs Editors type as. PDF reads and prints well and is
+ *  what a subscriber actually wants for a scripture list or set of notes. */
+const EXPORT_TARGETS: Record<string, { mimeType: string; ext: string }> = {
+    "application/vnd.google-apps.document": { mimeType: "application/pdf", ext: ".pdf" },
+    "application/vnd.google-apps.presentation": { mimeType: "application/pdf", ext: ".pdf" },
+    "application/vnd.google-apps.spreadsheet": { mimeType: "application/pdf", ext: ".pdf" },
+    "application/vnd.google-apps.drawing": { mimeType: "application/pdf", ext: ".pdf" },
+};
+
+export function exportTargetFor(mimeType: string): { mimeType: string; ext: string } {
+    return EXPORT_TARGETS[mimeType] ?? { mimeType: "application/pdf", ext: ".pdf" };
 }
 
 /**
  * Stream a Drive file's bytes. The ONLY place the codebase downloads file
  * content. Throws DriveUnavailableError with a subscriber-readable message.
+ *
+ * Pass the already-fetched `meta` so we can tell a binary file (alt=media) from
+ * a Docs Editors file (export) without a second metadata round trip.
  */
-export async function fetchDriveFileStream(fileId: string): Promise<{
+export async function fetchDriveFileStream(
+    fileId: string,
+    meta?: DriveFileMeta | null
+): Promise<{
     body: ReadableStream<Uint8Array>;
     contentType: string;
     contentLength: string | null;
+    /** Extension implied by the delivered bytes, e.g. ".pdf" for an exported Doc. */
+    suggestedExt: string | null;
 }> {
     if (!fileId?.trim()) throw new DriveUnavailableError("This file isn't available yet.", 404);
 
@@ -172,12 +222,17 @@ export async function fetchDriveFileStream(fileId: string): Promise<{
         throw new DriveUnavailableError(FRIENDLY_GENERIC, 503);
     }
 
+    const id = encodeURIComponent(fileId.trim());
+    const native = isGoogleNative(meta?.mimeType);
+    const target = native ? exportTargetFor(meta!.mimeType) : null;
+
+    const url = target
+        ? `https://www.googleapis.com/drive/v3/files/${id}/export?mimeType=${encodeURIComponent(target.mimeType)}`
+        : `https://www.googleapis.com/drive/v3/files/${id}?alt=media&supportsAllDrives=true`;
+
     let res: Response;
     try {
-        res = await fetch(
-            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId.trim())}?alt=media&supportsAllDrives=true`,
-            { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
-        );
+        res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
     } catch (err) {
         console.error(`[drive] network error for ${fileId}:`, err);
         throw new DriveUnavailableError(FRIENDLY_GENERIC, 502);
@@ -187,8 +242,10 @@ export async function fetchDriveFileStream(fileId: string): Promise<{
 
     return {
         body: res.body,
-        contentType: res.headers.get("content-type") ?? "application/octet-stream",
+        contentType:
+            target?.mimeType ?? res.headers.get("content-type") ?? "application/octet-stream",
         contentLength: res.headers.get("content-length"),
+        suggestedExt: target?.ext ?? null,
     };
 }
 

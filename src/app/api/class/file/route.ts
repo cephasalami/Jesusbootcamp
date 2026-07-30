@@ -2,8 +2,14 @@ import { NextResponse } from "next/server";
 import { getManifest } from "@/lib/manifest";
 import { resolveByToken } from "@/lib/subscriber";
 import { evaluateAccess, findClassBySlug, FORMAT_KEYS, type FormatKey } from "@/lib/access";
-import { fetchDriveFileStream, getDriveFileMeta, DriveUnavailableError } from "@/lib/drive";
+import {
+    fetchDriveFileStream,
+    getDriveFileMeta,
+    DriveUnavailableError,
+    PROXY_MAX_BYTES,
+} from "@/lib/drive";
 import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
+import { contentDisposition } from "@/lib/content-disposition";
 
 // Gated Drive proxy — the ONLY way a private class file reaches a browser.
 //
@@ -72,17 +78,43 @@ export async function GET(req: Request) {
 
     try {
         const meta = await getDriveFileMeta(fileId);
-        const { body, contentType, contentLength } = await fetchDriveFileStream(fileId);
+
+        // Defence in depth: the PAGE decides proxy-vs-preview, but this route is
+        // publicly reachable, so refuse to stream something far too large for a
+        // serverless response rather than timing out mid-transfer.
+        if (meta?.size != null && meta.size > PROXY_MAX_BYTES) {
+            console.warn(
+                `[class/file] refusing to proxy ${klass.slug}/${format} — ${meta.size} bytes exceeds ${PROXY_MAX_BYTES}`
+            );
+            return NextResponse.json(
+                { error: "This file is too large to open here. Please use the player on the class page." },
+                { status: 413 }
+            );
+        }
+
+        // `meta` is passed so a Docs Editors file is exported rather than
+        // fetched with alt=media (which Drive refuses with a 403).
+        const { body, contentType, contentLength, suggestedExt } = await fetchDriveFileStream(
+            fileId,
+            meta
+        );
 
         const safeTitle = klass.title.replace(/[^\p{L}\p{N} \-_]/gu, "").trim() || `Class ${klass.slug}`;
-        const ext = (meta?.name?.match(/\.[a-z0-9]+$/i)?.[0] ?? "").toLowerCase();
-        const filename = `JBC Class ${klass.slug} — ${safeTitle}${ext}`;
+        // Prefer the extension implied by what we actually deliver (an exported
+        // Doc arrives as PDF), falling back to the Drive file's own extension.
+        const ext = suggestedExt ?? (meta?.name?.match(/\.[a-z0-9]+$/i)?.[0] ?? "").toLowerCase();
+        const filename = `JBC Class ${klass.slug} - ${safeTitle}${ext}`;
 
         const headers = new Headers();
-        headers.set("Content-Type", meta?.mimeType || contentType);
+        // contentType already accounts for an export; never trust meta.mimeType
+        // here, which for a Doc is application/vnd.google-apps.document.
+        headers.set("Content-Type", contentType);
+        // NEVER interpolate raw text into a header: a non-Latin-1 character
+        // (em dash, curly quote, accented title) makes Headers.set() throw.
+        // See lib/content-disposition.ts.
         headers.set(
             "Content-Disposition",
-            `${wantsDownload ? "attachment" : "inline"}; filename="${filename.replace(/"/g, "")}"`
+            contentDisposition(wantsDownload ? "attachment" : "inline", filename)
         );
         if (contentLength) headers.set("Content-Length", contentLength);
         // Gated content — never cached by a shared proxy or CDN.
