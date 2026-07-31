@@ -12,14 +12,13 @@ const HEADERS = [
     "podcast_file_id",
     "brief_file_id",
     "slides_file_id",
-    "flashcards_file_id",
     "scriptures_file_id",
     "quiz_url",
 ];
 
-/** Row builder that puts a quiz_url in the 11th column. */
+/** Row builder that puts a quiz_url in the 10th column. */
 const rowQ = (slug: string, seq: string, title: string, quiz: string) => [
-    slug, seq, title, "pdf", "vid", "pod", "brief", "slides", "flash", "scrip", quiz,
+    slug, seq, title, "pdf", "vid", "pod", "brief", "slides", "scrip", quiz,
 ];
 
 const row = (slug: string, seq: string, title: string, ...files: string[]) => [
@@ -78,7 +77,7 @@ describe("manifest parsing", () => {
     // "Why The Jesus Boot Camp". Requiring >= 1 silently hid that whole class.
     test("sequence_position 0 is VALID (the real intro class)", () => {
         const { classes, warnings } = parseManifestRows([
-            HEADERS.slice(0, 10),
+            HEADERS.slice(0, 9),
             ["0", "0", "Why The Jesus Boot Camp", "pdf0"],
             ["1", "1", "What it means to be born again", "pdf1"],
         ]);
@@ -91,7 +90,7 @@ describe("manifest parsing", () => {
 
     test("a negative sequence_position is still rejected", () => {
         const { classes, warnings } = parseManifestRows([
-            HEADERS.slice(0, 10),
+            HEADERS.slice(0, 9),
             ["x", "-1", "Nope", "pdf"],
         ]);
         assert.equal(classes.length, 0);
@@ -157,7 +156,7 @@ describe("manifest parsing", () => {
         // Critically: it must NOT be folded into the Drive file-id map.
         assert.equal(Object.values(classes[0].files).includes(url), false);
         assert.deepEqual(Object.keys(classes[0].files).sort(), [
-            "brief", "flashcards", "pdf", "podcast", "scriptures", "slides", "video",
+            "brief", "pdf", "podcast", "scriptures", "slides", "video",
         ]);
     });
 

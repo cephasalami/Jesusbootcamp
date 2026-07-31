@@ -6,7 +6,7 @@
 // Two ways a class file reaches a subscriber:
 //   1. PROXIED  — fetched here with the service account and streamed back from
 //      our own origin. The Drive URL is never exposed to the browser. Used for
-//      everything comfortably under PROXY_MAX_BYTES (PDFs, slides, flashcards,
+//      everything comfortably under PROXY_MAX_BYTES (PDFs, slides,
 //      scripture lists).
 //   2. PREVIEW  — for files too large to push through a serverless function
 //      (video/audio), we reveal Drive's /preview embed URL, but ONLY after the
@@ -33,6 +33,13 @@ export type DriveFileMeta = {
     mimeType: string;
     /** Bytes. null when Drive doesn't report a size (e.g. Google-native docs). */
     size: number | null;
+    /**
+     * Drive's generated poster frame (for video, the first frame). A signed
+     * googleusercontent URL that is fetchable WITHOUT auth and expires, so it is
+     * never sent to the browser — /api/class/file?thumb=1 proxies it behind the
+     * same access checks as the file itself.
+     */
+    thumbnailLink: string | null;
 };
 
 /** A friendly, non-technical failure a subscriber can actually read. */
@@ -111,7 +118,7 @@ export async function getDriveFileMeta(fileId: string): Promise<DriveFileMeta | 
 
     try {
         const res = await fetch(
-            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(key)}?fields=id,name,mimeType,size&supportsAllDrives=true`,
+            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(key)}?fields=id,name,mimeType,size,thumbnailLink&supportsAllDrives=true`,
             { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
         );
         if (!res.ok) {
@@ -120,12 +127,19 @@ export async function getDriveFileMeta(fileId: string): Promise<DriveFileMeta | 
             console.error(`[drive] meta failed for ${key}: ${res.status}`);
             return null;
         }
-        const json = (await res.json()) as { id: string; name: string; mimeType: string; size?: string };
+        const json = (await res.json()) as {
+            id: string;
+            name: string;
+            mimeType: string;
+            size?: string;
+            thumbnailLink?: string;
+        };
         const value: DriveFileMeta = {
             id: json.id,
             name: json.name,
             mimeType: json.mimeType,
             size: json.size ? Number(json.size) : null,
+            thumbnailLink: json.thumbnailLink ?? null,
         };
         metaCache.set(key, { value, expires: Date.now() + META_TTL_MS });
         return value;
@@ -246,6 +260,42 @@ export async function fetchDriveFileStream(
             target?.mimeType ?? res.headers.get("content-type") ?? "application/octet-stream",
         contentLength: res.headers.get("content-length"),
         suggestedExt: target?.ext ?? null,
+    };
+}
+
+/**
+ * Stream Drive's generated poster frame for a file (for a video, its first
+ * frame). Used to give the class hero a real preview image instead of a blank
+ * panel.
+ *
+ * The underlying googleusercontent URL needs no auth and expires, so it is
+ * never handed to the browser — callers proxy these bytes from our own origin
+ * behind the normal access checks.
+ */
+export async function fetchDriveThumbnailStream(meta: DriveFileMeta): Promise<{
+    body: ReadableStream<Uint8Array>;
+    contentType: string;
+    contentLength: string | null;
+}> {
+    if (!meta.thumbnailLink) {
+        throw new DriveUnavailableError("No preview image for this file.", 404);
+    }
+    // Drive's default thumbnail is tiny (=s220). Ask for a hero-sized frame.
+    const url = meta.thumbnailLink.replace(/=s\d+(-c)?$/, "=s1600");
+
+    let res: Response;
+    try {
+        res = await fetch(url, { cache: "no-store" });
+    } catch (err) {
+        console.error(`[drive] thumbnail network error for ${meta.id}:`, err);
+        throw new DriveUnavailableError(FRIENDLY_GENERIC, 502);
+    }
+    if (!res.ok || !res.body) throw await driveFailure(res, meta.id);
+
+    return {
+        body: res.body,
+        contentType: res.headers.get("content-type") ?? "image/jpeg",
+        contentLength: res.headers.get("content-length"),
     };
 }
 

@@ -11,14 +11,13 @@
 //   2. Has this class been released to them yet? (drip, by sequence_position)
 //   3. Which formats can they open? (partner gate, from class 4 onward)
 
-/** The seven per-class formats, in the display order Paul specified. */
+/** The six per-class formats, in the display order Paul specified. */
 export const FORMAT_KEYS = [
     "pdf",
     "video",
     "podcast",
     "brief",
     "slides",
-    "flashcards",
     "scriptures",
 ] as const;
 
@@ -31,9 +30,6 @@ export const FORMAT_LABELS: Record<FormatKey, string> = {
     podcast: "Podcast (20 min)",
     brief: "Video brief (10 min)",
     slides: "PowerPoint",
-    // Renamed from "Flashcards & quiz" now that the quiz is its own row (fed by
-    // the separate quiz_url column) — two rows both saying "quiz" read as a bug.
-    flashcards: "Flashcards",
     scriptures: "Scripture list",
 };
 

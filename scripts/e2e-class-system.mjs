@@ -163,14 +163,14 @@ try {
 
     section("Partner gate â€” NON-partner on class 4");
     const nonPartner = await get(`/class/4?t=${TOKEN}`);
-    // 6 gated formats + the quiz row (class 4 has a quiz_url in the fixture).
+    // 5 gated formats + the quiz row (class 4 has a quiz_url in the fixture).
     const rowCount = (nonPartner.visible.match(/Unlocked for partners/g) ?? []).length;
-    ok(rowCount === 7, `six formats + the quiz show as partner-locked (got ${rowCount})`);
+    ok(rowCount === 6, `five formats + the quiz show as partner-locked (got ${rowCount})`);
     ok(nonPartner.visible.includes("Quiz</span>"), "the quiz row is visible to a non-partner");
     ok(!nonPartner.visible.includes("Take the Quiz"), "but its link is withheld");
     ok(!/viewform|forms\.gle/.test(nonPartner.html), "and the quiz URL never reaches a non-partner");
     ok(nonPartner.html.includes("/partner/join"), "locked formats link to /partner/join");
-    for (const label of ["Class PDF", "Full teaching video", "Podcast (20 min)", "Video brief (10 min)", "PowerPoint", "Flashcards", "Scripture list"]) {
+    for (const label of ["Class PDF", "Full teaching video", "Podcast (20 min)", "Video brief (10 min)", "PowerPoint", "Scripture list"]) {
         ok(nonPartner.html.includes(label), `all seven rows visible â€” "${label.replace("&amp;", "&")}"`);
     }
     const pdfLink = `/api/class/file?t=${TOKEN}&amp;slug=4&amp;format=pdf`;
@@ -221,7 +221,7 @@ try {
     await bustCache();
     const after = await get(`/class/4?t=${TOKEN}`);
     const afterLocked = (after.visible.match(/Unlocked for partners/g) ?? []).length;
-    ok(afterLocked === 7, `immediately after revoke, the six formats + quiz are locked again (got ${afterLocked})`);
+    ok(afterLocked === 6, `immediately after revoke, the five formats + quiz are locked again (got ${afterLocked})`);
     const vidAfter = await fetch(`${BASE}/api/class/file?t=${TOKEN}&slug=4&format=video`);
     ok(vidAfter.status === 403, `and the proxy refuses the gated format â†’ 403 (got ${vidAfter.status})`);
 
@@ -290,6 +290,4 @@ try {
     console.log(`\n${pass} passed, ${fail} failed`);
     process.exit(fail ? 1 : 0);
 }
-
-
 

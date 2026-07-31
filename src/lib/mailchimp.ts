@@ -4,7 +4,7 @@
 // TAGS here; a Mailchimp automation keyed on those tags sends the actual
 // delivery email with the download link.
 import { createHash } from "crypto";
-import { invalidateSubscriberCache } from "./kv";
+import { invalidateSubscriberCache } from "./kv.ts";
 
 const API_KEY = process.env.MAILCHIMP_API_KEY;
 const API_SERVER = process.env.MAILCHIMP_API_SERVER;

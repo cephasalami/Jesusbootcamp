@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getBook, bookDownloadFilename } from "@/config/products";
+import { getDownload, bookDownloadFilename } from "@/config/products";
 
 // FIX 3 — force-download proxy.
 // The book PDFs are hosted cross-origin on faithwithoutborders.us, and browsers
@@ -12,18 +12,18 @@ import { getBook, bookDownloadFilename } from "@/config/products";
 // URL from the client).
 export async function GET(_req: Request, ctx: { params: Promise<{ slug: string }> }) {
     const { slug } = await ctx.params;
-    const book = getBook(slug);
-    if (!book?.downloadUrl) {
-        return NextResponse.json({ error: "Unknown or undownloadable book" }, { status: 404 });
+    const download = getDownload(slug);
+    if (!download) {
+        return NextResponse.json({ error: "Unknown download" }, { status: 404 });
     }
 
     try {
-        const upstream = await fetch(book.downloadUrl, { cache: "no-store", redirect: "follow" });
+        const upstream = await fetch(download.downloadUrl, { cache: "no-store", redirect: "follow" });
         if (!upstream.ok || !upstream.body) {
             return NextResponse.json({ error: "File is temporarily unavailable" }, { status: 502 });
         }
 
-        const filename = bookDownloadFilename(book);
+        const filename = bookDownloadFilename(download);
         const headers = new Headers();
         headers.set("Content-Type", "application/pdf");
         headers.set("Content-Disposition", `attachment; filename="${filename}"`);

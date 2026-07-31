@@ -20,15 +20,15 @@ import {
     COURSE_START_TAG,
     COURSE_START_FIELD,
     COURSE_TOKEN_FIELD,
-} from "./mailchimp";
+} from "./mailchimp.ts";
 import {
     kvGetJson,
     kvSetJson,
     subscriberCacheKey,
     tokenIndexKey,
     isKvConfigured,
-} from "./kv";
-import type { Subscriber } from "./access";
+} from "./kv.ts";
+import type { Subscriber } from "./access.ts";
 
 /** Short by design: long enough to absorb a burst of clicks, short enough that
  *  any change we failed to explicitly invalidate still self-heals in a minute. */
@@ -47,6 +47,11 @@ type Snapshot = {
 /** Cryptographically random, unguessable access token. */
 export function generateToken(): string {
     return randomBytes(32).toString("hex");
+}
+
+/** Keep the email-link check aligned with the fallback form's validation. */
+export function isEmailAddress(value: string): boolean {
+    return /^\S+@\S+\.\S+$/.test(value);
 }
 
 /** Today as YYYY-MM-DD (UTC) — the format written to COURSESTART. */
@@ -141,6 +146,10 @@ export async function resolveByToken(token: string): Promise<Subscriber | null> 
     const snap = await getSnapshot(email);
     if (!snap) return null;
 
+    // A token is never sufficient on its own: removing the class tag must
+    // revoke access immediately (or within the short snapshot-cache window).
+    if (!snap.hasCourseTag) return null;
+
     // Defence in depth: the token in the index must still match the contact's
     // CTOKEN, so a re-issued token immediately invalidates the previous one.
     if (snap.token && snap.token !== clean) {
@@ -161,7 +170,9 @@ export async function resolveByEmail(
     if (!clean || !/^\S+@\S+\.\S+$/.test(clean)) return null;
 
     const snap = await getSnapshot(clean, { fresh: true });
-    if (!snap) return null;
+    // Being somewhere in the audience is not class enrolment. The journey's
+    // jbc-course-start tag is the source of truth for class access.
+    if (!snap || !snap.hasCourseTag) return null;
 
     // Lazily mint a token for anyone tagged before this system existed, so no
     // manual backfill is needed for the token itself.
@@ -181,5 +192,31 @@ export async function resolveByEmail(
 /** Bypass the snapshot cache — used by the verification script. */
 export async function resolveByEmailFresh(email: string): Promise<Subscriber | null> {
     const snap = await getSnapshot(String(email).trim().toLowerCase(), { fresh: true });
-    return snap ? toSubscriber(snap) : null;
+    return snap?.hasCourseTag ? toSubscriber(snap) : null;
+}
+
+export type ClassLinkAccess = {
+    subscriber: Subscriber;
+    /** Always the private token used for later page and file requests. */
+    token: string;
+    /** True when the original link used a Mailchimp email merge value. */
+    usedEmail: boolean;
+};
+
+/**
+ * Resolve either supported class-link form. Email links are accepted only for
+ * tagged class members, then callers replace the visible email with a private
+ * token before rendering any class content.
+ */
+export async function resolveClassLink(value: string): Promise<ClassLinkAccess | null> {
+    const clean = String(value ?? "").trim();
+    if (!clean) return null;
+
+    if (isEmailAddress(clean)) {
+        const found = await resolveByEmail(clean);
+        return found ? { ...found, usedEmail: true } : null;
+    }
+
+    const subscriber = await resolveByToken(clean);
+    return subscriber ? { subscriber, token: clean, usedEmail: false } : null;
 }

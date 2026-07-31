@@ -12,7 +12,7 @@ import { ArrowRight, Check, HandHeart } from "lucide-react";
 
 const PARTNER_JOIN_PATH = "/partner/join";
 
-const UNLOCKS = ["Teaching video", "20-min podcast", "10-min brief", "PowerPoint", "Flashcards & quiz", "Scripture list"];
+const UNLOCKS = ["Teaching video", "20-min podcast", "10-min brief", "PowerPoint", "Quiz", "Scripture list"];
 
 export default function PartnerCTA({
     variant = "short",

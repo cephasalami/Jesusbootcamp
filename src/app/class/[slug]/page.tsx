@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Lock, FileText, Video, Headphones, Clapperboard, Presentation, Layers, BookOpen, Clock, ClipboardCheck } from "lucide-react";
+import { redirect } from "next/navigation";
+import { Lock, Clock, ChevronRight, CheckCircle2, PlayCircle, Sparkles } from "lucide-react";
 import { getManifest } from "@/lib/manifest";
-import { resolveByToken } from "@/lib/subscriber";
+import { resolveClassLink } from "@/lib/subscriber";
 import {
     evaluateAccess,
     findClassBySlug,
@@ -15,6 +16,7 @@ import {
 import { getDriveFileMeta, chooseDelivery, drivePreviewUrl } from "@/lib/drive";
 import IdentifyForm from "./IdentifyForm";
 import { ShareRow, PreviewPlayer } from "./ClassClient";
+import FormatThumb, { type ThumbKind } from "./FormatThumb";
 import styles from "./page.module.css";
 
 // Per-subscriber gated content — never indexed, never cached at the edge.
@@ -25,16 +27,6 @@ export const metadata: Metadata = {
     robots: { index: false, follow: false },
 };
 
-const FORMAT_ICONS: Record<FormatKey, React.ComponentType<{ size?: number }>> = {
-    pdf: FileText,
-    video: Video,
-    podcast: Headphones,
-    brief: Clapperboard,
-    slides: Presentation,
-    flashcards: Layers,
-    scriptures: BookOpen,
-};
-
 /** Short blurb under each row so a locked format still sells itself. */
 const FORMAT_BLURBS: Record<FormatKey, string> = {
     pdf: "The full class, ready to read, print or pass on.",
@@ -42,7 +34,6 @@ const FORMAT_BLURBS: Record<FormatKey, string> = {
     podcast: "A passionate 20-minute explainer of the lesson.",
     brief: "The 10-minute version when time is short.",
     slides: "Teach it yourself from a platform.",
-    flashcards: "Drill the lesson — great for teaching children.",
     scriptures: "Every scripture on the topic, in one list.",
 };
 
@@ -56,8 +47,29 @@ function formatDate(d: Date): string {
     });
 }
 
+function shortDate(d: Date): string {
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+}
+
 function classNumberLabel(klass: ClassRecord): string {
     return `Class ${klass.slug.toUpperCase()}`;
+}
+
+/** Breadcrumb shown above every state, mirroring the reference layout. */
+function Crumbs({ klass }: { klass?: ClassRecord }) {
+    return (
+        <nav className={styles.crumbs} aria-label="Breadcrumb">
+            <Link href="/">Jesus Boot Camp</Link>
+            <ChevronRight size={13} aria-hidden="true" />
+            <span>Classes</span>
+            {klass && (
+                <>
+                    <ChevronRight size={13} aria-hidden="true" />
+                    <span className={styles.crumbCurrent}>{classNumberLabel(klass)}</span>
+                </>
+            )}
+        </nav>
+    );
 }
 
 export default async function ClassPage({
@@ -69,7 +81,7 @@ export default async function ClassPage({
 }) {
     const { slug } = await params;
     const sp = await searchParams;
-    const token = typeof sp.t === "string" ? sp.t : "";
+    const identifier = typeof sp.t === "string" ? sp.t : "";
 
     const classes = await getManifest();
 
@@ -102,6 +114,7 @@ export default async function ClassPage({
         return (
             <main className={styles.page}>
                 <div className={styles.shell}>
+                    <Crumbs />
                     <div className={styles.notice}>
                         <h1 className={styles.noticeTitle}>We couldn&apos;t find that class</h1>
                         <p className={styles.noticeText}>
@@ -109,7 +122,7 @@ export default async function ClassPage({
                             most recent class email again, or start from the beginning.
                         </p>
                         <p className={styles.noticeFoot}>
-                            <Link href={token ? `/class/1?t=${encodeURIComponent(token)}` : "/join"}>
+                            <Link href={identifier ? `/class/1?t=${encodeURIComponent(identifier)}` : "/join"}>
                                 Go to class 1
                             </Link>
                         </p>
@@ -119,7 +132,15 @@ export default async function ClassPage({
         );
     }
 
-    const subscriber = await resolveByToken(token);
+    const linkAccess = await resolveClassLink(identifier);
+    if (linkAccess?.usedEmail) {
+        // Mailchimp email links use ?t=*|EMAIL|*. Replace the email immediately
+        // so it is not left in the browser address bar or propagated to file links.
+        redirect("/class/" + encodeURIComponent(klass.slug) + "?t=" + encodeURIComponent(linkAccess.token));
+    }
+
+    const token = linkAccess?.token ?? "";
+    const subscriber = linkAccess?.subscriber ?? null;
     const access = evaluateAccess(subscriber, klass);
 
     if (access.status !== "unknown" && access.degraded) {
@@ -138,7 +159,7 @@ export default async function ClassPage({
         return (
             <main className={styles.page}>
                 <div className={styles.shell}>
-                    <span className={styles.eyebrow}>{classNumberLabel(klass)}</span>
+                    <Crumbs klass={klass} />
                     <h1 className={styles.title}>{klass.title}</h1>
                     <div className={styles.notice}>
                         <h2 className={styles.noticeTitle}>Let&apos;s find your place in the training</h2>
@@ -163,9 +184,7 @@ export default async function ClassPage({
         return (
             <main className={styles.page}>
                 <div className={styles.shell}>
-                    <span className={styles.eyebrow}>
-                        {classNumberLabel(klass)} · {position} of {ordered.length}
-                    </span>
+                    <Crumbs klass={klass} />
                     <h1 className={styles.title}>{klass.title}</h1>
 
                     <div className={styles.lockedCard}>
@@ -222,148 +241,274 @@ export default async function ClassPage({
     const lockedCount =
         rows.filter((r) => r.state === "locked-partner").length +
         (quizState === "locked-partner" ? 1 : 0);
+    const openCount =
+        rows.filter((r) => r.state === "open").length + (quizState === "open" ? 1 : 0);
     const shareUrl = `https://jesusbootcamp.org/class/${klass.slug}`;
+
+    // The hero player: the first openable media format, if any. Purely a display
+    // choice — it reuses the row that already passed the access check.
+    const heroRow = rows.find(
+        (r) => r.state === "open" && r.delivery === "preview" && (r.key === "video" || r.key === "brief")
+    );
+
+    // Sidebar outline. `evaluateAccess` is pure and does no I/O, so this is just
+    // the same decision re-read for display — it grants nothing.
+    const outline = ordered.map((c) => {
+        const a = evaluateAccess(subscriber, c);
+        return {
+            slug: c.slug,
+            title: c.title,
+            isCurrent: c.slug === klass.slug,
+            locked: a.status === "locked-time",
+            unlocksOn: a.status === "locked-time" ? a.unlocksOn : null,
+        };
+    });
 
     return (
         <main className={styles.page}>
             <div className={styles.shell}>
-                <span className={styles.eyebrow}>
-                    {classNumberLabel(klass)} · {position} of {ordered.length}
-                </span>
-                <h1 className={styles.title}>{klass.title}</h1>
+                <Crumbs klass={klass} />
 
-                <ul className={styles.formats}>
-                    {rows.map(({ key, state, delivery, previewUrl }) => {
-                        const Icon = FORMAT_ICONS[key];
-                        const href = `/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${key}`;
-
-                        return (
-                            <li
-                                key={key}
-                                className={[
-                                    styles.row,
-                                    state === "locked-partner" ? styles.rowLocked : "",
-                                    state === "coming-soon" ? styles.rowSoon : "",
-                                ].join(" ")}
-                            >
-                                <span className={styles.rowIcon} aria-hidden="true">
-                                    {state === "locked-partner" ? <Lock size={19} /> : <Icon size={19} />}
+                <header className={styles.header}>
+                    <h1 className={styles.title}>{klass.title}</h1>
+                    <div className={styles.metaRow}>
+                        <span className={styles.metaChip}>
+                            <Sparkles size={13} /> {classNumberLabel(klass)}
+                        </span>
+                        <span className={styles.metaDot} aria-hidden="true" />
+                        <span className={styles.metaItem}>
+                            {position} of {ordered.length}
+                        </span>
+                        <span className={styles.metaDot} aria-hidden="true" />
+                        <span className={styles.metaItem}>
+                            {openCount} {openCount === 1 ? "format" : "formats"} available
+                        </span>
+                        {lockedCount > 0 && (
+                            <>
+                                <span className={styles.metaDot} aria-hidden="true" />
+                                <span className={styles.metaItem}>
+                                    <Lock size={12} /> {lockedCount} for partners
                                 </span>
+                            </>
+                        )}
+                    </div>
+                </header>
 
-                                <span className={styles.rowBody}>
-                                    <span className={styles.rowLabel}>{FORMAT_LABELS[key]}</span>
-                                    <span className={styles.rowBlurb}>
-                                        {state === "coming-soon"
-                                            ? "Coming soon"
-                                            : state === "locked-partner"
-                                              ? "Unlocked for partners"
-                                              : FORMAT_BLURBS[key]}
-                                    </span>
+                <div className={styles.layout}>
+                    {/* ── Main column ── */}
+                    <div className={styles.main}>
+                        <section className={styles.hero}>
+                            {heroRow ? (
+                                <PreviewPlayer
+                                    variant="hero"
+                                    src={heroRow.previewUrl}
+                                    label={FORMAT_LABELS[heroRow.key]}
+                                    // Drive's own poster frame, proxied behind the
+                                    // same access checks as the video itself.
+                                    posterSrc={`/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${heroRow.key}&thumb=1`}
+                                    buttonClass={styles.heroPlay}
+                                    frameClass={styles.heroFrame}
+                                />
+                            ) : (
+                                <div className={styles.heroPlaceholder}>
+                                    <span className={styles.heroNumber}>{klass.slug.toUpperCase()}</span>
+                                    <span className={styles.heroCaption}>{klass.title}</span>
+                                </div>
+                            )}
+                        </section>
+
+                        <section className={styles.panel}>
+                            <div className={styles.panelHead}>
+                                <h2 className={styles.panelTitle}>In this class</h2>
+                                <span className={styles.panelNote}>
+                                    {openCount} of {openCount + lockedCount} open to you
                                 </span>
+                            </div>
 
-                                <span className={styles.rowAction}>
-                                    {state === "coming-soon" && (
-                                        <span className={styles.soonTag}>Coming soon</span>
-                                    )}
+                            <ul className={styles.formats}>
+                                {rows.map(({ key, state, delivery, previewUrl }) => {
+                                    const href = `/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${key}`;
 
-                                    {state === "locked-partner" && (
-                                        <Link href="/partner/join" className={styles.unlockBtn}>
-                                            Unlock
-                                        </Link>
-                                    )}
+                                    return (
+                                        <li
+                                            key={key}
+                                            className={[
+                                                styles.row,
+                                                state === "locked-partner" ? styles.rowLocked : "",
+                                                state === "coming-soon" ? styles.rowSoon : "",
+                                            ].join(" ")}
+                                        >
+                                            <FormatThumb
+                                                kind={key as ThumbKind}
+                                                locked={state === "locked-partner"}
+                                                muted={state === "coming-soon"}
+                                            />
 
-                                    {state === "open" && delivery === "proxy" && (
-                                        <>
-                                            <a className={styles.openBtn} href={href} target="_blank" rel="noopener noreferrer">
-                                                Open
-                                            </a>
-                                            <a className={styles.dlBtn} href={`${href}&download=1`}>
-                                                Download
-                                            </a>
-                                        </>
-                                    )}
+                                            <span className={styles.rowBody}>
+                                                <span className={styles.rowLabel}>{FORMAT_LABELS[key]}</span>
+                                                <span className={styles.rowBlurb}>
+                                                    {state === "coming-soon"
+                                                        ? "Coming soon"
+                                                        : state === "locked-partner"
+                                                          ? "Unlocked for partners"
+                                                          : FORMAT_BLURBS[key]}
+                                                </span>
+                                            </span>
 
-                                    {state === "open" && delivery === "preview" && (
-                                        <PreviewPlayer
-                                            src={previewUrl}
-                                            label={FORMAT_LABELS[key]}
-                                            buttonClass={styles.openBtn}
-                                            frameClass={styles.playerFrame}
-                                        />
-                                    )}
-                                </span>
-                            </li>
-                        );
-                    })}
+                                            <span className={styles.rowAction}>
+                                                {state === "coming-soon" && (
+                                                    <span className={styles.soonTag}>Coming soon</span>
+                                                )}
 
-                    {/* Quiz — an EXTERNAL link (typically a Google Form), never a
-                        Drive file: no proxy, no embed, no Drive API call. Rendered
-                        only when the class actually has a quiz_url. */}
-                    {quizState !== null && (
-                        <li
-                            className={[
-                                styles.row,
-                                quizState === "locked-partner" ? styles.rowLocked : "",
-                            ].join(" ")}
-                        >
-                            <span className={styles.rowIcon} aria-hidden="true">
-                                {quizState === "locked-partner" ? <Lock size={19} /> : <ClipboardCheck size={19} />}
-                            </span>
-                            <span className={styles.rowBody}>
-                                <span className={styles.rowLabel}>Quiz</span>
-                                <span className={styles.rowBlurb}>
-                                    {quizState === "locked-partner"
-                                        ? "Unlocked for partners"
-                                        : "Check what stuck — a few questions on this class."}
-                                </span>
-                            </span>
-                            <span className={styles.rowAction}>
-                                {quizState === "locked-partner" ? (
-                                    <Link href="/partner/join" className={styles.unlockBtn}>
-                                        Unlock
-                                    </Link>
-                                ) : (
-                                    <a
-                                        className={styles.openBtn}
-                                        href={klass.quizUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                                {state === "locked-partner" && (
+                                                    <Link href="/partner/join" className={styles.unlockBtn}>
+                                                        Unlock
+                                                    </Link>
+                                                )}
+
+                                                {state === "open" && delivery === "proxy" && (
+                                                    <>
+                                                        <a className={styles.openBtn} href={href} target="_blank" rel="noopener noreferrer">
+                                                            Open
+                                                        </a>
+                                                        <a className={styles.dlBtn} href={`${href}&download=1`}>
+                                                            Download
+                                                        </a>
+                                                    </>
+                                                )}
+
+                                                {state === "open" && delivery === "preview" && (
+                                                    <PreviewPlayer
+                                                        src={previewUrl}
+                                                        label={FORMAT_LABELS[key]}
+                                                        buttonClass={styles.openBtn}
+                                                        frameClass={styles.playerFrame}
+                                                    />
+                                                )}
+                                            </span>
+                                        </li>
+                                    );
+                                })}
+
+                                {/* Quiz — an EXTERNAL link (typically a Google Form), never a
+                                    Drive file: no proxy, no embed, no Drive API call. Rendered
+                                    only when the class actually has a quiz_url. */}
+                                {quizState !== null && (
+                                    <li
+                                        className={[
+                                            styles.row,
+                                            quizState === "locked-partner" ? styles.rowLocked : "",
+                                        ].join(" ")}
                                     >
-                                        Take the Quiz
-                                    </a>
+                                        <FormatThumb kind="quiz" locked={quizState === "locked-partner"} />
+                                        <span className={styles.rowBody}>
+                                            <span className={styles.rowLabel}>Quiz</span>
+                                            <span className={styles.rowBlurb}>
+                                                {quizState === "locked-partner"
+                                                    ? "Unlocked for partners"
+                                                    : "Check what stuck — a few questions on this class."}
+                                            </span>
+                                        </span>
+                                        <span className={styles.rowAction}>
+                                            {quizState === "locked-partner" ? (
+                                                <Link href="/partner/join" className={styles.unlockBtn}>
+                                                    Unlock
+                                                </Link>
+                                            ) : (
+                                                <a
+                                                    className={styles.openBtn}
+                                                    href={klass.quizUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    Take the Quiz
+                                                </a>
+                                            )}
+                                        </span>
+                                    </li>
                                 )}
-                            </span>
-                        </li>
-                    )}
-                </ul>
+                            </ul>
+                        </section>
 
-                {/* Persistent, low-key partner prompt — part of the page, never a modal. */}
-                {!isPartner && lockedCount > 0 && (
-                    <section className={styles.partnerPrompt}>
-                        <div>
-                            <h2 className={styles.promptTitle}>
-                                {lockedCount} more {lockedCount === 1 ? "format" : "formats"} for this class
-                            </h2>
-                            <p className={styles.promptText}>
-                                The class itself is always free. Partnering monthly — for any amount —
-                                opens the video, podcast, brief, slides, flashcards and scripture list
-                                on every class from here on.
-                            </p>
-                        </div>
-                        <Link href="/partner/join" className={styles.promptCta}>
-                            Become a Partner
-                        </Link>
-                    </section>
-                )}
+                        <ShareRow
+                            url={shareUrl}
+                            title={klass.title}
+                            className={styles.share}
+                            buttonClass={styles.shareBtn}
+                            waClass={styles.shareWa}
+                        />
+                    </div>
 
-                {/* Multiplication is the whole model — make passing it on effortless. */}
-                <ShareRow
-                    url={shareUrl}
-                    title={klass.title}
-                    className={styles.share}
-                    buttonClass={styles.shareBtn}
-                    waClass={styles.shareWa}
-                />
+                    {/* ── Sidebar ── */}
+                    <aside className={styles.sidebar}>
+                        <section className={styles.panel}>
+                            <div className={styles.panelHead}>
+                                <h2 className={styles.panelTitle}>Class content</h2>
+                                <span className={styles.panelNote}>{ordered.length} classes</span>
+                            </div>
+                            <ol className={styles.outline}>
+                                {outline.map((c) => (
+                                    <li key={c.slug}>
+                                        {c.locked ? (
+                                            <span className={`${styles.outlineRow} ${styles.outlineLocked}`}>
+                                                <Lock size={14} className={styles.outlineIcon} />
+                                                <span className={styles.outlineText}>
+                                                    <span className={styles.outlineNum}>
+                                                        {c.slug.toUpperCase()}
+                                                    </span>
+                                                    {c.title}
+                                                </span>
+                                                {c.unlocksOn && (
+                                                    <span className={styles.outlineDate}>
+                                                        {shortDate(c.unlocksOn)}
+                                                    </span>
+                                                )}
+                                            </span>
+                                        ) : (
+                                            <Link
+                                                href={`/class/${encodeURIComponent(c.slug)}?t=${encodeURIComponent(token)}`}
+                                                className={[
+                                                    styles.outlineRow,
+                                                    c.isCurrent ? styles.outlineCurrent : "",
+                                                ].join(" ")}
+                                                aria-current={c.isCurrent ? "page" : undefined}
+                                            >
+                                                {c.isCurrent ? (
+                                                    <PlayCircle size={14} className={styles.outlineIcon} />
+                                                ) : (
+                                                    <CheckCircle2 size={14} className={styles.outlineIcon} />
+                                                )}
+                                                <span className={styles.outlineText}>
+                                                    <span className={styles.outlineNum}>
+                                                        {c.slug.toUpperCase()}
+                                                    </span>
+                                                    {c.title}
+                                                </span>
+                                            </Link>
+                                        )}
+                                    </li>
+                                ))}
+                            </ol>
+                        </section>
+
+                        {/* Persistent, low-key partner prompt — part of the page, never a modal. */}
+                        {!isPartner && lockedCount > 0 && (
+                            <section className={styles.partnerPrompt}>
+                                <h2 className={styles.promptTitle}>
+                                    {lockedCount} more {lockedCount === 1 ? "format" : "formats"} for this class
+                                </h2>
+                                <p className={styles.promptText}>
+                                    The class itself is always free. Partnering monthly — for any
+                                    amount — opens the video, podcast, brief, slides, scripture
+                                    list and quiz on every class from here on.
+                                </p>
+                                <Link href="/partner/join" className={styles.promptCta}>
+                                    Become a Partner
+                                </Link>
+                            </section>
+                        )}
+                    </aside>
+                </div>
             </div>
         </main>
     );

@@ -6,6 +6,7 @@ import {
     fetchDriveFileStream,
     getDriveFileMeta,
     DriveUnavailableError,
+    fetchDriveThumbnailStream,
     PROXY_MAX_BYTES,
 } from "@/lib/drive";
 import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
@@ -34,6 +35,7 @@ export async function GET(req: Request) {
     const slug = url.searchParams.get("slug") ?? "";
     const format = url.searchParams.get("format") ?? "";
     const wantsDownload = url.searchParams.get("download") === "1";
+    const wantsThumb = url.searchParams.get("thumb") === "1";
 
     // Cheap abuse guard on a route that fans out to Google.
     const gate = await rateLimit(`classfile:${ipFromHeaders(req.headers)}`, LIMIT, WINDOW_SEC);
@@ -78,6 +80,23 @@ export async function GET(req: Request) {
 
     try {
         const meta = await getDriveFileMeta(fileId);
+
+        // Poster frame (?thumb=1). Deliberately placed AFTER every access check
+        // above, so a preview image is gated exactly like the file it previews —
+        // and the expiring googleusercontent URL never reaches the browser.
+        if (wantsThumb) {
+            if (!meta?.thumbnailLink) {
+                return NextResponse.json({ error: "No preview image" }, { status: 404 });
+            }
+            const thumb = await fetchDriveThumbnailStream(meta);
+            const thumbHeaders = new Headers();
+            thumbHeaders.set("Content-Type", thumb.contentType);
+            if (thumb.contentLength) thumbHeaders.set("Content-Length", thumb.contentLength);
+            // Private, but worth caching in the subscriber's own browser.
+            thumbHeaders.set("Cache-Control", "private, max-age=3600");
+            thumbHeaders.set("X-Content-Type-Options", "nosniff");
+            return new Response(thumb.body, { status: 200, headers: thumbHeaders });
+        }
 
         // Defence in depth: the PAGE decides proxy-vs-preview, but this route is
         // publicly reachable, so refuse to stream something far too large for a

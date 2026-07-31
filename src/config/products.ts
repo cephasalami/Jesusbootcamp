@@ -33,6 +33,13 @@ export type Book = {
     downloadUrl?: string;
 };
 
+/** A public PDF that uses the same trusted, same-origin download proxy as books. */
+export type DownloadablePdf = {
+    slug: string;
+    title: string;
+    downloadUrl: string;
+};
+
 export const CURRENCY = "usd";
 
 /** Every book is $5. Change here to reprice the whole catalog. */
@@ -67,6 +74,25 @@ export const BOOKS: Record<string, Book> = {
     // Add new approved books here, then wire them into a CHECKOUT below.
 };
 
+/**
+ * Additional PDFs delivered from email. Keeping these in the same allowlist
+ * lets /api/download/[slug] proxy them without accepting arbitrary URLs.
+ */
+export const EMAIL_PDFS: Record<string, DownloadablePdf> = {
+    "before-we-begin": {
+        slug: "before-we-begin",
+        title: "Before We Begin",
+        downloadUrl:
+            "https://mcusercontent.com/d0e3ae7aee09d6264267481c7/files/57165dd1-4035-79fa-7deb-976da2af8217/Before_We_Begin._From_Paul_Joseph.pdf",
+    },
+    "why-it-was-born": {
+        slug: "why-it-was-born",
+        title: "Why the Jesus Boot Camp Was Born",
+        downloadUrl:
+            "https://mcusercontent.com/d0e3ae7aee09d6264267481c7/files/4f875004-60d1-9787-88a4-009578d5e61e/Why_the_ldquo_Jesus_Boot_Camp_rdquo_Was_Born.pdf",
+    },
+};
+
 /** A secondary offer (order-bump or one-click upsell) inside a checkout. */
 export type Offer = { slug: string; priceCents: number };
 
@@ -99,6 +125,15 @@ export const CHECKOUTS: Record<string, Checkout> = {
 export function getBook(slug: string): Book | undefined {
     return BOOKS[slug];
 }
+
+/** Look up any allowlisted PDF served by the existing download proxy. */
+export function getDownload(slug: string): DownloadablePdf | undefined {
+    const book = getBook(slug);
+    if (book?.downloadUrl) {
+        return { slug: book.slug, title: book.title, downloadUrl: book.downloadUrl };
+    }
+    return EMAIL_PDFS[slug];
+}
 export function getCheckout(slug: string): Checkout | undefined {
     return CHECKOUTS[slug];
 }
@@ -113,8 +148,8 @@ export function formatUsd(cents: number): string {
  * Used by the download proxy so buyers get a clean name, not the raw dated
  * upload filename.
  */
-export function bookDownloadFilename(book: Book): string {
-    const base = book.title
+export function bookDownloadFilename(file: Pick<DownloadablePdf, "title">): string {
+    const base = file.title
         .replace(/[^\p{L}\p{N}]+/gu, "-")
         .replace(/^-+|-+$/g, "");
     return `${base || "Book"}.pdf`;

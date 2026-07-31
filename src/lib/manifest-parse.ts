@@ -14,7 +14,6 @@ const FILE_COLUMNS: Record<string, FormatKey> = {
     podcast_file_id: "podcast",
     brief_file_id: "brief",
     slides_file_id: "slides",
-    flashcards_file_id: "flashcards",
     scriptures_file_id: "scriptures",
 };
 

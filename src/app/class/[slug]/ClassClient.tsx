@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Play, Share2, Check, MessageCircle } from "lucide-react";
+import styles from "./page.module.css";
 
 /**
  * Video/audio player for the Drive `/preview` embed.
@@ -16,13 +17,43 @@ export function PreviewPlayer({
     label,
     buttonClass,
     frameClass,
+    variant = "row",
+    posterSrc,
 }: {
     src: string;
     label: string;
     buttonClass: string;
     frameClass: string;
+    /** "hero" renders a full-width poster with a centred play badge. */
+    variant?: "row" | "hero";
+    /** Proxied poster frame (see /api/class/file?thumb=1). */
+    posterSrc?: string;
 }) {
     const [open, setOpen] = useState(false);
+
+    if (!open && variant === "hero") {
+        // Composed from real elements rather than CSS pseudo-elements: the
+        // previous version drew the circle in CSS and tried to hide the button's
+        // contents with `> *`, which cannot hide a bare text node — so a stray
+        // "Play" label sat under the circle.
+        return (
+            <button
+                type="button"
+                className={buttonClass}
+                onClick={() => setOpen(true)}
+                aria-label={`Play ${label}`}
+            >
+                {posterSrc && (
+                    /* eslint-disable-next-line @next/next/no-img-element -- proxied,
+                       per-subscriber and short-lived; next/image would cache it. */
+                    <img src={posterSrc} alt="" className={styles.heroPoster} loading="eager" />
+                )}
+                <span className={styles.heroPlayBadge}>
+                    <Play size={26} strokeWidth={0} fill="currentColor" />
+                </span>
+            </button>
+        );
+    }
 
     if (!open) {
         return (

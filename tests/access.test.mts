@@ -20,7 +20,6 @@ const ALL_FILES = {
     podcast: "id_podcast",
     brief: "id_brief",
     slides: "id_slides",
-    flashcards: "id_flash",
     scriptures: "id_scrip",
 };
 
@@ -180,7 +179,7 @@ describe("Check 2 — missing/unparseable COURSESTART fails SAFE", () => {
 });
 
 describe("Check 3 — partner gating", () => {
-    test("class 4 (position 5), NON-partner: PDF open, other six locked", () => {
+    test("class 4 (position 5), NON-partner: PDF open, other five locked", () => {
         const r = evaluateAccess(sub({ partner: false }), cls("4"), NOW);
         assert.equal(r.status, "open");
         const f = (r as { formats: Record<string, string> }).formats;
@@ -188,11 +187,11 @@ describe("Check 3 — partner gating", () => {
         for (const key of FORMAT_KEYS.filter((k) => k !== "pdf")) {
             assert.equal(f[key], "locked-partner", `${key} must be partner-gated`);
         }
-        // All seven rows are still present — locked formats are shown, not hidden.
-        assert.equal(Object.keys(f).length, 7);
+        // All six rows are still present — locked formats are shown, not hidden.
+        assert.equal(Object.keys(f).length, 6);
     });
 
-    test("class 4, PARTNER: all seven formats open", () => {
+    test("class 4, PARTNER: all six formats open", () => {
         const r = evaluateAccess(sub({ partner: true }), cls("4"), NOW);
         const f = (r as { formats: Record<string, string> }).formats;
         for (const key of FORMAT_KEYS) assert.equal(f[key], "open", `${key} should be open for a partner`);

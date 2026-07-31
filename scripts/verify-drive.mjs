@@ -81,7 +81,7 @@ for (const c of classes) {
             `  ${fmt.padEnd(11)} ${String(size ?? "?").padStart(9)}B  ${String(meta.mimeType).slice(0, 28).padEnd(30)} -> ${route.padEnd(7)} ${bytesOk}`
         );
     }
-    const missing = 7 - Object.keys(c.files).length;
+    const missing = 6 - Object.keys(c.files).length;
     if (missing > 0) console.log(`  (${missing} format(s) absent -> "Coming soon" rows)`);
 }
 

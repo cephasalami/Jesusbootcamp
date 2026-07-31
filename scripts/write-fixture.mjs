@@ -4,10 +4,10 @@ import { readFileSync, writeFileSync } from "node:fs";
 const HEADER = [
     "slug", "sequence_position", "title",
     "pdf_file_id", "video_file_id", "podcast_file_id", "brief_file_id",
-    "slides_file_id", "flashcards_file_id", "scriptures_file_id",
+    "slides_file_id", "scriptures_file_id",
     "quiz_url",
 ];
-const all = (n) => [`FAKE_PDF_FILE_ID_${n}`, `FAKE_VID_${n}`, `FAKE_POD_${n}`, `FAKE_BRIEF_${n}`, `FAKE_SLIDES_${n}`, `FAKE_FLASH_${n}`, `FAKE_SCRIP_${n}`];
+const all = (n) => [`FAKE_PDF_FILE_ID_${n}`, `FAKE_VID_${n}`, `FAKE_POD_${n}`, `FAKE_BRIEF_${n}`, `FAKE_SLIDES_${n}`, `FAKE_SCRIP_${n}`];
 
 const GOOD_QUIZ = "https://docs.google.com/forms/d/e/1FAIpQLSfixture123/viewform";
 // The exact mistake that has happened for real: the Google Forms EDITOR link.
