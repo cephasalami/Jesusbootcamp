@@ -27,10 +27,10 @@ export type FormatKey = (typeof FORMAT_KEYS)[number];
 export const FORMAT_LABELS: Record<FormatKey, string> = {
     pdf: "Class PDF",
     video: "Full teaching video",
-    podcast: "Podcast (20 min)",
-    brief: "Video brief (10 min)",
+    podcast: "Podcast",
+    brief: "Video Overview",
     slides: "PowerPoint",
-    scriptures: "Scripture list",
+    scriptures: "Main Points/Scriptures",
 };
 
 /**

@@ -36,6 +36,7 @@ export async function GET(req: Request) {
     const format = url.searchParams.get("format") ?? "";
     const wantsDownload = url.searchParams.get("download") === "1";
     const wantsThumb = url.searchParams.get("thumb") === "1";
+    const wantsAudioStream = url.searchParams.get("stream") === "1" && format === "podcast";
 
     // Cheap abuse guard on a route that fans out to Google.
     const gate = await rateLimit(`classfile:${ipFromHeaders(req.headers)}`, LIMIT, WINDOW_SEC);
@@ -101,7 +102,7 @@ export async function GET(req: Request) {
         // Defence in depth: the PAGE decides proxy-vs-preview, but this route is
         // publicly reachable, so refuse to stream something far too large for a
         // serverless response rather than timing out mid-transfer.
-        if (meta?.size != null && meta.size > PROXY_MAX_BYTES) {
+        if (meta?.size != null && meta.size > PROXY_MAX_BYTES && !wantsAudioStream) {
             console.warn(
                 `[class/file] refusing to proxy ${klass.slug}/${format} — ${meta.size} bytes exceeds ${PROXY_MAX_BYTES}`
             );
@@ -113,9 +114,10 @@ export async function GET(req: Request) {
 
         // `meta` is passed so a Docs Editors file is exported rather than
         // fetched with alt=media (which Drive refuses with a 403).
-        const { body, contentType, contentLength, suggestedExt } = await fetchDriveFileStream(
+        const { body, contentType, contentLength, status, contentRange, suggestedExt } = await fetchDriveFileStream(
             fileId,
-            meta
+            meta,
+            wantsAudioStream ? req.headers.get("range") ?? undefined : undefined
         );
 
         const safeTitle = klass.title.replace(/[^\p{L}\p{N} \-_]/gu, "").trim() || `Class ${klass.slug}`;
@@ -136,11 +138,15 @@ export async function GET(req: Request) {
             contentDisposition(wantsDownload ? "attachment" : "inline", filename)
         );
         if (contentLength) headers.set("Content-Length", contentLength);
+        if (wantsAudioStream) {
+            headers.set("Accept-Ranges", "bytes");
+            if (contentRange) headers.set("Content-Range", contentRange);
+        }
         // Gated content — never cached by a shared proxy or CDN.
         headers.set("Cache-Control", "private, no-store");
         headers.set("X-Content-Type-Options", "nosniff");
 
-        return new Response(body, { status: 200, headers });
+        return new Response(body, { status, headers });
     } catch (err) {
         if (err instanceof DriveUnavailableError) {
             return NextResponse.json({ error: err.userMessage }, { status: err.status });

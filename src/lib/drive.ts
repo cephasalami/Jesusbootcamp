@@ -7,12 +7,13 @@
 //   1. PROXIED  — fetched here with the service account and streamed back from
 //      our own origin. The Drive URL is never exposed to the browser. Used for
 //      everything comfortably under PROXY_MAX_BYTES (PDFs, slides,
-//      scripture lists).
+//      Main Points/Scriptures documents).
 //   2. PREVIEW  — for files too large to push through a serverless function
 //      (video/audio), we reveal Drive's /preview embed URL, but ONLY after the
 //      server-side access check has passed. See the honesty note on
 //      `drivePreviewUrl` below.
 import { getAccessToken, isGoogleConfigured } from "./google-auth";
+import { readAudioDurationMs } from "./audio-duration";
 
 export { isGoogleConfigured };
 
@@ -40,6 +41,8 @@ export type DriveFileMeta = {
      * same access checks as the file itself.
      */
     thumbnailLink: string | null;
+    /** Real audio duration read from the file header when Drive omits it. */
+    durationMs: number | null;
 };
 
 /** A friendly, non-technical failure a subscriber can actually read. */
@@ -100,6 +103,61 @@ async function driveFailure(res: Response, fileId: string): Promise<DriveUnavail
 // ── File metadata (cached — size drives the proxy-vs-preview decision) ───────
 const metaCache = new Map<string, { value: DriveFileMeta; expires: number }>();
 const META_TTL_MS = 10 * 60 * 1000;
+const AUDIO_DURATION_SAMPLE_BYTES = 512 * 1024;
+
+async function fetchDriveRange(
+    fileId: string,
+    token: string,
+    start: number,
+    end: number
+): Promise<Uint8Array | null> {
+    try {
+        const res = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Range: `bytes=${start}-${end}`,
+                },
+                cache: "no-store",
+                signal: AbortSignal.timeout(10_000),
+            }
+        );
+        if (!res.ok) return null;
+        return new Uint8Array(await res.arrayBuffer());
+    } catch (err) {
+        // Duration is helpful metadata, not a reason to make a class page fail.
+        console.warn(`[drive] could not read audio duration for ${fileId}:`, err);
+        return null;
+    }
+}
+
+async function getAudioDurationMs(
+    fileId: string,
+    mimeType: string,
+    size: number | null,
+    token: string
+): Promise<number | null> {
+    if (!/^audio\//i.test(mimeType) || !size || size <= 0) return null;
+
+    const firstLength = Math.min(size, AUDIO_DURATION_SAMPLE_BYTES);
+    const firstBytes = await fetchDriveRange(fileId, token, 0, firstLength - 1);
+    if (!firstBytes) return null;
+
+    const firstResult = readAudioDurationMs({
+        firstBytes,
+        lastBytes: new Uint8Array(),
+        fileSize: size,
+        mimeType,
+    });
+    if (firstResult != null || size <= AUDIO_DURATION_SAMPLE_BYTES || /^audio\/mpeg$/i.test(mimeType)) {
+        return firstResult;
+    }
+
+    const lastBytes = await fetchDriveRange(fileId, token, size - AUDIO_DURATION_SAMPLE_BYTES, size - 1);
+    if (!lastBytes) return null;
+    return readAudioDurationMs({ firstBytes, lastBytes, fileSize: size, mimeType });
+}
 
 /**
  * Fetch a file's name/mimeType/size. Cached in-process for 10 minutes: file
@@ -134,12 +192,14 @@ export async function getDriveFileMeta(fileId: string): Promise<DriveFileMeta | 
             size?: string;
             thumbnailLink?: string;
         };
+        const size = json.size ? Number(json.size) : null;
         const value: DriveFileMeta = {
             id: json.id,
             name: json.name,
             mimeType: json.mimeType,
-            size: json.size ? Number(json.size) : null,
+            size,
             thumbnailLink: json.thumbnailLink ?? null,
+            durationMs: await getAudioDurationMs(key, json.mimeType, size, token),
         };
         metaCache.set(key, { value, expires: Date.now() + META_TTL_MS });
         return value;
@@ -190,7 +250,7 @@ const MEDIA_FORMATS = new Set(["video", "podcast", "brief"]);
  * `alt=media` answers 403 "Only files with binary content can be downloaded.
  * Use Export with Docs Editors files." They must go through /export instead.
  *
- * The real class-1 scripture list is a Google Doc, which is why it failed with
+ * The real class-1 Main Points/Scriptures document is a Google Doc, which is why it failed with
  * the same generic message as the em-dash bug but for a completely different
  * reason.
  */
@@ -199,7 +259,7 @@ export function isGoogleNative(mimeType: string | undefined | null): boolean {
 }
 
 /** What we export each Docs Editors type as. PDF reads and prints well and is
- *  what a subscriber actually wants for a scripture list or set of notes. */
+ *  what a subscriber actually wants for their Main Points/Scriptures document. */
 const EXPORT_TARGETS: Record<string, { mimeType: string; ext: string }> = {
     "application/vnd.google-apps.document": { mimeType: "application/pdf", ext: ".pdf" },
     "application/vnd.google-apps.presentation": { mimeType: "application/pdf", ext: ".pdf" },
@@ -220,11 +280,14 @@ export function exportTargetFor(mimeType: string): { mimeType: string; ext: stri
  */
 export async function fetchDriveFileStream(
     fileId: string,
-    meta?: DriveFileMeta | null
+    meta?: DriveFileMeta | null,
+    range?: string
 ): Promise<{
     body: ReadableStream<Uint8Array>;
     contentType: string;
     contentLength: string | null;
+    status: number;
+    contentRange: string | null;
     /** Extension implied by the delivered bytes, e.g. ".pdf" for an exported Doc. */
     suggestedExt: string | null;
 }> {
@@ -246,7 +309,9 @@ export async function fetchDriveFileStream(
 
     let res: Response;
     try {
-        res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+        const headers = new Headers({ Authorization: `Bearer ${token}` });
+        if (range) headers.set("Range", range);
+        res = await fetch(url, { headers, cache: "no-store" });
     } catch (err) {
         console.error(`[drive] network error for ${fileId}:`, err);
         throw new DriveUnavailableError(FRIENDLY_GENERIC, 502);
@@ -259,6 +324,8 @@ export async function fetchDriveFileStream(
         contentType:
             target?.mimeType ?? res.headers.get("content-type") ?? "application/octet-stream",
         contentLength: res.headers.get("content-length"),
+        status: res.status,
+        contentRange: res.headers.get("content-range"),
         suggestedExt: target?.ext ?? null,
     };
 }

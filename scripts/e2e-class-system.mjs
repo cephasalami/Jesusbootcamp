@@ -170,7 +170,7 @@ try {
     ok(!nonPartner.visible.includes("Take the Quiz"), "but its link is withheld");
     ok(!/viewform|forms\.gle/.test(nonPartner.html), "and the quiz URL never reaches a non-partner");
     ok(nonPartner.html.includes("/partner/join"), "locked formats link to /partner/join");
-    for (const label of ["Class PDF", "Full teaching video", "Podcast (20 min)", "Video brief (10 min)", "PowerPoint", "Scripture list"]) {
+    for (const label of ["Class PDF", "Full teaching video", "Podcast (20 min)", "Video Overview", "PowerPoint", "Main Points/Scriptures"]) {
         ok(nonPartner.html.includes(label), `all seven rows visible â€” "${label.replace("&amp;", "&")}"`);
     }
     const pdfLink = `/api/class/file?t=${TOKEN}&amp;slug=4&amp;format=pdf`;
@@ -290,4 +290,3 @@ try {
     console.log(`\n${pass} passed, ${fail} failed`);
     process.exit(fail ? 1 : 0);
 }
-

@@ -56,7 +56,7 @@ export default async function PartnerConfirmationPage({
                         <li>
                             Your partner access is being switched on. From your next class onward,
                             the full extra material — video, podcast, brief, slides, quiz and
-                            scripture list — arrives alongside each class.
+                            Main Points/Scriptures — arrives alongside each class.
                         </li>
                         <li>
                             You can cancel anytime — just reply to any email and we&apos;ll stop the

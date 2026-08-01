@@ -15,7 +15,7 @@ import {
 } from "@/lib/access";
 import { getDriveFileMeta, chooseDelivery, drivePreviewUrl } from "@/lib/drive";
 import IdentifyForm from "./IdentifyForm";
-import { ShareRow, PreviewPlayer } from "./ClassClient";
+import { AudioPlayer, ShareRow, PreviewPlayer } from "./ClassClient";
 import FormatThumb, { type ThumbKind } from "./FormatThumb";
 import styles from "./page.module.css";
 
@@ -31,10 +31,10 @@ export const metadata: Metadata = {
 const FORMAT_BLURBS: Record<FormatKey, string> = {
     pdf: "The full class, ready to read, print or pass on.",
     video: "Watch the class taught in full.",
-    podcast: "A passionate 20-minute explainer of the lesson.",
+    podcast: "An audio explainer of the lesson.",
     brief: "The 10-minute version when time is short.",
     slides: "Teach it yourself from a platform.",
-    scriptures: "Every scripture on the topic, in one list.",
+    scriptures: "The main points and scripture references, together in one document.",
 };
 
 function formatDate(d: Date): string {
@@ -53,6 +53,12 @@ function shortDate(d: Date): string {
 
 function classNumberLabel(klass: ClassRecord): string {
     return `Class ${klass.slug.toUpperCase()}`;
+}
+
+function formatAudioDuration(durationMs: number | null): string | null {
+    if (durationMs == null || !Number.isFinite(durationMs) || durationMs <= 0) return null;
+    const totalSeconds = Math.floor(durationMs / 1000);
+    return `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
 }
 
 /** Breadcrumb shown above every state, mirroring the reference layout. */
@@ -215,21 +221,36 @@ export default async function ClassPage({
     }
 
     // ── Check 3 — released: resolve how each open format is delivered ──
+    type Delivery = "proxy" | "preview" | "audio";
     const rows = await Promise.all(
         FORMAT_KEYS.map(async (key) => {
             const state = access.formats[key];
             const fileId = klass.files[key];
             if (state !== "open" || !fileId) {
-                return { key, state, delivery: null as null | "proxy" | "preview", previewUrl: "" };
+                return {
+                    key,
+                    state,
+                    delivery: null as Delivery | null,
+                    previewUrl: "",
+                    audioUrl: "",
+                    durationMs: null,
+                };
             }
             const meta = await getDriveFileMeta(fileId);
-            const delivery = chooseDelivery(key, meta);
+            // Media always uses its tailored browser player: a compact audio
+            // control for podcasts and a popup /preview embed for video.
+            const delivery: Delivery =
+                key === "podcast" ? "audio" : key === "video" || key === "brief" ? "preview" : chooseDelivery(key, meta);
             return {
                 key,
                 state,
                 delivery,
                 // Only ever computed for a format this subscriber may open.
                 previewUrl: delivery === "preview" ? drivePreviewUrl(fileId) : "",
+                audioUrl: delivery === "audio"
+                    ? `/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=podcast&stream=1`
+                    : "",
+                durationMs: meta?.durationMs ?? null,
             };
         })
     );
@@ -303,11 +324,11 @@ export default async function ClassPage({
                                     variant="hero"
                                     src={heroRow.previewUrl}
                                     label={FORMAT_LABELS[heroRow.key]}
+                                    classTitle={klass.title}
                                     // Drive's own poster frame, proxied behind the
                                     // same access checks as the video itself.
                                     posterSrc={`/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${heroRow.key}&thumb=1`}
                                     buttonClass={styles.heroPlay}
-                                    frameClass={styles.heroFrame}
                                 />
                             ) : (
                                 <div className={styles.heroPlaceholder}>
@@ -326,8 +347,12 @@ export default async function ClassPage({
                             </div>
 
                             <ul className={styles.formats}>
-                                {rows.map(({ key, state, delivery, previewUrl }) => {
+                                {rows.map(({ key, state, delivery, previewUrl, audioUrl, durationMs }) => {
                                     const href = `/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${key}`;
+                                    const duration = key === "podcast" ? formatAudioDuration(durationMs) : null;
+                                    const formatLabel = key === "podcast" && duration
+                                        ? `Podcast (${duration})`
+                                        : FORMAT_LABELS[key];
 
                                     return (
                                         <li
@@ -345,7 +370,7 @@ export default async function ClassPage({
                                             />
 
                                             <span className={styles.rowBody}>
-                                                <span className={styles.rowLabel}>{FORMAT_LABELS[key]}</span>
+                                                <span className={styles.rowLabel}>{formatLabel}</span>
                                                 <span className={styles.rowBlurb}>
                                                     {state === "coming-soon"
                                                         ? "Coming soon"
@@ -355,7 +380,7 @@ export default async function ClassPage({
                                                 </span>
                                             </span>
 
-                                            <span className={styles.rowAction}>
+                                            <div className={styles.rowAction}>
                                                 {state === "coming-soon" && (
                                                     <span className={styles.soonTag}>Coming soon</span>
                                                 )}
@@ -381,11 +406,19 @@ export default async function ClassPage({
                                                     <PreviewPlayer
                                                         src={previewUrl}
                                                         label={FORMAT_LABELS[key]}
+                                                        classTitle={klass.title}
                                                         buttonClass={styles.openBtn}
-                                                        frameClass={styles.playerFrame}
                                                     />
                                                 )}
-                                            </span>
+
+                                                {state === "open" && delivery === "audio" && (
+                                                    <AudioPlayer
+                                                        src={audioUrl}
+                                                        label={formatLabel}
+                                                        durationMs={durationMs}
+                                                    />
+                                                )}
+                                            </div>
                                         </li>
                                     );
                                 })}
@@ -499,8 +532,8 @@ export default async function ClassPage({
                                 </h2>
                                 <p className={styles.promptText}>
                                     The class itself is always free. Partnering monthly — for any
-                                    amount — opens the video, podcast, brief, slides, scripture
-                                    list and quiz on every class from here on.
+                                    amount — opens the full video, podcast, Video Overview, slides,
+                                    Main Points/Scriptures and quiz on every class from here on.
                                 </p>
                                 <Link href="/partner/join" className={styles.promptCta}>
                                     Become a Partner

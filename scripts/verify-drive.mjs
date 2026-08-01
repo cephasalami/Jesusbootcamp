@@ -40,8 +40,62 @@ const rq = async (url, init = {}, tries = 4) => {
 const sheet = await rq(
     `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SHEET_ID)}/values/${encodeURIComponent(RANGE)}?majorDimension=ROWS`
 );
-const { classes } = parseManifestRows((await sheet.json()).values ?? []);
+const sheetValues = (await sheet.json()).values ?? [];
+const { classes } = parseManifestRows(sheetValues);
+console.log(`manifest headers: ${(sheetValues[0] ?? []).join(" | ")}`);
 console.log(`manifest: ${classes.length} class(es)\n`);
+
+const isGoogleNative = (mimeType) => String(mimeType).startsWith("application/vnd.google-apps.");
+const duration = (ms) => {
+    const total = Number(ms);
+    if (!Number.isFinite(total) || total <= 0) return "n/a";
+    const seconds = Math.round(total / 1000);
+    return `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, "0")}s`;
+};
+
+const exportUrl = (id) =>
+    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}/export?mimeType=application%2Fpdf`;
+
+// Media previews are intentionally loaded in a subscriber browser without a
+// service-account bearer token. Probe every Video Overview this same way so a
+// valid Drive ID that is not actually shareable cannot masquerade as a working
+// class link.
+const publicPreview = async (id) => {
+    try {
+        const res = await fetch(`https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`, {
+            redirect: "manual",
+            signal: AbortSignal.timeout(20_000),
+        });
+        const html = res.status === 200 ? await res.text() : "";
+        const title = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? "(no title)";
+        // Public Drive previews include a ServiceLogin link in their chrome,
+        // so only the page title can reliably distinguish the real sign-in
+        // screen from a viewable file page.
+        const signIn = /^(Google Drive: Sign-in|Sign in - Google Accounts)$/i.test(title);
+        return res.status === 200 && !signIn
+            ? "public preview OK"
+            : `public preview FAILED ${res.status}${signIn ? ` (${title})` : ""}`;
+    } catch (err) {
+        return `public preview ERROR ${err instanceof Error ? err.message : "unknown"}`;
+    }
+};
+
+// Native <audio> needs a real media response rather than Drive's HTML preview.
+// Verify that the public stream supports range requests before the class UI uses it.
+const publicAudioStream = async (id) => {
+    try {
+        const res = await fetch(
+            `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download&confirm=t`,
+            { headers: { Range: "bytes=0-1023" }, redirect: "follow", signal: AbortSignal.timeout(20_000) }
+        );
+        const type = res.headers.get("content-type") ?? "unknown";
+        return res.ok && /^audio\//i.test(type)
+            ? `native audio stream OK (${type})`
+            : `native audio stream FAILED ${res.status} (${type})`;
+    } catch (err) {
+        return `native audio stream ERROR ${err instanceof Error ? err.message : "unknown"}`;
+    }
+};
 
 let proxied = 0;
 let preview = 0;
@@ -52,7 +106,7 @@ for (const c of classes) {
     if (c.quizUrl) console.log(`  quiz_url: ${c.quizUrl}`);
     for (const [fmt, id] of Object.entries(c.files)) {
         const metaRes = await rq(
-            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?fields=id,name,mimeType,size&supportsAllDrives=true`
+            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?fields=id,name,mimeType,size,videoMediaMetadata&supportsAllDrives=true`
         );
         if (!metaRes.ok) {
             failed++;
@@ -62,23 +116,30 @@ for (const c of classes) {
         const meta = await metaRes.json();
         const size = meta.size ? Number(meta.size) : null;
         const route = size == null
-            ? (fmt === "video" || fmt === "podcast" ? "preview" : "proxy")
+            ? (["video", "podcast", "brief"].includes(fmt) ? "preview" : "proxy")
             : (size <= PROXY_MAX ? "proxy" : "preview");
         if (route === "proxy") proxied++; else preview++;
+        const mediaDuration = duration(meta.videoMediaMetadata?.durationMillis);
 
         // Prove we can actually pull the bytes (Range keeps it to 1 KB).
         let bytesOk = "n/a (preview path)";
         if (route === "proxy") {
+            const source = isGoogleNative(meta.mimeType)
+                ? exportUrl(id)
+                : `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true`;
             const dl = await rq(
-                `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true`,
+                source,
                 { headers: { Range: "bytes=0-1023" } }
             );
             const buf = dl.ok ? Buffer.from(await dl.arrayBuffer()) : null;
             bytesOk = dl.ok ? `OK ${buf.length}B "${buf.subarray(0, 5).toString("latin1").replace(/[^\x20-\x7e]/g, ".")}"` : `FAILED ${dl.status}`;
             if (!dl.ok) failed++;
         }
+        const browserCheck = fmt === "brief" ? await publicPreview(id) : "";
+        const audioCheck = fmt === "podcast" ? await publicAudioStream(id) : "";
         console.log(
-            `  ${fmt.padEnd(11)} ${String(size ?? "?").padStart(9)}B  ${String(meta.mimeType).slice(0, 28).padEnd(30)} -> ${route.padEnd(7)} ${bytesOk}`
+            `  ${fmt.padEnd(11)} ${String(size ?? "?").padStart(9)}B  ${String(meta.mimeType).slice(0, 28).padEnd(30)} ${mediaDuration.padEnd(8)} -> ${route.padEnd(7)} ${bytesOk}\n` +
+            `               ${meta.name ?? "(unnamed file)"}${browserCheck ? `\n               ${browserCheck}` : ""}${audioCheck ? `\n               ${audioCheck}` : ""}`
         );
     }
     const missing = 6 - Object.keys(c.files).length;

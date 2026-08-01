@@ -33,9 +33,9 @@ type Selection = PartnerTierId | "custom";
 const UNLOCKS = [
     <>An actual <strong>VIDEO</strong> of each class</>,
     <>A passionate 20 minute audio <strong>PODCAST</strong>, providing a full explainer of each lesson</>,
-    <>A shorter 10 minute <strong>VIDEO BRIEF</strong> of each class</>,
+    <>A shorter 10 minute <strong>VIDEO OVERVIEW</strong> of each class</>,
     <>A <strong>POWERPOINT</strong> presentation for those who want to teach it from a platform</>,
-    <>A digital <strong>FLASHCARD</strong> and a <strong>QUIZ</strong> of each class to help teach children</>,
+    <>A <strong>QUIZ</strong> of each class to help teach children</>,
     <>A targeted list of the class&apos;s <strong>MAIN POINTS</strong> for your study group</>,
     <>
         A <strong>TOPICAL LIST</strong> of <strong>ALL SCRIPTURE</strong> verses on the topic for
@@ -72,7 +72,7 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
     // Elements is created in deferred `subscription` mode with a FIXED initial
     // amount; amount changes are applied imperatively via elements.update() inside
     // the child, so the element never remounts on a selection change.
-    const initialAmount = useRef(defaultTier.amountCents).current;
+    const [initialAmount] = useState(defaultTier.amountCents);
     const elementsOptions = useMemo(
         () =>
             ({
