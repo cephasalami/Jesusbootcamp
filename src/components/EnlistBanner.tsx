@@ -33,11 +33,10 @@ export default function EnlistBanner() {
                         </span>
                         <h2 className="font-display text-[1.9rem] sm:text-[2.4rem] font-bold text-navy leading-[1.1] mb-4">
                             Every believer is called.
-                            <br className="hidden sm:block" /> Few ever enlist.
                         </h2>
                         <p className="text-grey text-[1.05rem] leading-[1.7] max-w-[540px] mx-auto mb-8">
                             The Jesus Boot Camp is a 90-day intensive that turns what you know into
-                            how you live — and equips you to disciple others. Start free; your first
+                            how you live — and equips you to disciple others today. Start free; your first
                             class arrives by email.
                         </p>
 

@@ -49,7 +49,7 @@ export default function PartnerCTA({
                         href={PARTNER_JOIN_PATH}
                         className="inline-flex items-center gap-2 bg-gold text-navy text-[15px] font-bold px-8 py-4 rounded-sm transition-all duration-300 hover:brightness-105 hover:-translate-y-0.5 shadow-[0_10px_30px_rgba(201,168,76,0.25)]"
                     >
-                        Partner From $25/month
+                        Partner with us
                         <ArrowRight className="w-4 h-4" />
                     </Link>
                     <p className="text-white/40 text-[12.5px] mt-4">
