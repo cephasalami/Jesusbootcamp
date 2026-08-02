@@ -160,6 +160,19 @@
     cursor: default;
 }
 
+.heroVideoFrame {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+}
+
+.heroVideoFrame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
 /* The poster frame (Drive's first frame of the video), proxied from our origin. */
 .heroPoster {
     position: absolute;

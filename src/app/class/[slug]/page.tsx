@@ -17,11 +17,10 @@ import {
     type ClassRecord,
 } from "@/lib/access";
 import { getDriveFileMeta, chooseDelivery, drivePreviewUrl } from "@/lib/drive";
-import { getSellableBookPromotions } from "@/config/products";
 import { classDownloadFilename } from "@/lib/class-download";
 import IdentifyForm from "./IdentifyForm";
 import DeviceIdentityBootstrap from "./DeviceIdentityBootstrap";
-import BookSpotlight from "./BookSpotlight";
+import ClassMediaWarmup from "./ClassMediaWarmup";
 import { AudioPlayer, ShareRow, PreviewPlayer } from "./ClassClient";
 import FormatThumb, { type ThumbKind } from "./FormatThumb";
 import styles from "./page.module.css";
@@ -43,6 +42,18 @@ const FORMAT_BLURBS: Record<FormatKey, string> = {
     slides: "Teach it yourself from a platform.",
     scriptures: "The main points and scripture references, together in one document.",
 };
+
+/** The learner-facing material order. The full teaching video lives in the
+ * hero when available, so it is deliberately last here only for its existing
+ * "Coming soon" fallback state. */
+const MATERIAL_ROW_ORDER: readonly FormatKey[] = [
+    "pdf",
+    "podcast",
+    "brief",
+    "scriptures",
+    "slides",
+    "video",
+];
 
 function formatDate(d: Date): string {
     return d.toLocaleDateString("en-US", {
@@ -286,14 +297,15 @@ export default async function ClassPage({
     const openCount =
         rows.filter((r) => r.state === "open").length + (quizState === "open" ? 1 : 0);
     const shareUrl = `https://jesusbootcamp.org/class/${klass.slug}`;
-    const bookPromotions = getSellableBookPromotions();
 
     // The hero player prefers an open Video Overview, then an open full video. Purely a display
     // choice — it reuses the row that already passed the access check.
     const heroRow =
-        rows.find((r) => r.key === "brief" && r.state === "open" && r.delivery === "preview") ??
-        rows.find((r) => r.key === "video" && r.state === "open" && r.delivery === "preview");
-    const materialRows = heroRow ? rows.filter((r) => r.key !== heroRow.key) : rows;
+        rows.find((r) => r.key === "video" && r.state === "open" && r.delivery === "preview") ??
+        rows.find((r) => r.key === "brief" && r.state === "open" && r.delivery === "preview");
+    const materialRows = [...(heroRow ? rows.filter((r) => r.key !== heroRow.key) : rows)].sort(
+        (a, b) => MATERIAL_ROW_ORDER.indexOf(a.key) - MATERIAL_ROW_ORDER.indexOf(b.key)
+    );
     // Remove only the promoted format. Missing video rows remain visible as "Coming soon."
 
     // Sidebar outline. `evaluateAccess` is pure and does no I/O, so this is just
@@ -312,6 +324,7 @@ export default async function ClassPage({
     return (
         <main className={styles.page}>
             {identity?.source === "url" && <DeviceIdentityBootstrap token={token} />}
+            <ClassMediaWarmup />
             <div className={styles.shell}>
                 <Crumbs klass={klass} />
 
@@ -494,12 +507,6 @@ export default async function ClassPage({
                                 )}
                             </ul>
                         </section>
-
-                        <BookSpotlight
-                            key={klass.slug}
-                            books={bookPromotions}
-                            classSlug={klass.slug}
-                        />
 
                         <ShareRow
                             url={shareUrl}

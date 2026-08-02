@@ -2,14 +2,15 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Pause, Play, Share2, Check, MessageCircle, Volume2, X } from "lucide-react";
+import { shouldPrebufferPodcast } from "@/lib/media-warmup";
 import styles from "./page.module.css";
 
 /**
  * Video player for the Drive `/preview` embed.
  *
  * The embed URL is computed server-side and ONLY passed here for a format the
- * subscriber is authorised to open. It mounts only inside a focused popup,
- * keeping the class list in place and avoiding several concurrent players.
+ * subscriber is authorised to open. List-row videos use a focused popup; the
+ * single class hero video mounts in place so it can start immediately.
  */
 export function PreviewPlayer({
     src,
@@ -49,7 +50,9 @@ export function PreviewPlayer({
     }, []);
 
     useEffect(() => {
-        if (!open) return;
+        // Only the material-list modal locks scroll and captures Escape. The
+        // hero video plays inline and must leave the page behaving normally.
+        if (!open || variant === "hero") return;
         const previousOverflow = document.body.style.overflow;
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") closePlayer();
@@ -61,9 +64,13 @@ export function PreviewPlayer({
             document.body.style.overflow = previousOverflow;
             window.removeEventListener("keydown", onKeyDown);
         };
-    }, [open]);
+    }, [open, variant]);
 
     function openPlayer() {
+        if (variant === "hero") {
+            setOpen(true);
+            return;
+        }
         window.history.pushState({ jbcPreviewPlayer: playerId }, "", window.location.href);
         ownsHistoryEntry.current = true;
         setOpen(true);
@@ -77,6 +84,20 @@ export function PreviewPlayer({
             ownsHistoryEntry.current = false;
             window.history.back();
         }
+    }
+
+    if (open && variant === "hero") {
+        const autoplaySrc = `${src}${src.includes("?") ? "&" : "?"}autoplay=1`;
+        return (
+            <div className={styles.heroVideoFrame} aria-label={`Playing ${playerLabel}`}>
+                <iframe
+                    src={autoplaySrc}
+                    title={playerLabel}
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                />
+            </div>
+        );
     }
 
     if (!open && variant === "hero") {
@@ -169,6 +190,7 @@ export function AudioPlayer({
     durationMs: number | null;
 }) {
     const audioRef = useRef<HTMLAudioElement>(null);
+    const [preload, setPreload] = useState<"metadata" | "auto">("metadata");
     const [open, setOpen] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [loadedDuration, setLoadedDuration] = useState(0);
@@ -176,6 +198,18 @@ export function AudioPlayer({
     const totalSeconds = loadedDuration || (durationMs != null ? durationMs / 1000 : 0);
     const progress = totalSeconds > 0 ? Math.min(1, currentTime / totalSeconds) : 0;
     const durationLabel = formatAudioTime(totalSeconds) ?? "Audio";
+
+    useEffect(() => {
+        const navigatorWithConnection = navigator as Navigator & {
+            connection?: { saveData?: boolean; effectiveType?: string };
+        };
+        if (!shouldPrebufferPodcast(navigatorWithConnection.connection)) return;
+
+        // Let the class page paint before asking the browser to buffer a
+        // podcast. This keeps the hero and class material list responsive.
+        const timer = window.setTimeout(() => setPreload("auto"), 1_000);
+        return () => window.clearTimeout(timer);
+    }, []);
 
     async function togglePlayback() {
         const audio = audioRef.current;
@@ -199,7 +233,7 @@ export function AudioPlayer({
             <audio
                 ref={audioRef}
                 src={src}
-                preload="metadata"
+                preload={preload}
                 onLoadedMetadata={(event) => setLoadedDuration(event.currentTarget.duration)}
                 onDurationChange={(event) => setLoadedDuration(event.currentTarget.duration)}
                 onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
