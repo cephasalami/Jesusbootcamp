@@ -277,10 +277,19 @@ export type MailchimpMember = {
  */
 export async function getMember(email: string): Promise<MailchimpMember | null> {
     const { base, headers } = memberEndpoint(email);
-    const res = await fetch(
-        `${base}?fields=email_address,status,tags,merge_fields`,
-        { headers, cache: "no-store" }
-    );
+    let res: Response;
+    try {
+        res = await fetch(
+            `${base}?fields=email_address,status,tags,merge_fields`,
+            { headers, cache: "no-store", signal: AbortSignal.timeout(10_000) }
+        );
+    } catch (err) {
+        // Class-page identity checks run during server rendering. A short-lived
+        // DNS/network outage at Mailchimp must lead to the normal recovery UI,
+        // not crash the entire React Server Component with `fetch failed`.
+        console.error("[mailchimp] member read network failure:", err);
+        return null;
+    }
     if (res.status === 404) return null;
     if (res.status >= 400) {
         const detail = await res.text();

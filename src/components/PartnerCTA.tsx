@@ -28,7 +28,7 @@ export default function PartnerCTA({
                     <span className="inline-flex items-center gap-2 text-[11px] font-bold text-gold tracking-[0.2em] uppercase mb-5">
                         <HandHeart className="w-4 h-4" /> Become a Kingdom Partner
                     </span>
-                    <h2 className="font-display text-[2rem] sm:text-[2.5rem] font-bold leading-tight mb-5">
+                    <h2 className="font-display !text-white text-[2rem] sm:text-[2.5rem] font-bold leading-tight mb-5">
                         The core classes are always free. Partnering unlocks the rest.
                     </h2>
                     <p className="text-white/70 text-[1.05rem] leading-[1.7] max-w-[640px] mx-auto mb-8">

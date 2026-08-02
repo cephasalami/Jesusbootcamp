@@ -11,6 +11,7 @@ import {
 } from "@/lib/drive";
 import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 import { contentDisposition } from "@/lib/content-disposition";
+import { classDownloadFilename } from "@/lib/class-download";
 
 // Gated Drive proxy — the ONLY way a private class file reaches a browser.
 //
@@ -124,7 +125,14 @@ export async function GET(req: Request) {
         // Prefer the extension implied by what we actually deliver (an exported
         // Doc arrives as PDF), falling back to the Drive file's own extension.
         const ext = suggestedExt ?? (meta?.name?.match(/\.[a-z0-9]+$/i)?.[0] ?? "").toLowerCase();
-        const filename = `JBC Class ${klass.slug} - ${safeTitle}${ext}`;
+        const filename = wantsDownload
+            ? classDownloadFilename(
+                klass.slug,
+                safeTitle,
+                format,
+                ext || (format === "pdf" || format === "scriptures" ? ".pdf" : "")
+            )
+            : `JBC Class ${klass.slug} - ${safeTitle}${ext}`;
 
         const headers = new Headers();
         // contentType already accounts for an export; never trust meta.mimeType

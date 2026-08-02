@@ -1,8 +1,11 @@
-// Repairs only class-tagged contacts that are missing a CTOKEN or its Redis
-// reverse index. Requires --apply so an audit can never mutate live data by accident.
+// Repairs class-tagged contacts that are missing a CTOKEN or its Redis reverse
+// index. `--rotate-all --apply` deliberately re-issues every enrolled contact's
+// token; it exists for a pre-launch reset, not routine repair. Both modes
+// require --apply so an audit can never mutate live data by accident.
 import { issueToken, resolveByEmail } from "../src/lib/subscriber.ts";
 
 const apply = process.argv.includes("--apply");
+const rotateAll = process.argv.includes("--rotate-all");
 const apiKey = process.env.MAILCHIMP_API_KEY;
 const server = process.env.MAILCHIMP_API_SERVER;
 const audienceId = process.env.MAILCHIMP_AUDIENCE_ID;
@@ -84,12 +87,24 @@ for (const member of members) {
     if (rawOwner == null) missingIndexes.push(email);
 }
 
-console.log(JSON.stringify({ tagged: members.length, missingTokens: missingTokens.length, missingIndexes: missingIndexes.length, apply }, null, 2));
+const enrolledEmails = members
+    .map((member) => String(member.email_address ?? "").trim().toLowerCase())
+    .filter(Boolean);
+const targets = rotateAll ? enrolledEmails : missingTokens;
+
+console.log(JSON.stringify({
+    tagged: members.length,
+    missingTokens: missingTokens.length,
+    missingIndexes: missingIndexes.length,
+    rotateAll,
+    targets: targets.length,
+    apply,
+}, null, 2));
 if (!apply) process.exit(0);
 
 const repaired: string[] = [];
 const failures: string[] = [];
-for (const email of missingTokens) {
+for (const email of targets) {
     try {
         await issueToken(email, { setCourseStartIfMissing: false });
         repaired.push(email);
@@ -97,7 +112,7 @@ for (const email of missingTokens) {
         failures.push(`${email.replace(/^(.{2}).*@/, "$1***@")} — ${String(error)}`);
     }
 }
-for (const email of missingIndexes) {
+if (!rotateAll) for (const email of missingIndexes) {
     try {
         const result = await resolveByEmail(email);
         if (!result) throw new Error("contact did not resolve as enrolled");

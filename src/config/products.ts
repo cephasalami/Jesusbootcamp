@@ -219,6 +219,15 @@ export type CheckoutView = {
     hasUpsell: boolean;
 };
 
+/** Minimal, client-safe book data used by rotating purchase cards. */
+export type BookPromotionView = {
+    slug: string;
+    title: string;
+    blurb: string;
+    image?: string;
+    price: string;
+};
+
 /** Build the client display DTO for a checkout, or null if the slug is unknown. */
 export function getCheckoutView(slug: string): CheckoutView | null {
     const checkout = CHECKOUTS[slug];
@@ -235,6 +244,23 @@ export function getCheckoutView(slug: string): CheckoutView | null {
                 : undefined,
         hasUpsell: Boolean(checkout.upsell && BOOKS[checkout.upsell.slug]),
     };
+}
+
+/**
+ * Every book that has a working first-party checkout. A BOOKS entry is not
+ * promoted until its matching CHECKOUTS entry exists, so a newly drafted book
+ * can never send a learner to a 404 checkout.
+ */
+export function getSellableBookPromotions(): BookPromotionView[] {
+    return Object.values(BOOKS)
+        .filter((book) => CHECKOUTS[book.slug]?.productSlug === book.slug)
+        .map((book) => ({
+            slug: book.slug,
+            title: book.title,
+            blurb: book.blurb,
+            image: book.image,
+            price: formatUsd(book.priceCents),
+        }));
 }
 
 // ── Reverse tag lookup (used by the /tracking dashboard for book attribution) ─

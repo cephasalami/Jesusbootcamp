@@ -835,6 +835,169 @@ a.outlineRow:hover {
     filter: brightness(1.06);
 }
 
+/* ── Rotating book offer ── */
+.bookPromo {
+    position: relative;
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    overflow: hidden;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(201, 168, 76, 0.16), transparent 42%),
+        var(--white);
+    box-shadow: 0 8px 28px rgba(26, 26, 26, 0.06);
+}
+
+.bookPromo::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--gold), var(--green));
+}
+
+.bookPromoCover {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 88px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border: 1px solid rgba(138, 109, 47, 0.18);
+    border-radius: 10px;
+    background: linear-gradient(145deg, #f9f5ea, #ebe2ce);
+    color: var(--brown);
+    box-shadow: 0 8px 18px rgba(26, 26, 26, 0.12);
+}
+
+.bookPromoCover img {
+    object-fit: contain;
+    padding: 5px;
+}
+
+.bookPromoCopy {
+    min-width: 0;
+}
+
+.bookPromoEyebrow {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--brown);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.bookPromoTitle {
+    margin: 0 0 4px;
+    color: var(--text-primary);
+    font-family: var(--font-display), "Playfair Display", Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.16;
+}
+
+.bookPromoBlurb {
+    margin: 0 0 7px;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.bookPromoMeta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    color: var(--green);
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.bookPromoCta {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    background: var(--green);
+    color: var(--white);
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    transition: filter 0.16s ease, transform 0.16s ease;
+}
+
+.bookPromoCta strong {
+    color: #f1d88f;
+    font-size: inherit;
+}
+
+.bookPromoCta:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.bookPromoCta:focus-visible {
+    outline: 3px solid rgba(201, 168, 76, 0.5);
+    outline-offset: 3px;
+}
+
+.bookPromoLoading {
+    min-height: 200px;
+}
+
+.bookPromoSkeletonCover,
+.bookPromoSkeletonCopy > span,
+.bookPromoSkeletonButton {
+    display: block;
+    border-radius: 8px;
+    background: linear-gradient(100deg, var(--bg-cream-alt) 20%, #f3eee4 40%, var(--bg-cream-alt) 60%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.bookPromoSkeletonCover {
+    width: 88px;
+    aspect-ratio: 3 / 4;
+}
+
+.bookPromoSkeletonCopy {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.bookPromoSkeletonCopy > span:nth-child(1) {
+    width: 45%;
+    height: 10px;
+}
+
+.bookPromoSkeletonCopy > span:nth-child(2) {
+    width: 72%;
+    height: 20px;
+}
+
+.bookPromoSkeletonCopy > span:nth-child(3) {
+    width: 92%;
+    height: 11px;
+}
+
+.bookPromoSkeletonButton {
+    grid-column: 1 / -1;
+    height: 44px;
+}
+
 /* ── Share ── */
 .share {
     background-color: var(--white);
@@ -1041,7 +1204,10 @@ a.outlineRow:hover {
 
 @media (prefers-reduced-motion: reduce) {
     .skel,
-    .spin {
+    .spin,
+    .bookPromoSkeletonCover,
+    .bookPromoSkeletonCopy > span,
+    .bookPromoSkeletonButton {
         animation: none;
     }
 }
@@ -1076,6 +1242,30 @@ a.outlineRow:hover {
     }
     .row {
         padding: 13px 14px;
+    }
+    .bookPromo {
+        grid-template-columns: 128px minmax(0, 1fr) auto;
+        gap: 20px;
+        padding: 20px;
+    }
+    .bookPromoCover,
+    .bookPromoSkeletonCover {
+        width: 128px;
+    }
+    .bookPromoTitle {
+        font-size: 24px;
+    }
+    .bookPromoBlurb {
+        font-size: 13.5px;
+    }
+    .bookPromoCta,
+    .bookPromoSkeletonButton {
+        grid-column: 3;
+        grid-row: 1;
+        min-width: 142px;
+    }
+    .bookPromoLoading {
+        min-height: 212px;
     }
 }
 

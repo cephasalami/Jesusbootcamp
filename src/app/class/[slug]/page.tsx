@@ -17,8 +17,11 @@ import {
     type ClassRecord,
 } from "@/lib/access";
 import { getDriveFileMeta, chooseDelivery, drivePreviewUrl } from "@/lib/drive";
+import { getSellableBookPromotions } from "@/config/products";
+import { classDownloadFilename } from "@/lib/class-download";
 import IdentifyForm from "./IdentifyForm";
 import DeviceIdentityBootstrap from "./DeviceIdentityBootstrap";
+import BookSpotlight from "./BookSpotlight";
 import { AudioPlayer, ShareRow, PreviewPlayer } from "./ClassClient";
 import FormatThumb, { type ThumbKind } from "./FormatThumb";
 import styles from "./page.module.css";
@@ -283,6 +286,7 @@ export default async function ClassPage({
     const openCount =
         rows.filter((r) => r.state === "open").length + (quizState === "open" ? 1 : 0);
     const shareUrl = `https://jesusbootcamp.org/class/${klass.slug}`;
+    const bookPromotions = getSellableBookPromotions();
 
     // The hero player prefers an open Video Overview, then an open full video. Purely a display
     // choice — it reuses the row that already passed the access check.
@@ -370,6 +374,9 @@ export default async function ClassPage({
                             <ul className={styles.formats}>
                                 {materialRows.map(({ key, state, delivery, previewUrl, audioUrl, durationMs }) => {
                                     const href = `/api/class/file?t=${encodeURIComponent(accessToken)}&slug=${encodeURIComponent(klass.slug)}&format=${key}`;
+                                    const downloadFilename = key === "pdf" || key === "scriptures"
+                                        ? classDownloadFilename(klass.slug, klass.title, key, ".pdf")
+                                        : undefined;
                                     const duration = key === "podcast" ? formatAudioDuration(durationMs) : null;
                                     const formatLabel = key === "podcast" && duration
                                         ? `Podcast (${duration})`
@@ -417,7 +424,11 @@ export default async function ClassPage({
                                                         <a className={styles.openBtn} href={href} target="_blank" rel="noopener noreferrer">
                                                             Open
                                                         </a>
-                                                        <a className={styles.dlBtn} href={`${href}&download=1`}>
+                                                        <a
+                                                            className={styles.dlBtn}
+                                                            href={`${href}&download=1`}
+                                                            download={downloadFilename}
+                                                        >
                                                             Download
                                                         </a>
                                                     </>
@@ -483,6 +494,12 @@ export default async function ClassPage({
                                 )}
                             </ul>
                         </section>
+
+                        <BookSpotlight
+                            key={klass.slug}
+                            books={bookPromotions}
+                            classSlug={klass.slug}
+                        />
 
                         <ShareRow
                             url={shareUrl}

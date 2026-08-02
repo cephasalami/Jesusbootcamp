@@ -17,12 +17,8 @@ export default function Navbar() {
 
   const links = [
     { href: "/#problem", label: "About" },
-    { href: "/join", label: "Join Free" },
     { href: "/#how", label: "The Course" },
-    { href: "/handbook", label: "The Handbook" },
-    { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
     { href: "/blog", label: "Blog" },
-    { href: "/#testimonials", label: "Testimonials" },
     // Repointed from the PayPal /partner page to the embedded subscription flow.
     // The PayPal page stays live at /partner; revert this href to restore it here.
     { href: "/partner/join", label: "Partner" },
