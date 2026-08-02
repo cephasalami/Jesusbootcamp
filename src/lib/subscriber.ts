@@ -24,6 +24,7 @@ import {
 import {
     kvGetJson,
     kvSetJson,
+    kvDel,
     subscriberCacheKey,
     tokenIndexKey,
     isKvConfigured,
@@ -34,7 +35,7 @@ import type { Subscriber } from "./access.ts";
  *  any change we failed to explicitly invalidate still self-heals in a minute. */
 const SNAPSHOT_TTL_SEC = 60;
 /** The token→email index is durable; the token itself lives on the contact. */
-const TOKEN_INDEX_TTL_SEC = 400 * 24 * 60 * 60;
+export const TOKEN_INDEX_TTL_SEC = 400 * 24 * 60 * 60;
 
 type Snapshot = {
     email: string;
@@ -47,11 +48,6 @@ type Snapshot = {
 /** Cryptographically random, unguessable access token. */
 export function generateToken(): string {
     return randomBytes(32).toString("hex");
-}
-
-/** Keep the email-link check aligned with the fallback form's validation. */
-export function isEmailAddress(value: string): boolean {
-    return /^\S+@\S+\.\S+$/.test(value);
 }
 
 /** Today as YYYY-MM-DD (UTC) — the format written to COURSESTART. */
@@ -123,9 +119,32 @@ export async function issueToken(
 
     await setCourseFields({ email, token, courseStart });
     await kvSetJson(tokenIndexKey(token), email.trim().toLowerCase(), TOKEN_INDEX_TTL_SEC);
-    // Force the next read to see the new token/date.
-    await kvSetJson(subscriberCacheKey(email), null as unknown, 1);
+    const indexedEmail = await kvGetJson<string>(tokenIndexKey(token));
+    if (indexedEmail !== email.trim().toLowerCase()) {
+        throw new Error("CTOKEN was written to Mailchimp but its KV index could not be verified");
+    }
+    // Remove the former reverse index too. The Mailchimp CTOKEN comparison
+    // already rejects it, but deleting it makes one-person rotation a complete
+    // revocation rather than leaving a stale email mapping for 400 days.
+    if (existing?.token && existing.token !== token) {
+        await kvDel(tokenIndexKey(existing.token));
+    }
     return token;
+}
+
+/**
+ * Revoke one subscriber's token without touching their course enrolment or any
+ * other contact. They can later be issued a new token through the normal flow.
+ */
+export async function revokeToken(email: string): Promise<boolean> {
+    const clean = String(email ?? "").trim().toLowerCase();
+    if (!clean) return false;
+    const existing = await readSnapshot(clean);
+    if (!existing) return false;
+
+    await setCourseFields({ email: clean, token: "" });
+    if (existing.token) await kvDel(tokenIndexKey(existing.token));
+    return true;
 }
 
 /**
@@ -138,7 +157,10 @@ export async function issueToken(
  */
 export async function resolveByToken(token: string): Promise<Subscriber | null> {
     const clean = String(token ?? "").trim();
-    if (!clean || clean.length < 16) return null;
+    // CTOKENs are exactly 32 random bytes encoded as hexadecimal. Keeping this
+    // strict also guarantees an email address can never accidentally enter the
+    // token lookup path.
+    if (!/^[a-f0-9]{64}$/i.test(clean)) return null;
 
     const email = await kvGetJson<string>(tokenIndexKey(clean));
     if (!email) return null;
@@ -152,7 +174,7 @@ export async function resolveByToken(token: string): Promise<Subscriber | null> 
 
     // Defence in depth: the token in the index must still match the contact's
     // CTOKEN, so a re-issued token immediately invalidates the previous one.
-    if (snap.token && snap.token !== clean) {
+    if (snap.token !== clean) {
         console.warn(`[subscriber] stale token presented for ${email} — CTOKEN has been re-issued`);
         return null;
     }
@@ -186,6 +208,10 @@ export async function resolveByEmail(
 
     // Repair a missing KV index entry (eviction, or a token issued pre-deploy).
     await kvSetJson(tokenIndexKey(snap.token), clean, TOKEN_INDEX_TTL_SEC);
+    const indexedEmail = await kvGetJson<string>(tokenIndexKey(snap.token));
+    if (indexedEmail !== clean) {
+        throw new Error("The subscriber token index could not be repaired");
+    }
     return { subscriber: toSubscriber(snap), token: snap.token };
 }
 
@@ -193,30 +219,4 @@ export async function resolveByEmail(
 export async function resolveByEmailFresh(email: string): Promise<Subscriber | null> {
     const snap = await getSnapshot(String(email).trim().toLowerCase(), { fresh: true });
     return snap?.hasCourseTag ? toSubscriber(snap) : null;
-}
-
-export type ClassLinkAccess = {
-    subscriber: Subscriber;
-    /** Always the private token used for later page and file requests. */
-    token: string;
-    /** True when the original link used a Mailchimp email merge value. */
-    usedEmail: boolean;
-};
-
-/**
- * Resolve either supported class-link form. Email links are accepted only for
- * tagged class members, then callers replace the visible email with a private
- * token before rendering any class content.
- */
-export async function resolveClassLink(value: string): Promise<ClassLinkAccess | null> {
-    const clean = String(value ?? "").trim();
-    if (!clean) return null;
-
-    if (isEmailAddress(clean)) {
-        const found = await resolveByEmail(clean);
-        return found ? { ...found, usedEmail: true } : null;
-    }
-
-    const subscriber = await resolveByToken(clean);
-    return subscriber ? { subscriber, token: clean, usedEmail: false } : null;
 }

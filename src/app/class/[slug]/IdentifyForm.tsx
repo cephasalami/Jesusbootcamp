@@ -38,8 +38,10 @@ export default function IdentifyForm({ slug }: { slug: string }) {
                 setNotFound(data.message || "We couldn't find that email.");
                 return;
             }
-            // Continue to the class they were originally trying to open.
-            window.location.assign(`/class/${encodeURIComponent(slug)}?t=${encodeURIComponent(data.token)}`);
+            // Replace the tokenless fallback entry. If it stays immediately
+            // behind the authenticated page, a phone's Back button while leaving
+            // a player returns to the email form and appears to "lose" access.
+            window.location.replace(`/class/${encodeURIComponent(slug)}?t=${encodeURIComponent(data.token)}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong.");
         } finally {

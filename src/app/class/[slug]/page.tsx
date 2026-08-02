@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Lock, Clock, ChevronRight, CheckCircle2, PlayCircle, Sparkles } from "lucide-react";
 import { getManifest } from "@/lib/manifest";
-import { resolveClassLink } from "@/lib/subscriber";
+import { resolveByToken } from "@/lib/subscriber";
 import {
     evaluateAccess,
     findClassBySlug,
@@ -87,7 +86,7 @@ export default async function ClassPage({
 }) {
     const { slug } = await params;
     const sp = await searchParams;
-    const identifier = typeof sp.t === "string" ? sp.t : "";
+    const token = typeof sp.t === "string" ? sp.t : "";
 
     const classes = await getManifest();
 
@@ -128,7 +127,7 @@ export default async function ClassPage({
                             most recent class email again, or start from the beginning.
                         </p>
                         <p className={styles.noticeFoot}>
-                            <Link href={identifier ? `/class/1?t=${encodeURIComponent(identifier)}` : "/join"}>
+                            <Link href={token ? `/class/1?t=${encodeURIComponent(token)}` : "/join"}>
                                 Go to class 1
                             </Link>
                         </p>
@@ -138,15 +137,9 @@ export default async function ClassPage({
         );
     }
 
-    const linkAccess = await resolveClassLink(identifier);
-    if (linkAccess?.usedEmail) {
-        // Mailchimp email links use ?t=*|EMAIL|*. Replace the email immediately
-        // so it is not left in the browser address bar or propagated to file links.
-        redirect("/class/" + encodeURIComponent(klass.slug) + "?t=" + encodeURIComponent(linkAccess.token));
-    }
-
-    const token = linkAccess?.token ?? "";
-    const subscriber = linkAccess?.subscriber ?? null;
+    // `t` is a private, random CTOKEN only. An email address must never act as
+    // an access credential because forwarded class emails are intentionally common.
+    const subscriber = await resolveByToken(token);
     const access = evaluateAccess(subscriber, klass);
 
     if (access.status !== "unknown" && access.degraded) {
@@ -266,11 +259,13 @@ export default async function ClassPage({
         rows.filter((r) => r.state === "open").length + (quizState === "open" ? 1 : 0);
     const shareUrl = `https://jesusbootcamp.org/class/${klass.slug}`;
 
-    // The hero player: the first openable media format, if any. Purely a display
+    // The hero player prefers an open Video Overview, then an open full video. Purely a display
     // choice — it reuses the row that already passed the access check.
-    const heroRow = rows.find(
-        (r) => r.state === "open" && r.delivery === "preview" && (r.key === "video" || r.key === "brief")
-    );
+    const heroRow =
+        rows.find((r) => r.key === "brief" && r.state === "open" && r.delivery === "preview") ??
+        rows.find((r) => r.key === "video" && r.state === "open" && r.delivery === "preview");
+    const materialRows = heroRow ? rows.filter((r) => r.key !== heroRow.key) : rows;
+    // Remove only the promoted format. Missing video rows remain visible as "Coming soon."
 
     // Sidebar outline. `evaluateAccess` is pure and does no I/O, so this is just
     // the same decision re-read for display — it grants nothing.
@@ -347,7 +342,7 @@ export default async function ClassPage({
                             </div>
 
                             <ul className={styles.formats}>
-                                {rows.map(({ key, state, delivery, previewUrl, audioUrl, durationMs }) => {
+                                {materialRows.map(({ key, state, delivery, previewUrl, audioUrl, durationMs }) => {
                                     const href = `/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${key}`;
                                     const duration = key === "podcast" ? formatAudioDuration(durationMs) : null;
                                     const formatLabel = key === "podcast" && duration

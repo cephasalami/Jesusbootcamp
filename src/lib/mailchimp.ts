@@ -315,7 +315,9 @@ export async function setCourseFields(opts: {
     courseStart?: string;
 }): Promise<void> {
     const fields: Record<string, string> = {};
-    if (opts.token) fields[COURSE_TOKEN_FIELD] = opts.token;
+    // An explicit empty string revokes this contact's token. `undefined` means
+    // leave the merge field unchanged.
+    if (opts.token !== undefined) fields[COURSE_TOKEN_FIELD] = opts.token;
     if (opts.courseStart) fields[COURSE_START_FIELD] = opts.courseStart;
     if (!Object.keys(fields).length) return;
 

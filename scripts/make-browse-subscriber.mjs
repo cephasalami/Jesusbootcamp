@@ -21,7 +21,14 @@ const kv = (args) =>
 const delIdx = process.argv.indexOf("--delete");
 if (delIdx !== -1) {
     const email = process.argv[delIdx + 1];
+    const memberResponse = await fetch(
+        `${mc}/members/${hash(email)}?fields=merge_fields.CTOKEN`,
+        { headers: H }
+    );
+    const member = memberResponse.ok ? await memberResponse.json() : null;
+    const token = String(member?.merge_fields?.CTOKEN ?? "").trim();
     const r = await fetch(`${mc}/members/${hash(email)}/actions/delete-permanent`, { method: "POST", headers: H });
+    if (token) await kv(["DEL", `jbc:ctoken:${token}`]);
     await kv(["DEL", `jbc:sub:${email.toLowerCase()}`]);
     console.log(r.ok ? `deleted ${email}` : `delete failed ${r.status}`);
     process.exit(0);

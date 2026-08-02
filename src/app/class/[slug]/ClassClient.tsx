@@ -96,6 +96,7 @@ export function PreviewPlayer({
                        per-subscriber and short-lived; next/image would cache it. */
                     <img src={posterSrc} alt="" className={styles.heroPoster} loading="eager" />
                 )}
+                <span className={styles.heroMediaLabel}>{label}</span>
                 <span className={styles.heroPlayBadge}>
                     <Play size={26} strokeWidth={0} fill="currentColor" />
                 </span>
