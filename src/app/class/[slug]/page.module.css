@@ -552,6 +552,35 @@
     display: block;
 }
 
+/* PDFs remain in this same overlay rather than opening a separate browser
+   tab. That keeps the materials list available behind the close button. */
+.documentModal {
+    width: min(100%, 1240px);
+    height: min(100%, 880px);
+}
+
+.documentModalFrame {
+    height: calc(100% - 56px);
+    min-height: 420px;
+    background: #e8e8e8;
+}
+
+.documentModalFrame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.documentModalClose {
+    width: auto;
+    gap: 6px;
+    padding: 0 11px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+}
+
 @keyframes mediaFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -1239,6 +1268,20 @@ a.outlineRow:hover {
     .rowAction {
         margin-left: 58px;
         width: 100%;
+    }
+
+    .videoModalBackdrop {
+        padding: 0;
+    }
+
+    .documentModal {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .documentModalFrame {
+        min-height: 0;
     }
 }
 

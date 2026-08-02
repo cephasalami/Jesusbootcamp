@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { Pause, Play, Share2, Check, MessageCircle, Volume2, X } from "lucide-react";
+import { ArrowLeft, Pause, Play, Share2, Check, MessageCircle, Volume2, X } from "lucide-react";
 import { shouldPrebufferPodcast } from "@/lib/media-warmup";
 import styles from "./page.module.css";
 
@@ -167,6 +167,114 @@ export function PreviewPlayer({
                         allowFullScreen
                         loading="lazy"
                     />
+                </div>
+            </section>
+        </div>
+    );
+}
+
+/**
+ * Keeps PDF handouts inside the class experience.  Opening a document in a
+ * separate tab is particularly fragile in email apps: closing that tab often
+ * returns a learner to the email rather than to their class.  This viewer
+ * preserves the class underneath, and gives browser Back the same close-only
+ * behaviour as the video popup.
+ */
+export function DocumentViewer({
+    src,
+    label,
+    classTitle,
+    buttonClass,
+}: {
+    src: string;
+    label: string;
+    classTitle: string;
+    buttonClass: string;
+}) {
+    const [open, setOpen] = useState(false);
+    const viewerId = useId();
+    const ownsHistoryEntry = useRef(false);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const viewerLabel = `${label} - ${classTitle}`;
+
+    useEffect(() => {
+        const onPopState = () => {
+            if (!ownsHistoryEntry.current) return;
+            ownsHistoryEntry.current = false;
+            setOpen(false);
+        };
+        window.addEventListener("popstate", onPopState);
+        return () => window.removeEventListener("popstate", onPopState);
+    }, []);
+
+    useEffect(() => {
+        if (!open) return;
+        const previousOverflow = document.body.style.overflow;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") closeViewer();
+        };
+        document.body.style.overflow = "hidden";
+        closeButtonRef.current?.focus();
+        window.addEventListener("keydown", onKeyDown);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", onKeyDown);
+        };
+    }, [open]);
+
+    function openViewer() {
+        // This leaves the address (and its CTOKEN) unchanged while giving the
+        // device Back button one local action: close the document viewer.
+        window.history.pushState({ jbcDocumentViewer: viewerId }, "", window.location.href);
+        ownsHistoryEntry.current = true;
+        setOpen(true);
+    }
+
+    function closeViewer() {
+        setOpen(false);
+        if (ownsHistoryEntry.current) {
+            ownsHistoryEntry.current = false;
+            window.history.back();
+        }
+    }
+
+    if (!open) {
+        return (
+            <button type="button" className={buttonClass} onClick={openViewer}>
+                Open
+            </button>
+        );
+    }
+
+    return (
+        <div
+            className={styles.videoModalBackdrop}
+            role="presentation"
+            onMouseDown={(event) => {
+                if (event.target === event.currentTarget) closeViewer();
+            }}
+        >
+            <section
+                className={`${styles.videoModal} ${styles.documentModal}`}
+                role="dialog"
+                aria-modal="true"
+                aria-label={`Viewing ${viewerLabel}`}
+            >
+                <header className={styles.videoModalHead}>
+                    <span>{label}</span>
+                    <button
+                        ref={closeButtonRef}
+                        type="button"
+                        className={`${styles.videoModalClose} ${styles.documentModalClose}`}
+                        onClick={closeViewer}
+                        aria-label={`Back to class from ${viewerLabel}`}
+                    >
+                        <ArrowLeft size={18} />
+                        <span>Back to class</span>
+                    </button>
+                </header>
+                <div className={styles.documentModalFrame}>
+                    <iframe src={src} title={viewerLabel} />
                 </div>
             </section>
         </div>

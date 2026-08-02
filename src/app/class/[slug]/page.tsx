@@ -21,7 +21,7 @@ import { classDownloadFilename } from "@/lib/class-download";
 import IdentifyForm from "./IdentifyForm";
 import DeviceIdentityBootstrap from "./DeviceIdentityBootstrap";
 import ClassMediaWarmup from "./ClassMediaWarmup";
-import { AudioPlayer, ShareRow, PreviewPlayer } from "./ClassClient";
+import { AudioPlayer, DocumentViewer, ShareRow, PreviewPlayer } from "./ClassClient";
 import FormatThumb, { type ThumbKind } from "./FormatThumb";
 import styles from "./page.module.css";
 
@@ -434,9 +434,12 @@ export default async function ClassPage({
 
                                                 {state === "open" && delivery === "proxy" && (
                                                     <>
-                                                        <a className={styles.openBtn} href={href} target="_blank" rel="noopener noreferrer">
-                                                            Open
-                                                        </a>
+                                                        <DocumentViewer
+                                                            src={href}
+                                                            label={FORMAT_LABELS[key]}
+                                                            classTitle={klass.title}
+                                                            buttonClass={styles.openBtn}
+                                                        />
                                                         <a
                                                             className={styles.dlBtn}
                                                             href={`${href}&download=1`}
