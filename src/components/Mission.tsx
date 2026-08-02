@@ -2,7 +2,7 @@ import { SectionTag } from "./ui/Buttons";
 
 const stats: { value: string; label: string; scripture?: boolean }[] = [
   { value: "90 Days", label: "Discipleship Course" },
-  { value: "26,000+", label: "Scripture Words" },
+  { value: "26,000+", label: "Word Scriptures" },
   { value: "Global Mission", label: "“making disciples of all nations” (Matthew 28:19)", scripture: true },
 ];
 

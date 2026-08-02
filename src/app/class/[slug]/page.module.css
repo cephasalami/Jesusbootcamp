@@ -878,6 +878,22 @@ a.outlineRow:hover {
     color: #06331a;
 }
 
+.helpLink {
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin: 2px 0 0;
+    text-align: center;
+}
+
+.helpLink a {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.helpLink a:hover {
+    color: var(--brown);
+}
+
 /* ── Notices / fallback form ── */
 .notice {
     background-color: var(--white);

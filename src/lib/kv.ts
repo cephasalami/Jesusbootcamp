@@ -65,6 +65,22 @@ export async function kvDel(key: string): Promise<void> {
     await command(["DEL", key]);
 }
 
+/** Add one value to a Redis set and keep the set for the requested lifetime. */
+export async function kvSetAdd(key: string, value: string, ttlSeconds: number): Promise<boolean> {
+    const added = await command<number>(["SADD", key, value]);
+    if (added == null) return false;
+    if (ttlSeconds > 0) {
+        const expires = await command<number>(["EXPIRE", key, Math.floor(ttlSeconds)]);
+        if (expires !== 1) return false;
+    }
+    return true;
+}
+
+/** Read every member of a Redis set. Null means KV was unavailable. */
+export async function kvSetMembers(key: string): Promise<string[] | null> {
+    return command<string[]>(["SMEMBERS", key]);
+}
+
 // ── Class-subscriber cache keys ──────────────────────────────────────────────
 // Defined here (rather than in subscriber.ts) so lib/mailchimp.ts can drop a
 // stale snapshot the instant partner status changes, without importing
@@ -79,6 +95,16 @@ export function subscriberCacheKey(email: string): string {
 /** Index key mapping an access token to the email that owns it. */
 export function tokenIndexKey(token: string): string {
     return `jbc:ctoken:${token.trim()}`;
+}
+
+/** Index key for a device credential. Only a SHA-256 digest is used here. */
+export function deviceIndexKey(tokenDigest: string): string {
+    return `jbc:device:${tokenDigest.trim()}`;
+}
+
+/** Reverse index used to revoke all of one subscriber's device credentials. */
+export function subscriberDevicesKey(email: string): string {
+    return `jbc:devices:${email.trim().toLowerCase()}`;
 }
 
 /**

@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { resolveByEmail } from "@/lib/subscriber";
+import {
+    DEVICE_COOKIE_NAME,
+    DEVICE_COOKIE_OPTIONS,
+    issueDeviceToken,
+    resolveByEmail,
+} from "@/lib/subscriber";
 import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 
 // Fallback identification for a class link whose `?t=` is missing, mangled by an
@@ -39,7 +44,20 @@ export async function POST(req: Request) {
                     "We couldn't find that email on the Jesus Boot Camp list. You can join free — it only takes a moment.",
             });
         }
-        return NextResponse.json({ found: true, token: found.token });
+        const response = NextResponse.json({ found: true, token: found.token });
+        try {
+            const deviceToken = await issueDeviceToken(found.subscriber.email);
+            response.cookies.set(DEVICE_COOKIE_NAME, deviceToken, DEVICE_COOKIE_OPTIONS);
+        } catch (deviceError) {
+            // Device recognition is a convenience layer. A transient KV outage
+            // must not stop a correctly identified subscriber from continuing
+            // with their normal CTOKEN link.
+            console.error(
+                `[class/identify] could not remember the device for ${found.subscriber.email}:`,
+                deviceError
+            );
+        }
+        return response;
     } catch (err) {
         console.error(`[class/identify] lookup failed for ${email}:`, err);
         return NextResponse.json(

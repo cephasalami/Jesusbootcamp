@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Lock, Clock, ChevronRight, CheckCircle2, PlayCircle, Sparkles } from "lucide-react";
 import { getManifest } from "@/lib/manifest";
-import { resolveByToken } from "@/lib/subscriber";
+import {
+    DEVICE_COOKIE_NAME,
+    resolveSubscriberIdentity,
+} from "@/lib/subscriber";
 import {
     evaluateAccess,
     findClassBySlug,
@@ -14,6 +18,7 @@ import {
 } from "@/lib/access";
 import { getDriveFileMeta, chooseDelivery, drivePreviewUrl } from "@/lib/drive";
 import IdentifyForm from "./IdentifyForm";
+import DeviceIdentityBootstrap from "./DeviceIdentityBootstrap";
 import { AudioPlayer, ShareRow, PreviewPlayer } from "./ClassClient";
 import FormatThumb, { type ThumbKind } from "./FormatThumb";
 import styles from "./page.module.css";
@@ -77,6 +82,15 @@ function Crumbs({ klass }: { klass?: ClassRecord }) {
     );
 }
 
+function ClassHelpLink({ slug }: { slug: string }) {
+    return (
+        <p className={styles.helpLink}>
+            Something not working or partner materials still locked?{" "}
+            <Link href={`/contact?class=${encodeURIComponent(slug)}`}>Contact us</Link>.
+        </p>
+    );
+}
+
 export default async function ClassPage({
     params,
     searchParams,
@@ -102,6 +116,7 @@ export default async function ClassPage({
                             again in a few minutes — nothing is wrong with your access.
                         </p>
                     </div>
+                    <ClassHelpLink slug={slug} />
                 </div>
             </main>
         );
@@ -132,6 +147,7 @@ export default async function ClassPage({
                             </Link>
                         </p>
                     </div>
+                    <ClassHelpLink slug={slug} />
                 </div>
             </main>
         );
@@ -139,7 +155,13 @@ export default async function ClassPage({
 
     // `t` is a private, random CTOKEN only. An email address must never act as
     // an access credential because forwarded class emails are intentionally common.
-    const subscriber = await resolveByToken(token);
+    const deviceToken = (await cookies()).get(DEVICE_COOKIE_NAME)?.value ?? "";
+    const identity = await resolveSubscriberIdentity(token, deviceToken);
+    const subscriber = identity?.subscriber ?? null;
+    // A device-recognised visit has no token in its page URL. Continue using
+    // the subscriber's current CTOKEN for the existing file proxy and class
+    // navigation; this keeps those already-tested authorization paths intact.
+    const accessToken = identity?.source === "device" ? subscriber?.token ?? "" : token;
     const access = evaluateAccess(subscriber, klass);
 
     if (access.status !== "unknown" && access.degraded) {
@@ -157,6 +179,7 @@ export default async function ClassPage({
     if (access.status === "unknown") {
         return (
             <main className={styles.page}>
+                {identity?.source === "url" && <DeviceIdentityBootstrap token={token} />}
                 <div className={styles.shell}>
                     <Crumbs klass={klass} />
                     <h1 className={styles.title}>{klass.title}</h1>
@@ -173,6 +196,7 @@ export default async function ClassPage({
                             it&apos;s free.
                         </p>
                     </div>
+                    <ClassHelpLink slug={klass.slug} />
                 </div>
             </main>
         );
@@ -204,10 +228,11 @@ export default async function ClassPage({
                                 this fixed.
                             </p>
                         )}
-                        <Link href={`/class/1?t=${encodeURIComponent(token)}`} className={styles.lockedCta}>
+                        <Link href={`/class/1?t=${encodeURIComponent(accessToken)}`} className={styles.lockedCta}>
                             Go to the classes you can open
                         </Link>
                     </div>
+                    <ClassHelpLink slug={klass.slug} />
                 </div>
             </main>
         );
@@ -241,7 +266,7 @@ export default async function ClassPage({
                 // Only ever computed for a format this subscriber may open.
                 previewUrl: delivery === "preview" ? drivePreviewUrl(fileId) : "",
                 audioUrl: delivery === "audio"
-                    ? `/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=podcast&stream=1`
+                    ? `/api/class/file?t=${encodeURIComponent(accessToken)}&slug=${encodeURIComponent(klass.slug)}&format=podcast&stream=1`
                     : "",
                 durationMs: meta?.durationMs ?? null,
             };
@@ -282,6 +307,7 @@ export default async function ClassPage({
 
     return (
         <main className={styles.page}>
+            {identity?.source === "url" && <DeviceIdentityBootstrap token={token} />}
             <div className={styles.shell}>
                 <Crumbs klass={klass} />
 
@@ -322,7 +348,7 @@ export default async function ClassPage({
                                     classTitle={klass.title}
                                     // Drive's own poster frame, proxied behind the
                                     // same access checks as the video itself.
-                                    posterSrc={`/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${heroRow.key}&thumb=1`}
+                                    posterSrc={`/api/class/file?t=${encodeURIComponent(accessToken)}&slug=${encodeURIComponent(klass.slug)}&format=${heroRow.key}&thumb=1`}
                                     buttonClass={styles.heroPlay}
                                 />
                             ) : (
@@ -343,7 +369,7 @@ export default async function ClassPage({
 
                             <ul className={styles.formats}>
                                 {materialRows.map(({ key, state, delivery, previewUrl, audioUrl, durationMs }) => {
-                                    const href = `/api/class/file?t=${encodeURIComponent(token)}&slug=${encodeURIComponent(klass.slug)}&format=${key}`;
+                                    const href = `/api/class/file?t=${encodeURIComponent(accessToken)}&slug=${encodeURIComponent(klass.slug)}&format=${key}`;
                                     const duration = key === "podcast" ? formatAudioDuration(durationMs) : null;
                                     const formatLabel = key === "podcast" && duration
                                         ? `Podcast (${duration})`
@@ -465,6 +491,8 @@ export default async function ClassPage({
                             buttonClass={styles.shareBtn}
                             waClass={styles.shareWa}
                         />
+
+                        <ClassHelpLink slug={klass.slug} />
                     </div>
 
                     {/* ── Sidebar ── */}
@@ -494,7 +522,7 @@ export default async function ClassPage({
                                             </span>
                                         ) : (
                                             <Link
-                                                href={`/class/${encodeURIComponent(c.slug)}?t=${encodeURIComponent(token)}`}
+                                                href={`/class/${encodeURIComponent(c.slug)}?t=${encodeURIComponent(accessToken)}`}
                                                 className={[
                                                     styles.outlineRow,
                                                     c.isCurrent ? styles.outlineCurrent : "",

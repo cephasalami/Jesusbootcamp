@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 const originalFetch = globalThis.fetch;
 const memberByEmail = new Map<string, { tags: string[]; token: string }>();
 const kv = new Map<string, string>();
+const kvSets = new Map<string, Set<string>>();
 const kvTtl = new Map<string, number>();
 
 process.env.MAILCHIMP_API_KEY = "test-key";
@@ -37,9 +38,24 @@ before(() => {
                 return json({ result: "OK" });
             }
             if (command === "DEL") {
-                const existed = kv.delete(key);
+                const existed = kv.delete(key) || kvSets.delete(key);
                 kvTtl.delete(key);
                 return json({ result: existed ? 1 : 0 });
+            }
+            if (command === "SADD") {
+                const values = kvSets.get(key) ?? new Set<string>();
+                const sizeBefore = values.size;
+                values.add(value);
+                kvSets.set(key, values);
+                return json({ result: values.size === sizeBefore ? 0 : 1 });
+            }
+            if (command === "SMEMBERS") {
+                return json({ result: [...(kvSets.get(key) ?? [])] });
+            }
+            if (command === "EXPIRE") {
+                const exists = kv.has(key) || kvSets.has(key);
+                if (exists) kvTtl.set(key, Number(value));
+                return json({ result: exists ? 1 : 0 });
             }
         }
 
@@ -70,6 +86,7 @@ before(() => {
 beforeEach(() => {
     memberByEmail.clear();
     kv.clear();
+    kvSets.clear();
     kvTtl.clear();
 });
 
@@ -78,10 +95,16 @@ after(() => {
 });
 
 const {
+    DEVICE_COOKIE_NAME,
+    DEVICE_COOKIE_OPTIONS,
+    DEVICE_TOKEN_TTL_SEC,
     TOKEN_INDEX_TTL_SEC,
+    issueDeviceToken,
     issueToken,
+    resolveByDeviceToken,
     resolveByEmail,
     resolveByToken,
+    resolveSubscriberIdentity,
     revokeToken,
 } = await import("../src/lib/subscriber.ts");
 
@@ -134,6 +157,52 @@ describe("class-link identity", () => {
         assert.equal(TOKEN_INDEX_TTL_SEC, 400 * 24 * 60 * 60);
     });
 
+    test("manual identification can remember the device for later tokenless links", async () => {
+        const email = "remember-me@example.com";
+        const token = "2".repeat(64);
+        memberByEmail.set(email, { tags: ["jbc-course-start"], token });
+
+        const found = await resolveByEmail(email);
+        assert.equal(found?.token, token);
+
+        const deviceToken = await issueDeviceToken(email);
+        assert.match(deviceToken, /^[a-f0-9]{64}$/);
+        const tokenDigest = createHash("sha256").update(deviceToken).digest("hex");
+        assert.equal(kv.has(`jbc:device:${deviceToken}`), false, "raw device token must not be stored");
+        assert.equal(kv.has(`jbc:device:${tokenDigest}`), true);
+        assert.equal(kvSets.get(`jbc:devices:${email}`)?.has(tokenDigest), true);
+        assert.equal(kvTtl.get(`jbc:device:${tokenDigest}`), DEVICE_TOKEN_TTL_SEC);
+        assert.equal(kvTtl.get(`jbc:devices:${email}`), DEVICE_TOKEN_TTL_SEC);
+
+        const laterVisit = await resolveSubscriberIdentity("", deviceToken);
+        assert.equal(laterVisit?.source, "device");
+        assert.equal(laterVisit?.subscriber.email, email);
+        assert.equal(laterVisit?.subscriber.token, token);
+    });
+
+    test("the cookie is a long-lived secure httpOnly host cookie", () => {
+        assert.equal(DEVICE_COOKIE_NAME, "__Host-jbc_device");
+        assert.equal(DEVICE_COOKIE_OPTIONS.httpOnly, true);
+        assert.equal(DEVICE_COOKIE_OPTIONS.secure, true);
+        assert.equal(DEVICE_COOKIE_OPTIONS.sameSite, "lax");
+        assert.equal(DEVICE_COOKIE_OPTIONS.path, "/");
+        assert.equal(DEVICE_COOKIE_OPTIONS.maxAge, 400 * 24 * 60 * 60);
+    });
+
+    test("a valid URL CTOKEN stays primary even when another device cookie is present", async () => {
+        const deviceEmail = "device@example.com";
+        const deviceOwnerToken = "3".repeat(64);
+        const linkEmail = "link@example.com";
+        const linkToken = "4".repeat(64);
+        seed(deviceEmail, deviceOwnerToken);
+        seed(linkEmail, linkToken);
+        const deviceToken = await issueDeviceToken(deviceEmail);
+
+        const identity = await resolveSubscriberIdentity(linkToken, deviceToken);
+        assert.equal(identity?.source, "url");
+        assert.equal(identity?.subscriber.email, linkEmail);
+    });
+
     test("rotates one subscriber's token and leaves every other subscriber untouched", async () => {
         const firstEmail = "rotate@example.com";
         const firstOldToken = "d".repeat(64);
@@ -169,5 +238,36 @@ describe("class-link identity", () => {
         kv.set(`jbc:ctoken:${firstToken}`, JSON.stringify(firstEmail));
         assert.equal(await resolveByToken(firstToken), null);
         assert.equal((await resolveByToken(secondToken))?.email, secondEmail);
+    });
+
+    test("revocation immediately rejects every device for only that subscriber", async () => {
+        const firstEmail = "device-revoke@example.com";
+        const firstToken = "5".repeat(64);
+        const secondEmail = "device-still-valid@example.com";
+        const secondToken = "6".repeat(64);
+        seed(firstEmail, firstToken);
+        seed(secondEmail, secondToken);
+
+        const firstPhone = await issueDeviceToken(firstEmail);
+        const firstLaptop = await issueDeviceToken(firstEmail);
+        const secondDevice = await issueDeviceToken(secondEmail);
+        assert.equal((await resolveByDeviceToken(firstPhone))?.email, firstEmail);
+        assert.equal((await resolveByDeviceToken(firstLaptop))?.email, firstEmail);
+
+        assert.equal(await revokeToken(firstEmail), true);
+        assert.equal(await resolveByDeviceToken(firstPhone), null);
+        assert.equal(await resolveByDeviceToken(firstLaptop), null);
+        assert.equal((await resolveByDeviceToken(secondDevice))?.email, secondEmail);
+        assert.equal(kvSets.has(`jbc:devices:${firstEmail}`), false);
+        assert.equal(kvSets.has(`jbc:devices:${secondEmail}`), true);
+    });
+
+    test("rotating one CTOKEN also invalidates that subscriber's old device", async () => {
+        const email = "device-rotate@example.com";
+        seed(email, "7".repeat(64));
+        const deviceToken = await issueDeviceToken(email);
+
+        await issueToken(email);
+        assert.equal(await resolveByDeviceToken(deviceToken), null);
     });
 });

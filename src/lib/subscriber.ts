@@ -13,7 +13,7 @@
 // handful of concurrent users. Snapshots are cached for SIXTY SECONDS, keyed by
 // email. Partner changes explicitly bust that key (see lib/mailchimp.ts), so a
 // cancellation still lands on the very next request.
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import {
     getMember,
     setCourseFields,
@@ -25,8 +25,12 @@ import {
     kvGetJson,
     kvSetJson,
     kvDel,
+    kvSetAdd,
+    kvSetMembers,
     subscriberCacheKey,
     tokenIndexKey,
+    deviceIndexKey,
+    subscriberDevicesKey,
     isKvConfigured,
 } from "./kv.ts";
 import type { Subscriber } from "./access.ts";
@@ -36,6 +40,17 @@ import type { Subscriber } from "./access.ts";
 const SNAPSHOT_TTL_SEC = 60;
 /** The token→email index is durable; the token itself lives on the contact. */
 export const TOKEN_INDEX_TTL_SEC = 400 * 24 * 60 * 60;
+/** Device recognition lasts as long as the durable CTOKEN index. */
+export const DEVICE_TOKEN_TTL_SEC = TOKEN_INDEX_TTL_SEC;
+export const DEVICE_COOKIE_NAME = "__Host-jbc_device";
+export const DEVICE_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: DEVICE_TOKEN_TTL_SEC,
+    priority: "high" as const,
+};
 
 type Snapshot = {
     email: string;
@@ -45,9 +60,19 @@ type Snapshot = {
     hasCourseTag: boolean;
 };
 
+type DeviceIndex = {
+    email: string;
+    /** Binds this device to the exact CTOKEN generation that created it. */
+    ctokenDigest: string;
+};
+
 /** Cryptographically random, unguessable access token. */
 export function generateToken(): string {
     return randomBytes(32).toString("hex");
+}
+
+function digestToken(token: string): string {
+    return createHash("sha256").update(token).digest("hex");
 }
 
 /** Today as YYYY-MM-DD (UTC) — the format written to COURSESTART. */
@@ -103,6 +128,97 @@ async function getSnapshot(email: string, opts: { fresh?: boolean } = {}): Promi
 }
 
 /**
+ * Remove every remembered device for one subscriber. A failed KV deletion does
+ * not weaken revocation: device resolution also verifies the live CTOKEN
+ * generation, so a blanked or rotated CTOKEN rejects any stale device index.
+ */
+export async function revokeDeviceTokens(email: string): Promise<boolean> {
+    const clean = String(email ?? "").trim().toLowerCase();
+    if (!clean) return false;
+
+    const reverseKey = subscriberDevicesKey(clean);
+    const tokenDigests = await kvSetMembers(reverseKey);
+    if (tokenDigests == null) return false;
+
+    await Promise.all(tokenDigests.map((digest) => kvDel(deviceIndexKey(digest))));
+    await kvDel(reverseKey);
+    return true;
+}
+
+/**
+ * Issue a separate random device credential. The browser receives the raw
+ * value; Redis only receives its digest. The stored CTOKEN digest makes a
+ * subscriber-level revoke or rotation invalidate every device immediately.
+ */
+export async function issueDeviceToken(email: string): Promise<string> {
+    const clean = String(email ?? "").trim().toLowerCase();
+    if (!clean) throw new Error("A subscriber email is required for device recognition");
+
+    const snap = await getSnapshot(clean, { fresh: true });
+    if (!snap?.hasCourseTag || !/^[a-f0-9]{64}$/i.test(snap.token)) {
+        throw new Error("Only an enrolled subscriber with a current CTOKEN can be remembered");
+    }
+
+    const deviceToken = generateToken();
+    const tokenDigest = digestToken(deviceToken);
+    const index: DeviceIndex = {
+        email: clean,
+        ctokenDigest: digestToken(snap.token),
+    };
+    const indexKey = deviceIndexKey(tokenDigest);
+    const reverseKey = subscriberDevicesKey(clean);
+
+    await kvSetJson(indexKey, index, DEVICE_TOKEN_TTL_SEC);
+    const reverseAdded = await kvSetAdd(reverseKey, tokenDigest, DEVICE_TOKEN_TTL_SEC);
+    const [storedIndex, storedDigests] = await Promise.all([
+        kvGetJson<DeviceIndex>(indexKey),
+        kvSetMembers(reverseKey),
+    ]);
+
+    if (
+        !reverseAdded ||
+        storedIndex?.email !== clean ||
+        storedIndex.ctokenDigest !== index.ctokenDigest ||
+        !storedDigests?.includes(tokenDigest)
+    ) {
+        await kvDel(indexKey);
+        throw new Error("The device identity could not be verified in KV");
+    }
+
+    return deviceToken;
+}
+
+/** Resolve a browser device, always checking fresh Mailchimp revocation state. */
+export async function resolveByDeviceToken(deviceToken: string): Promise<Subscriber | null> {
+    const clean = String(deviceToken ?? "").trim();
+    if (!/^[a-f0-9]{64}$/i.test(clean)) return null;
+
+    const index = await kvGetJson<DeviceIndex>(deviceIndexKey(digestToken(clean)));
+    if (!index?.email || !index.ctokenDigest) return null;
+
+    // Intentionally bypass the 60-second snapshot cache. A device credential is
+    // a fallback bearer credential and must stop on the first request after a
+    // Mailchimp enrolment revoke or CTOKEN rotation.
+    const snap = await getSnapshot(index.email, { fresh: true });
+    if (!snap?.hasCourseTag || !snap.token) return null;
+    if (digestToken(snap.token) !== index.ctokenDigest) return null;
+
+    return toSubscriber(snap);
+}
+
+/** URL CTOKEN remains authoritative; the device is only the fallback. */
+export async function resolveSubscriberIdentity(
+    urlToken: string,
+    deviceToken: string
+): Promise<{ subscriber: Subscriber; source: "url" | "device" } | null> {
+    const urlSubscriber = await resolveByToken(urlToken);
+    if (urlSubscriber) return { subscriber: urlSubscriber, source: "url" };
+
+    const deviceSubscriber = await resolveByDeviceToken(deviceToken);
+    return deviceSubscriber ? { subscriber: deviceSubscriber, source: "device" } : null;
+}
+
+/**
  * Issue (or re-issue) an access token for a contact: persist it as CTOKEN and
  * index token→email in KV so the `?t=` lookup is O(1) and never scans Mailchimp.
  * Also stamps COURSESTART when the contact doesn't have one yet.
@@ -129,6 +245,9 @@ export async function issueToken(
     if (existing?.token && existing.token !== token) {
         await kvDel(tokenIndexKey(existing.token));
     }
+    // Rotation is an individual revoke. Device indexes are deleted eagerly;
+    // their CTOKEN-generation binding is the fail-safe if KV deletion fails.
+    await revokeDeviceTokens(email);
     return token;
 }
 
@@ -144,6 +263,7 @@ export async function revokeToken(email: string): Promise<boolean> {
 
     await setCourseFields({ email: clean, token: "" });
     if (existing.token) await kvDel(tokenIndexKey(existing.token));
+    await revokeDeviceTokens(clean);
     return true;
 }
 
