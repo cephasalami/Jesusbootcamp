@@ -14,6 +14,7 @@
 //      `drivePreviewUrl` below.
 import { getAccessToken, isGoogleConfigured } from "./google-auth";
 import { readAudioDurationMs } from "./audio-duration";
+import { driveMetaCacheKey, isKvConfigured, kvGetJson, kvSetJson } from "./kv";
 
 export { isGoogleConfigured };
 
@@ -103,7 +104,42 @@ async function driveFailure(res: Response, fileId: string): Promise<DriveUnavail
 // ── File metadata (cached — size drives the proxy-vs-preview decision) ───────
 const metaCache = new Map<string, { value: DriveFileMeta; expires: number }>();
 const META_TTL_MS = 10 * 60 * 1000;
+const SHARED_META_TTL_SEC = 24 * 60 * 60;
 const AUDIO_DURATION_SAMPLE_BYTES = 512 * 1024;
+
+/**
+ * Shared cache intentionally excludes Drive's short-lived thumbnail URL. The
+ * URL itself is a temporary credential; keeping it out of Redis prevents an
+ * expired image link from being treated as durable metadata.
+ */
+type SharedDriveFileMeta = Omit<DriveFileMeta, "thumbnailLink">;
+
+function readSharedMeta(raw: unknown): SharedDriveFileMeta | null {
+    if (!raw || typeof raw !== "object") return null;
+    const meta = raw as Partial<SharedDriveFileMeta>;
+    if (typeof meta.id !== "string" || typeof meta.name !== "string" || typeof meta.mimeType !== "string") {
+        return null;
+    }
+    if (meta.size !== null && typeof meta.size !== "number") return null;
+    if (meta.durationMs !== null && typeof meta.durationMs !== "number") return null;
+    return {
+        id: meta.id,
+        name: meta.name,
+        mimeType: meta.mimeType,
+        size: meta.size ?? null,
+        durationMs: meta.durationMs ?? null,
+    };
+}
+
+function withoutThumbnail(meta: DriveFileMeta): SharedDriveFileMeta {
+    return {
+        id: meta.id,
+        name: meta.name,
+        mimeType: meta.mimeType,
+        size: meta.size,
+        durationMs: meta.durationMs,
+    };
+}
 
 async function fetchDriveRange(
     fileId: string,
@@ -160,16 +196,32 @@ async function getAudioDurationMs(
 }
 
 /**
- * Fetch a file's name/mimeType/size. Cached in-process for 10 minutes: file
- * metadata is effectively static, and this call sits on the class-page render
- * path for every format row.
+ * Fetch a file's name/mimeType/size. The normal fast path is a 24-hour shared
+ * KV cache, backed by a 10-minute in-process cache. A thumbnail request always
+ * obtains a fresh temporary thumbnail URL, while reusing the shared duration.
  */
-export async function getDriveFileMeta(fileId: string): Promise<DriveFileMeta | null> {
+export async function getDriveFileMeta(
+    fileId: string,
+    options: { requireThumbnail?: boolean } = {}
+): Promise<DriveFileMeta | null> {
     if (!fileId?.trim()) return null;
     const key = fileId.trim();
+    const requireThumbnail = Boolean(options.requireThumbnail);
 
     const hit = metaCache.get(key);
-    if (hit && hit.expires > Date.now()) return hit.value;
+    if (hit && hit.expires > Date.now() && (!requireThumbnail || Boolean(hit.value.thumbnailLink))) {
+        return hit.value;
+    }
+
+    let shared: SharedDriveFileMeta | null = null;
+    if (isKvConfigured) {
+        shared = readSharedMeta(await kvGetJson<unknown>(driveMetaCacheKey(key)));
+        if (shared && !requireThumbnail) {
+            const value: DriveFileMeta = { ...shared, thumbnailLink: null };
+            metaCache.set(key, { value, expires: Date.now() + META_TTL_MS });
+            return value;
+        }
+    }
 
     const token = await getAccessToken();
     if (!token) return null;
@@ -199,9 +251,14 @@ export async function getDriveFileMeta(fileId: string): Promise<DriveFileMeta | 
             mimeType: json.mimeType,
             size,
             thumbnailLink: json.thumbnailLink ?? null,
-            durationMs: await getAudioDurationMs(key, json.mimeType, size, token),
+            // Reuse a known duration whenever a fresh thumbnail is being
+            // obtained. This avoids rereading large audio headers.
+            durationMs: shared?.durationMs ?? await getAudioDurationMs(key, json.mimeType, size, token),
         };
         metaCache.set(key, { value, expires: Date.now() + META_TTL_MS });
+        // Shared metadata is an optimisation only. Do not make the class page
+        // wait for Redis to acknowledge the write.
+        void kvSetJson(driveMetaCacheKey(key), withoutThumbnail(value), SHARED_META_TTL_SEC);
         return value;
     } catch (err) {
         console.error(`[drive] meta errored for ${key}:`, err);

@@ -26,6 +26,9 @@ async function command<T>(args: (string | number)[]): Promise<T | null> {
             },
             body: JSON.stringify(args.map(String)),
             cache: "no-store",
+            // KV is an optimisation, never a reason for a class page or a
+            // checkout to wait indefinitely during an external outage.
+            signal: AbortSignal.timeout(2_000),
         });
         if (!res.ok) {
             console.warn(`[kv] ${args[0]} failed: ${res.status}`);
@@ -90,6 +93,11 @@ export async function kvSetMembers(key: string): Promise<string[] | null> {
 export function subscriberCacheKey(email: string): string {
     // Lower-cased so the key matches however the address was typed.
     return `jbc:sub:${email.trim().toLowerCase()}`;
+}
+
+/** Stable Google Drive metadata (size/type/duration), shared across serverless instances. */
+export function driveMetaCacheKey(fileId: string): string {
+    return `jbc:drive-meta:${fileId.trim()}`;
 }
 
 /** Index key mapping an access token to the email that owns it. */

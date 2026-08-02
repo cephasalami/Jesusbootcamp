@@ -81,7 +81,7 @@ export async function GET(req: Request) {
     }
 
     try {
-        const meta = await getDriveFileMeta(fileId);
+        const meta = await getDriveFileMeta(fileId, { requireThumbnail: wantsThumb });
 
         // Poster frame (?thumb=1). Deliberately placed AFTER every access check
         // above, so a preview image is gated exactly like the file it previews —
