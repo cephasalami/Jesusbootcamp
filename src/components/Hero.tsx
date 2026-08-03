@@ -1,20 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Users, CalendarCheck } from "lucide-react";
-
-const TRUST_MARKERS = [
-  { icon: BookOpen, label: "Rooted in the Word" },
-  { icon: CalendarCheck, label: "A focused 90-day journey" },
-  { icon: Users, label: "Equipped to disciple others" },
-];
+import { ArrowRight } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section
-      id="hero"
-      className="relative min-h-svh flex flex-col overflow-hidden"
-    >
-      {/* ── Full-bleed background ── */}
+    <section id="hero" className="relative min-h-svh flex flex-col overflow-hidden">
       <Image
         src="/images/hero-meadow.webp"
         alt=""
@@ -24,19 +14,7 @@ export default function Hero() {
         className="object-cover object-center"
       />
 
-      {/* ── Hero copy, anchored over the light upper sky for natural contrast ── */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-start text-center px-5 sm:px-8 pt-[100px] pb-8">
-        {/* eyebrow badge */}
-        <span
-          data-aos="fade-down"
-          data-aos-duration="800"
-          className="inline-flex items-center gap-2.5 rounded-full bg-white/70 backdrop-blur-md border border-white/60 px-4 py-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.22em] text-navy shadow-[0_4px_20px_rgba(26,26,26,0.08)] mb-7"
-        >
-          <span className="w-2 h-2 rounded-full bg-gold animate-pulse-dot" />
-          The Jesus Boot Camp
-        </span>
-
-        {/* headline */}
         <h1
           data-aos="fade-up"
           data-aos-duration="1000"
@@ -46,7 +24,6 @@ export default function Hero() {
           <span className="italic font-normal text-gold">three months</span>
         </h1>
 
-        {/* supporting copy */}
         <p
           data-aos="fade-up"
           data-aos-delay="120"
@@ -57,7 +34,6 @@ export default function Hero() {
           Structured training in the Word, so you can disciple others.
         </p>
 
-        {/* CTAs */}
         <div
           data-aos="fade-up"
           data-aos-delay="200"
@@ -78,25 +54,6 @@ export default function Hero() {
             Get the free Handbook
             <ArrowRight className="w-4 h-4 text-gold transition-transform duration-300 group-hover:translate-x-1" />
           </a>
-        </div>
-      </div>
-
-      {/* ── Bottom trust strip (echoes the reference logo row) ── */}
-      <div className="relative z-10 w-full px-4 sm:px-5 pb-5 sm:pb-8">
-        <div
-          data-aos="fade-up"
-          data-aos-delay="300"
-          className="mx-auto w-full max-w-[900px] rounded-xl sm:rounded-2xl bg-cream/70 backdrop-blur-md border border-white/50 shadow-[0_10px_40px_rgba(26,26,26,0.12)] px-4 py-3 sm:px-6 sm:py-4 flex flex-wrap items-center justify-center gap-x-5 sm:gap-x-9 gap-y-2 sm:gap-y-2.5"
-        >
-          {TRUST_MARKERS.map(({ icon: Icon, label }) => (
-            <span
-              key={label}
-              className="inline-flex items-center gap-1.5 sm:gap-2 text-[12px] sm:text-[14px] font-semibold text-navy/80 whitespace-nowrap"
-            >
-              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold shrink-0" />
-              {label}
-            </span>
-          ))}
         </div>
       </div>
     </section>

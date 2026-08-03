@@ -50,7 +50,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar />
+      <Navbar hideBrand />
       <Hero />
       <Problem />
       <Mission />
