@@ -112,7 +112,7 @@ export default function TermsPage() {
             <p>
               If you have any questions about these terms, please reach out to us{" "}
               <a
-                href="/join"
+                href="/contact"
                 className="text-gold font-semibold underline decoration-gold/30 underline-offset-2 hover:decoration-gold"
               >
                 here

@@ -82,7 +82,7 @@ export default function PrivacyPage() {
               If you have any questions about this policy or would like your information
               removed, please reach out to us{" "}
               <a
-                href="/join"
+                href="/contact"
                 className="text-gold font-semibold underline decoration-gold/30 underline-offset-2 hover:decoration-gold"
               >
                 here

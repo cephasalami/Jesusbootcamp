@@ -5,6 +5,7 @@ import { JOIN_URL } from "@/config/links";
 const links = [
   { href: "/#problem", label: "About" },
   { href: "/#how", label: "The Course" },
+  { href: "/contact", label: "Contact" },
   { href: "/handbook", label: "The Handbook" },
   { href: "/why-the-boot-camp", label: "Why the Boot Camp?" },
   { href: "/blog", label: "Blog" },
@@ -79,7 +80,9 @@ export default function Footer() {
           <div className="flex flex-col gap-3.5">
             <a href="/handbook" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">The Handbook PDF</a>
             <a href="/why-the-boot-camp" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">Why the Boot Camp</a>
+            <a href="/contact" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">Contact Us</a>
             <a href="/privacy" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">Privacy Policy</a>
+            <a href="/terms" className="text-[14px] text-white/50 hover:text-gold hover:pl-1 transition-all duration-200">Terms of Use</a>
           </div>
         </div>
       </div>

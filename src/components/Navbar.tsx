@@ -19,6 +19,7 @@ export default function Navbar({ hideBrand = false }: { hideBrand?: boolean }) {
     { href: "/#problem", label: "About" },
     { href: "/#how", label: "The Course" },
     { href: "/blog", label: "Blog" },
+    { href: "/contact", label: "Contact" },
     // Repointed from the PayPal /partner page to the embedded subscription flow.
     // The PayPal page stays live at /partner; revert this href to restore it here.
     { href: "/partner/join", label: "Partner" },
