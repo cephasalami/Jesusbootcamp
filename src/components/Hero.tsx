@@ -1,46 +1,18 @@
-import { getImageProps } from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-
-const imageCommon = {
-  alt: "Jesus teaching a diverse group gathered for Bible study",
-  sizes: "100vw",
-};
-
-const {
-  props: { srcSet: desktopHeroSrcSet },
-} = getImageProps({
-  ...imageCommon,
-  src: "/images/hero-study-desktop.jpg",
-  width: 1774,
-  height: 887,
-  quality: 80,
-});
-
-const {
-  props: { srcSet: mobileHeroSrcSet, ...mobileHeroProps },
-} = getImageProps({
-  ...imageCommon,
-  src: "/images/hero-study-mobile.jpg",
-  width: 941,
-  height: 1672,
-  quality: 78,
-});
 
 export default function Hero() {
   return (
     <section id="hero" className="relative min-h-svh flex flex-col overflow-hidden">
-      <picture className="absolute inset-0">
-        <source media="(min-width: 640px)" srcSet={desktopHeroSrcSet} />
-        <img
-          {...mobileHeroProps}
-          srcSet={mobileHeroSrcSet}
-          alt="Jesus teaching a diverse group gathered for Bible study"
-          fetchPriority="high"
-          className="h-full w-full object-cover object-center"
-        />
-      </picture>
-      <div className="absolute inset-0 bg-gradient-to-b from-cream/95 via-cream/65 to-transparent" />
+      <Image
+        src="/images/hero-meadow.webp"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
+      />
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-start text-center px-5 sm:px-8 pt-[100px] pb-8">
         <h1
