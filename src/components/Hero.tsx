@@ -11,7 +11,7 @@ export default function Hero() {
         fill
         priority
         sizes="100vw"
-        className="object-cover object-center"
+        className="object-cover object-[60%_center] sm:object-center"
       />
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-start text-center px-5 sm:px-8 pt-[100px] pb-8">
@@ -21,7 +21,9 @@ export default function Hero() {
           className="font-display font-bold text-navy tracking-tight leading-[1.05] text-[clamp(2.3rem,5.4vw,4rem)] max-w-[18ch] mx-auto"
         >
           Become an active disciple of Jesus in only{" "}
-          <span className="italic font-normal text-gold">three months</span>
+          <span className="italic font-normal text-[#8A6510] drop-shadow-[0_1px_1px_rgba(255,255,255,0.55)]">
+            three months
+          </span>
         </h1>
 
         <p
@@ -49,7 +51,7 @@ export default function Hero() {
           </Link>
           <a
             href="/handbook"
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md border border-white/60 text-navy text-[14px] sm:text-[15px] font-bold px-6 sm:px-7 py-3.5 sm:py-4 rounded-full transition-all duration-300 hover:bg-white/90 hover:-translate-y-0.5"
+            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-cream/95 backdrop-blur-md border border-navy/25 text-navy text-[14px] sm:text-[15px] font-bold px-6 sm:px-7 py-3.5 sm:py-4 rounded-full shadow-[0_8px_24px_rgba(26,26,26,0.12)] transition-all duration-300 hover:bg-white hover:-translate-y-0.5"
           >
             Get the free Handbook
             <ArrowRight className="w-4 h-4 text-gold transition-transform duration-300 group-hover:translate-x-1" />

@@ -30,7 +30,7 @@ export default function Navbar({ hideBrand = false }: { hideBrand?: boolean }) {
       className={`fixed top-0 left-0 right-0 z-[500] transition-all duration-500 ${
         scrolled
           ? "bg-cream/90 backdrop-blur-2xl border-b border-card-border shadow-[0_2px_32px_rgba(10,31,68,0.06)]"
-          : "bg-transparent border-b border-transparent"
+          : "bg-cream/80 backdrop-blur-md border-b border-white/60 shadow-[0_1px_18px_rgba(26,26,26,0.08)]"
       }`}
     >
       <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 sm:px-8 h-[76px]">
