@@ -24,9 +24,16 @@ export async function readMailchimpMetrics(): Promise<MailchimpMetrics> {
     windowDays: WINDOW_DAYS,
     totalSubscribers: 0,
     totalContacts: 0,
+    unsubscribeCount: 0,
+    cleanedCount: 0,
+    avgOpenRate: 0,
+    avgClickRate: 0,
+    lastCampaignSentAt: null,
     newSignupsWindow: 0,
+    newUnsubsWindow: 0,
     recent: [] as MailchimpMetrics["recent"],
     series: [] as MailchimpMetrics["series"],
+    unsubSeries: [] as MailchimpMetrics["unsubSeries"],
   };
 
   if (!isMailchimpConfigured) {
@@ -58,45 +65,73 @@ export async function readMailchimpMetrics(): Promise<MailchimpMetrics> {
 
   try {
     const [list, activity, members] = await Promise.all([
-      get("?fields=stats.member_count,stats.total_contacts"),
-      get(`/activity?count=${WINDOW_DAYS}&fields=activity.day,activity.subs`),
       get(
-        "/members?sort_field=timestamp_opt&sort_dir=DESC&count=8&fields=members.email_address,members.timestamp_opt,members.timestamp_signup"
+        "?fields=stats.member_count,stats.total_contacts,stats.unsubscribe_count,stats.cleaned_count,stats.open_rate,stats.click_rate,stats.campaign_last_sent"
+      ),
+      get(`/activity?count=${WINDOW_DAYS}&fields=activity.day,activity.subs,activity.unsubs`),
+      get(
+        "/members?sort_field=timestamp_opt&sort_dir=DESC&count=25&fields=members.email_address,members.timestamp_opt,members.timestamp_signup,members.status,members.source"
       ),
     ]);
 
     const stats = (list.stats as Record<string, unknown>) ?? {};
-    const activityRows = (activity.activity as Array<{ day?: string; subs?: unknown }>) ?? [];
+    const activityRows =
+      (activity.activity as Array<{ day?: string; subs?: unknown; unsubs?: unknown }>) ?? [];
     const memberRows =
       (members.members as Array<{
         email_address?: string;
         timestamp_opt?: string;
         timestamp_signup?: string;
+        status?: string;
+        source?: string;
       }>) ?? [];
 
     const newSignupsWindow = activityRows.reduce((sum, r) => sum + num(r.subs), 0);
+    const newUnsubsWindow = activityRows.reduce((sum, r) => sum + num(r.unsubs), 0);
 
     // Mailchimp returns activity newest-first; reverse for an oldest-first series.
-    const series = [...activityRows]
-      .reverse()
-      .map((r) => ({ date: String(r.day ?? "").slice(0, 10), count: num(r.subs) }));
+    const ordered = [...activityRows].reverse();
+    const series = ordered.map((r) => ({
+      date: String(r.day ?? "").slice(0, 10),
+      count: num(r.subs),
+    }));
+    const unsubSeries = ordered.map((r) => ({
+      date: String(r.day ?? "").slice(0, 10),
+      count: num(r.unsubs),
+    }));
 
     const recent = memberRows
       .map((m) => {
         const ts = m.timestamp_opt || m.timestamp_signup || "";
         const ms = ts ? Date.parse(ts) : NaN;
-        return { email: m.email_address ?? "", ms };
+        return {
+          email: m.email_address ?? "",
+          ms,
+          status: m.status ?? null,
+          source: m.source ?? null,
+        };
       })
       .filter((r) => r.email);
+
+    const lastSent = typeof stats.campaign_last_sent === "string" ? Date.parse(stats.campaign_last_sent) : NaN;
 
     return {
       connected: true,
       windowDays: WINDOW_DAYS,
       totalSubscribers: num(stats.member_count),
       totalContacts: num(stats.total_contacts),
+      unsubscribeCount: num(stats.unsubscribe_count),
+      cleanedCount: num(stats.cleaned_count),
+      // NOTE: unlike the per-campaign report rates, LIST stats already come back
+      // as percentages (e.g. 19.77 means 19.77%) — do not scale these.
+      avgOpenRate: num(stats.open_rate),
+      avgClickRate: num(stats.click_rate),
+      lastCampaignSentAt: Number.isFinite(lastSent) ? lastSent : null,
       newSignupsWindow,
+      newUnsubsWindow,
       recent,
       series,
+      unsubSeries,
     };
   } catch (err) {
     return {

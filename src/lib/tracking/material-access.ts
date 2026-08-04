@@ -31,6 +31,33 @@ export type MaterialAccessMetrics = ProviderStatus & {
     }>;
 };
 
+/** One row of the recent-activity log, safe to render (no PII). */
+export type MaterialAccessLogEntry = {
+    classSlug: string;
+    format: MaterialAccessFormat;
+    timestamp: number;
+    success: boolean;
+    /** First 8 characters of the one-way subscriber hash — a stable pseudonym. */
+    learner: string;
+};
+
+/** The drill-down view: who opened what, when — derived from the event log. */
+export type MaterialAccessActivity = ProviderStatus & {
+    /** Newest first, already trimmed to the requested limit. */
+    events: MaterialAccessLogEntry[];
+    /** Distinct subscribers present in the log (optionally within one class). */
+    uniqueLearners: number;
+    /** Daily opened/failed counts over `windowDays`, oldest first. */
+    series: Array<{ date: string; opened: number; failed: number }>;
+    windowDays: number;
+    /** Events the log holds for this filter, before the display limit. */
+    matched: number;
+    /** Oldest event the capped log still remembers. */
+    oldestMs: number | null;
+    /** True when the log is at its 2,000-record cap, so it is a recent window. */
+    capped: boolean;
+};
+
 const ROOT = "jbc:material-access:v1";
 const EVENT_LOG_LIMIT = 2_000;
 
@@ -147,6 +174,115 @@ export async function readMaterialAccessMetrics(): Promise<MaterialAccessMetrics
         return {
             connected: true,
             error: err instanceof Error ? err.message : "Failed to read material-access metrics",
+            ...empty,
+        };
+    }
+}
+
+const ACTIVITY_WINDOW_DAYS = 14;
+
+function utcDay(ms: number): string {
+    return new Date(ms).toISOString().slice(0, 10);
+}
+
+function parseLogEntry(raw: unknown): MaterialAccessEvent | null {
+    if (typeof raw !== "string") return null;
+    try {
+        const parsed = JSON.parse(raw) as Partial<MaterialAccessEvent>;
+        if (!parsed || typeof parsed.classSlug !== "string" || typeof parsed.format !== "string") return null;
+        if (!isMaterialFormat(parsed.format)) return null;
+        const timestamp = Number(parsed.timestamp);
+        if (!Number.isFinite(timestamp)) return null;
+        return {
+            classSlug: parsed.classSlug,
+            format: parsed.format,
+            timestamp,
+            success: Boolean(parsed.success),
+            subscriberRef: String(parsed.subscriberRef ?? ""),
+        };
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Read the capped event log behind the counters. This is what makes a class row
+ * openable: it answers "when did this happen and how many distinct people",
+ * which the plain INCR counters cannot. Pass a `classSlug` for one class.
+ */
+export async function readMaterialAccessActivity(options: {
+    classSlug?: string;
+    limit?: number;
+} = {}): Promise<MaterialAccessActivity> {
+    const limit = Math.max(1, Math.min(options.limit ?? 40, EVENT_LOG_LIMIT));
+    const empty = {
+        events: [] as MaterialAccessLogEntry[],
+        uniqueLearners: 0,
+        series: [] as MaterialAccessActivity["series"],
+        windowDays: ACTIVITY_WINDOW_DAYS,
+        matched: 0,
+        oldestMs: null,
+        capped: false,
+    };
+
+    if (!isKvConfigured) {
+        return {
+            connected: false,
+            hint: "Set the existing UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_URL and KV_REST_API_TOKEN) to record material engagement.",
+            ...empty,
+        };
+    }
+
+    try {
+        const out = await kvPipeline<string[]>([["LRANGE", `${ROOT}:events`, 0, EVENT_LOG_LIMIT - 1]]);
+        if (!out) throw new Error("KV unavailable");
+        const rows = Array.isArray(out[0]) ? (out[0] as unknown[]) : [];
+
+        const parsed = rows
+            .map(parseLogEntry)
+            .filter((event): event is MaterialAccessEvent => event !== null);
+        const scoped = options.classSlug
+            ? parsed.filter((event) => event.classSlug === options.classSlug)
+            : parsed;
+        scoped.sort((a, b) => b.timestamp - a.timestamp);
+
+        // Pre-seed every day in the window so quiet days chart as zero, not as a gap.
+        const days = new Map<string, { opened: number; failed: number }>();
+        const todayStart = new Date(utcDay(Date.now()) + "T00:00:00.000Z").getTime();
+        for (let i = ACTIVITY_WINDOW_DAYS - 1; i >= 0; i--) {
+            days.set(utcDay(todayStart - i * 86_400_000), { opened: 0, failed: 0 });
+        }
+
+        const learners = new Set<string>();
+        for (const event of scoped) {
+            if (event.subscriberRef) learners.add(event.subscriberRef);
+            const bucket = days.get(utcDay(event.timestamp));
+            if (bucket) {
+                if (event.success) bucket.opened += 1;
+                else bucket.failed += 1;
+            }
+        }
+
+        return {
+            connected: true,
+            events: scoped.slice(0, limit).map((event) => ({
+                classSlug: event.classSlug,
+                format: event.format,
+                timestamp: event.timestamp,
+                success: event.success,
+                learner: event.subscriberRef.slice(0, 8) || "unknown",
+            })),
+            uniqueLearners: learners.size,
+            series: Array.from(days, ([date, counts]) => ({ date, ...counts })),
+            windowDays: ACTIVITY_WINDOW_DAYS,
+            matched: scoped.length,
+            oldestMs: parsed.length > 0 ? Math.min(...parsed.map((event) => event.timestamp)) : null,
+            capped: parsed.length >= EVENT_LOG_LIMIT,
+        };
+    } catch (err) {
+        return {
+            connected: true,
+            error: err instanceof Error ? err.message : "Failed to read the material-access log",
             ...empty,
         };
     }

@@ -16,9 +16,25 @@ import type { StripeMetrics } from "@/lib/tracking/types";
 const WINDOW_DAYS = 30;
 const MAX_PAGES = 5; // up to 500 orders scanned — bounds dashboard latency.
 const PAGE_SIZE = 100;
+/** How many orders the Sales screen can list. */
+const RECENT_LIMIT = 25;
 
 function startOfUtcTodayMs(): number {
   return new Date(new Date().toISOString().slice(0, 10) + "T00:00:00.000Z").getTime();
+}
+
+function utcDay(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+/** One entry per UTC day in the window, oldest first, so gaps read as zero. */
+function emptySeries(): Map<string, { revenueCents: number; conversions: number }> {
+  const days = new Map<string, { revenueCents: number; conversions: number }>();
+  const todayStart = startOfUtcTodayMs();
+  for (let i = WINDOW_DAYS - 1; i >= 0; i--) {
+    days.set(utcDay(todayStart - i * 86_400_000), { revenueCents: 0, conversions: 0 });
+  }
+  return days;
 }
 
 function parseTags(raw: unknown): string[] {
@@ -33,8 +49,11 @@ export async function readStripeMetrics(): Promise<StripeMetrics> {
     windowDays: WINDOW_DAYS,
     conversions: 0,
     revenueCents: 0,
+    refundedCents: 0,
     today: { conversions: 0, revenueCents: 0 },
     bookSales: [] as StripeMetrics["bookSales"],
+    bumpOrders: 0,
+    series: [] as StripeMetrics["series"],
     recent: [] as StripeMetrics["recent"],
     capped: false,
   };
@@ -54,9 +73,12 @@ export async function readStripeMetrics(): Promise<StripeMetrics> {
 
     let conversions = 0;
     let revenueCents = 0;
+    let refundedCents = 0;
+    let bumpOrders = 0;
     let todayConversions = 0;
     let todayRevenueCents = 0;
     const recent: StripeMetrics["recent"] = [];
+    const days = emptySeries();
     // slug -> { title, units }
     const books = new Map<string, { title: string; units: number }>();
 
@@ -77,14 +99,25 @@ export async function readStripeMetrics(): Promise<StripeMetrics> {
         const charge =
           pi.latest_charge && typeof pi.latest_charge !== "string" ? pi.latest_charge : null;
         const captured = charge?.amount_captured ?? pi.amount_received ?? pi.amount;
-        const net = Math.max(0, captured - (charge?.amount_refunded ?? 0));
+        const refunded = charge?.amount_refunded ?? 0;
+        const net = Math.max(0, captured - refunded);
         const createdMs = pi.created * 1000;
 
         conversions += 1;
         revenueCents += net;
+        refundedCents += refunded;
+        if (pi.metadata?.bump && pi.metadata.bump !== "false") bumpOrders += 1;
         if (createdMs >= todayStartMs) {
           todayConversions += 1;
           todayRevenueCents += net;
+        }
+
+        // Only days inside the window exist in the map; anything Stripe returns
+        // slightly outside it is still counted in the totals, just not charted.
+        const bucket = days.get(utcDay(createdMs));
+        if (bucket) {
+          bucket.revenueCents += net;
+          bucket.conversions += 1;
         }
 
         // Attribute one unit per purchase tag to the matching book. Non-book
@@ -101,8 +134,10 @@ export async function readStripeMetrics(): Promise<StripeMetrics> {
           books.set(book.slug, entry);
         }
 
-        if (recent.length < 8) {
+        if (recent.length < RECENT_LIMIT) {
+          const card = charge?.payment_method_details?.card;
           recent.push({
+            id: pi.id,
             amountCents: net,
             createdMs,
             email:
@@ -111,6 +146,10 @@ export async function readStripeMetrics(): Promise<StripeMetrics> {
               (typeof pi.metadata?.email === "string" ? pi.metadata.email : null),
             description:
               titles.length > 0 ? titles.join(" + ") : charge?.description ?? pi.description ?? null,
+            kind: typeof pi.metadata?.kind === "string" ? pi.metadata.kind : null,
+            card: card ? `${card.brand ?? "card"} ···· ${card.last4 ?? "????"}` : null,
+            country: charge?.billing_details?.address?.country ?? card?.country ?? null,
+            refundedCents: refunded,
           });
         }
       }
@@ -131,8 +170,11 @@ export async function readStripeMetrics(): Promise<StripeMetrics> {
       windowDays: WINDOW_DAYS,
       conversions,
       revenueCents,
+      refundedCents,
       today: { conversions: todayConversions, revenueCents: todayRevenueCents },
       bookSales,
+      bumpOrders,
+      series: Array.from(days, ([date, totals]) => ({ date, ...totals })),
       recent,
       capped,
     };

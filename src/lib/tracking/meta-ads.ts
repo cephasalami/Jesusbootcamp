@@ -42,6 +42,7 @@ type InsightRow = {
   cpc?: string;
   spend?: string;
   reach?: string;
+  date_start?: string;
   actions?: Array<{ action_type: string; value: string }>;
 };
 
@@ -80,6 +81,7 @@ export async function readMetaAds(): Promise<MetaAdsMetrics> {
     purchases: 0,
     currency: "USD",
     campaigns: [] as MetaAdsMetrics["campaigns"],
+    series: [] as MetaAdsMetrics["series"],
   };
 
   if (!isMetaAdsConfigured) {
@@ -94,7 +96,7 @@ export async function readMetaAds(): Promise<MetaAdsMetrics> {
   const timeout = setTimeout(() => controller.abort(), 9000);
   try {
     const act = accountId();
-    const [account, campaignsRes, meta] = await Promise.all([
+    const [account, campaignsRes, meta, dailyRes] = await Promise.all([
       graphGet(
         `${act}/insights`,
         {
@@ -115,10 +117,31 @@ export async function readMetaAds(): Promise<MetaAdsMetrics> {
         controller.signal
       ),
       graphGet(act, { fields: "currency" }, controller.signal),
+      // The daily trend is a bonus: if Meta refuses it, the rest still renders.
+      graphGet(
+        `${act}/insights`,
+        {
+          level: "account",
+          date_preset: DATE_PRESET,
+          time_increment: "1",
+          limit: "90",
+          fields: "impressions,clicks,spend",
+        },
+        controller.signal
+      ).catch(() => null),
     ]);
 
     const row = ((account.data as InsightRow[]) ?? [])[0] ?? {};
     const campaignRows = (campaignsRes.data as InsightRow[]) ?? [];
+    const series = ((dailyRes?.data as InsightRow[]) ?? [])
+      .map((day) => ({
+        date: String(day.date_start ?? "").slice(0, 10),
+        spend: num(day.spend),
+        clicks: num(day.clicks),
+        impressions: num(day.impressions),
+      }))
+      .filter((day) => day.date)
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     const campaigns = campaignRows
       .map((c) => ({
@@ -143,6 +166,7 @@ export async function readMetaAds(): Promise<MetaAdsMetrics> {
       purchases: purchasesFrom(row),
       currency: (meta.currency as string) || "USD",
       campaigns,
+      series,
     };
   } catch (err) {
     return {
