@@ -21,7 +21,7 @@ import { classDownloadFilename } from "@/lib/class-download";
 import IdentifyForm from "./IdentifyForm";
 import DeviceIdentityBootstrap from "./DeviceIdentityBootstrap";
 import ClassMediaWarmup from "./ClassMediaWarmup";
-import { AudioPlayer, DocumentViewer, ShareRow, PreviewPlayer } from "./ClassClient";
+import { AudioPlayer, DocumentViewer, ShareRow, PreviewPlayer, QuizLink } from "./ClassClient";
 import FormatThumb, { type ThumbKind } from "./FormatThumb";
 import styles from "./page.module.css";
 
@@ -367,6 +367,9 @@ export default async function ClassPage({
                                     // same access checks as the video itself.
                                     posterSrc={`/api/class/file?t=${encodeURIComponent(accessToken)}&slug=${encodeURIComponent(klass.slug)}&format=${heroRow.key}&thumb=1`}
                                     buttonClass={styles.heroPlay}
+                                    accessToken={accessToken}
+                                    classSlug={klass.slug}
+                                    format={heroRow.key as "video" | "brief"}
                                 />
                             ) : (
                                 <div className={styles.heroPlaceholder}>
@@ -456,6 +459,9 @@ export default async function ClassPage({
                                                         label={FORMAT_LABELS[key]}
                                                         classTitle={klass.title}
                                                         buttonClass={styles.openBtn}
+                                                        accessToken={accessToken}
+                                                        classSlug={klass.slug}
+                                                        format={key as "video" | "brief"}
                                                     />
                                                 )}
 
@@ -464,6 +470,8 @@ export default async function ClassPage({
                                                         src={audioUrl}
                                                         label={formatLabel}
                                                         durationMs={durationMs}
+                                                        accessToken={accessToken}
+                                                        classSlug={klass.slug}
                                                     />
                                                 )}
                                             </div>
@@ -496,14 +504,12 @@ export default async function ClassPage({
                                                     Unlock
                                                 </Link>
                                             ) : (
-                                                <a
+                                                <QuizLink
+                                                    href={klass.quizUrl!}
                                                     className={styles.openBtn}
-                                                    href={klass.quizUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                >
-                                                    Take the Quiz
-                                                </a>
+                                                    accessToken={accessToken}
+                                                    classSlug={klass.slug}
+                                                />
                                             )}
                                         </span>
                                     </li>

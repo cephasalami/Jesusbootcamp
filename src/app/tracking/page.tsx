@@ -5,6 +5,10 @@ import { readStripeMetrics } from "@/lib/tracking/stripe-metrics";
 import { readMetaAds } from "@/lib/tracking/meta-ads";
 import { readFirstParty } from "@/lib/tracking/events-store";
 import { readMailchimpMetrics } from "@/lib/tracking/mailchimp-metrics";
+import { readMailchimpCampaignMetrics } from "@/lib/tracking/mailchimp-campaign-metrics";
+import { readMaterialAccessMetrics, type MaterialAccessFormat } from "@/lib/tracking/material-access";
+import { getManifest } from "@/lib/manifest";
+import { FORMAT_LABELS } from "@/lib/access";
 import { PIXELS, TRACKED_EVENTS } from "@/config/pixels";
 import Toolbar from "./Toolbar";
 import styles from "./tracking.module.css";
@@ -39,6 +43,15 @@ function fmtWhen(ms: number): string {
   const days = Math.round(hrs / 24);
   if (days < 30) return `${days}d ago`;
   return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function fmtSentAt(ms: number | null): string {
+  if (ms == null) return "—";
+  return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function materialFormatLabel(format: MaterialAccessFormat): string {
+  return format === "quiz" ? "Quiz" : FORMAT_LABELS[format];
 }
 
 // ── Small presentational helpers (server components) ─────────────────────────
@@ -85,11 +98,14 @@ export default async function TrackingDashboard() {
   }
 
   // ── Gather data (each provider catches its own errors) ──────────────────────
-  const [stripe, meta, first, mailchimp] = await Promise.all([
+  const [stripe, meta, first, mailchimp, campaignReports, materials, classes] = await Promise.all([
     readStripeMetrics(),
     readMetaAds(),
     readFirstParty(),
     readMailchimpMetrics(),
+    readMailchimpCampaignMetrics(),
+    readMaterialAccessMetrics(),
+    getManifest(),
   ]);
 
   const metaOk = meta.connected && !meta.error;
@@ -101,6 +117,12 @@ export default async function TrackingDashboard() {
   const stripeState = !stripe.connected ? "off" : stripe.error ? "err" : "live";
   const firstState = !first.connected ? "off" : first.error ? "err" : "live";
   const mcState = !mailchimp.connected ? "off" : mailchimp.error ? "err" : "live";
+  const campaignReportsState = !campaignReports.connected
+    ? "off"
+    : campaignReports.error
+      ? "err"
+      : "live";
+  const materialsState = !materials.connected ? "off" : materials.error ? "err" : "live";
 
   const totalBookUnits = stripeOk ? stripe.bookSales.reduce((s, b) => s + b.units, 0) : 0;
   const mcSeriesMax = mcOk ? Math.max(1, ...mailchimp.series.map((d) => d.count)) : 1;
@@ -108,6 +130,19 @@ export default async function TrackingDashboard() {
   const firstPartyLeads = firstOk
     ? first.byEvent.find((e) => e.name === "Lead")?.total ?? 0
     : 0;
+
+  const classTitles = new Map(classes.map((klass) => [klass.slug, klass.title]));
+  const materialClasses = materials.byClass
+    .map((klass) => ({
+      ...klass,
+      title: classTitles.get(klass.classSlug) ?? `Class ${klass.classSlug.toUpperCase()}`,
+      opened: klass.formats.reduce((sum, format) => sum + format.opened, 0),
+    }))
+    .sort((a, b) => a.classSlug.localeCompare(b.classSlug, undefined, { numeric: true }));
+  const mostAccessedClass = [...materialClasses].sort((a, b) => b.opened - a.opened)[0] ?? null;
+  const leastAccessedClass = [...materialClasses].sort((a, b) => a.opened - b.opened)[0] ?? null;
+  const mostOpenedEmail = [...campaignReports.campaigns].sort((a, b) => b.opens - a.opens)[0] ?? null;
+  const leastOpenedEmail = [...campaignReports.campaigns].sort((a, b) => a.opens - b.opens)[0] ?? null;
 
   // ── Cross-source derived metrics ────────────────────────────────────────────
   const aov =
@@ -216,6 +251,155 @@ export default async function TrackingDashboard() {
         </section>
 
         {/* Ad performance — Meta */}
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>Course material engagement</h2>
+            <span className={styles.sourceTag}>
+              Source: secured course access log &nbsp; <Chip state={materialsState} />
+            </span>
+          </div>
+
+          {!materials.connected ? (
+            <NotConnected
+              title="Material access logging needs the existing KV store"
+              hint={
+                <>
+                  Set <code>UPSTASH_REDIS_REST_URL</code> and <code>UPSTASH_REDIS_REST_TOKEN</code>
+                  (or the Vercel <code>KV_REST_API_*</code> equivalents). No additional database is needed.
+                </>
+              }
+            />
+          ) : (
+            <>
+              {materials.error ? <p className={styles.errorBanner}>Material log error: {materials.error}</p> : null}
+              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
+                <Kpi label="Materials opened" value={fmtInt(materials.totalOpened)} sub="Successful opens and downloads" />
+                <Kpi label="Failed attempts" value={fmtInt(materials.totalFailed)} sub="Access or delivery could not complete" />
+                <Kpi
+                  label="Most accessed class"
+                  value={mostAccessedClass ? `Class ${mostAccessedClass.classSlug.toUpperCase()}` : "-"}
+                  sub={mostAccessedClass ? `${fmtInt(mostAccessedClass.opened)} opens - ${mostAccessedClass.title}` : "No material access yet"}
+                  muted={!mostAccessedClass}
+                />
+                <Kpi
+                  label="Least accessed class"
+                  value={leastAccessedClass ? `Class ${leastAccessedClass.classSlug.toUpperCase()}` : "-"}
+                  sub={leastAccessedClass ? `${fmtInt(leastAccessedClass.opened)} opens - ${leastAccessedClass.title}` : "No material access yet"}
+                  muted={!leastAccessedClass}
+                />
+              </div>
+
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Class</th>
+                      <th>Material</th>
+                      <th className={styles.num}>Opened</th>
+                      <th className={styles.num}>Failed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {materialClasses.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className={styles.muted}>No material access has been recorded yet.</td>
+                      </tr>
+                    ) : (
+                      materialClasses.flatMap((klass) =>
+                        klass.formats.map((format, index) => (
+                          <tr key={`${klass.classSlug}-${format.format}`}>
+                            <td>{index === 0 ? <><strong>Class {klass.classSlug.toUpperCase()}</strong><br /><span className={styles.muted}>{klass.title}</span></> : null}</td>
+                            <td>{materialFormatLabel(format.format)}</td>
+                            <td className={styles.num}>{fmtInt(format.opened)}</td>
+                            <td className={styles.num}>{fmtInt(format.failed)}</td>
+                          </tr>
+                        ))
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>Email campaign performance</h2>
+            <span className={styles.sourceTag}>
+              Source: Mailchimp Reports API &nbsp; <Chip state={campaignReportsState} />
+            </span>
+          </div>
+
+          {!campaignReports.connected ? (
+            <NotConnected
+              title="Connect Mailchimp to show sent-email opens and clicks"
+              hint={<>Set <code>MAILCHIMP_API_KEY</code>, <code>MAILCHIMP_API_SERVER</code> and <code>MAILCHIMP_AUDIENCE_ID</code>.</>}
+            />
+          ) : (
+            <>
+              {campaignReports.error ? <p className={styles.errorBanner}>Mailchimp report error: {campaignReports.error}</p> : null}
+              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
+                <Kpi label="Sent campaigns" value={fmtInt(campaignReports.totalCampaigns)} sub="Mailchimp campaign reports" />
+                <Kpi label="Campaign opens" value={fmtInt(campaignReports.totalOpens)} sub="Sum of unique opens by campaign" />
+                <Kpi label="Campaign clicks" value={fmtInt(campaignReports.totalClicks)} sub="Sum of unique clicks by campaign" />
+                <Kpi
+                  label="Most opened email"
+                  value={mostOpenedEmail ? fmtInt(mostOpenedEmail.opens) : "-"}
+                  sub={mostOpenedEmail ? mostOpenedEmail.title : "No sent campaigns yet"}
+                  muted={!mostOpenedEmail}
+                />
+                <Kpi
+                  label="Least opened email"
+                  value={leastOpenedEmail ? fmtInt(leastOpenedEmail.opens) : "-"}
+                  sub={leastOpenedEmail ? leastOpenedEmail.title : "No sent campaigns yet"}
+                  muted={!leastOpenedEmail}
+                />
+              </div>
+
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Sent email</th>
+                      <th>Sent</th>
+                      <th className={styles.num}>Recipients</th>
+                      <th className={styles.num}>Unique opens</th>
+                      <th className={styles.num}>Open rate</th>
+                      <th className={styles.num}>Unique clicks</th>
+                      <th className={styles.num}>Click rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {campaignReports.campaigns.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className={styles.muted}>No sent Mailchimp campaigns found yet.</td>
+                      </tr>
+                    ) : (
+                      campaignReports.campaigns.map((campaign) => (
+                        <tr key={campaign.id}>
+                          <td>{campaign.title}</td>
+                          <td className={styles.mono}>{fmtSentAt(campaign.sentAt)}</td>
+                          <td className={styles.num}>{fmtInt(campaign.emailsSent)}</td>
+                          <td className={styles.num}>{fmtInt(campaign.opens)}</td>
+                          <td className={styles.num}>{fmtPct(campaign.openRate)}</td>
+                          <td className={styles.num}>{fmtInt(campaign.clicks)}</td>
+                          <td className={styles.num}>{fmtPct(campaign.clickRate)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <p className={styles.kpiSub}>
+                {campaignReports.cachedAt
+                  ? `Mailchimp report data cached ${fmtWhen(campaignReports.cachedAt)}; refreshes at most once every 15 minutes.`
+                  : "Mailchimp report data refreshes at most once every 15 minutes."}
+              </p>
+            </>
+          )}
+        </section>
+
         <section className={styles.section}>
           <div className={styles.sectionHead}>
             <h2 className={styles.sectionTitle}>Ad performance</h2>

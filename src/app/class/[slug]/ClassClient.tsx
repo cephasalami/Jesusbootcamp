@@ -5,6 +5,28 @@ import { ArrowLeft, Pause, Play, Share2, Check, MessageCircle, Volume2, X } from
 import { shouldPrebufferPodcast } from "@/lib/media-warmup";
 import styles from "./page.module.css";
 
+type TrackedMaterial = "video" | "brief" | "podcast" | "quiz";
+
+function recordMaterialAccess(input: {
+    token: string;
+    slug: string;
+    format: TrackedMaterial;
+    success: boolean;
+}) {
+    // `keepalive` lets this reach the server when a quiz opens in another tab.
+    // The server independently validates the token and entitlement, and never
+    // exposes analytics data back to the browser.
+    void fetch("/api/class/access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        keepalive: true,
+        body: JSON.stringify(input),
+    }).catch(() => {
+        // Tracking must not turn a playable lesson into a visible error.
+    });
+}
+
 /**
  * Video player for the Drive `/preview` embed.
  *
@@ -19,6 +41,9 @@ export function PreviewPlayer({
     buttonClass,
     variant = "row",
     posterSrc,
+    accessToken,
+    classSlug,
+    format,
 }: {
     src: string;
     label: string;
@@ -29,6 +54,9 @@ export function PreviewPlayer({
     variant?: "row" | "hero";
     /** Proxied poster frame (see /api/class/file?thumb=1). */
     posterSrc?: string;
+    accessToken: string;
+    classSlug: string;
+    format: "video" | "brief";
 }) {
     const [open, setOpen] = useState(false);
     const playerId = useId();
@@ -67,6 +95,7 @@ export function PreviewPlayer({
     }, [open, variant]);
 
     function openPlayer() {
+        recordMaterialAccess({ token: accessToken, slug: classSlug, format, success: true });
         if (variant === "hero") {
             setOpen(true);
             return;
@@ -292,10 +321,14 @@ export function AudioPlayer({
     src,
     label,
     durationMs,
+    accessToken,
+    classSlug,
 }: {
     src: string;
     label: string;
     durationMs: number | null;
+    accessToken: string;
+    classSlug: string;
 }) {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [preload, setPreload] = useState<"metadata" | "auto">("metadata");
@@ -326,9 +359,21 @@ export function AudioPlayer({
             try {
                 setFailed(false);
                 await audio.play();
+                recordMaterialAccess({
+                    token: accessToken,
+                    slug: classSlug,
+                    format: "podcast",
+                    success: true,
+                });
                 setOpen(true);
             } catch {
                 setFailed(true);
+                recordMaterialAccess({
+                    token: accessToken,
+                    slug: classSlug,
+                    format: "podcast",
+                    success: false,
+                });
             }
         } else {
             audio.pause();
@@ -382,6 +427,39 @@ export function AudioPlayer({
             </button>
             {failed && <span className={styles.audioError}>The audio could not start. Please try again.</span>}
         </div>
+    );
+}
+
+/** External quizzes still receive the same server-validated access event as
+ * proxied materials and preview videos. */
+export function QuizLink({
+    href,
+    className,
+    accessToken,
+    classSlug,
+}: {
+    href: string;
+    className: string;
+    accessToken: string;
+    classSlug: string;
+}) {
+    return (
+        <a
+            className={className}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+                recordMaterialAccess({
+                    token: accessToken,
+                    slug: classSlug,
+                    format: "quiz",
+                    success: true,
+                })
+            }
+        >
+            Take the Quiz
+        </a>
     );
 }
 

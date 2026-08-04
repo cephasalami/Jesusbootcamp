@@ -12,6 +12,7 @@ import {
 import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 import { contentDisposition } from "@/lib/content-disposition";
 import { classDownloadFilename } from "@/lib/class-download";
+import { recordMaterialAccess } from "@/lib/tracking/material-access";
 
 // Gated Drive proxy — the ONLY way a private class file reaches a browser.
 //
@@ -63,12 +64,25 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "Unknown class" }, { status: 404 });
     }
 
+    const trackAttempt = !wantsThumb && !wantsAudioStream;
+    const recordAttempt = async (success: boolean) => {
+        if (!trackAttempt) return;
+        await recordMaterialAccess({
+            subscriberToken: subscriber.token,
+            classSlug: klass.slug,
+            format,
+            success,
+        });
+    };
+
     // Re-run the SAME access logic the page used — never trust the page's word.
     const access = evaluateAccess(subscriber, klass);
     if (access.status !== "open") {
+        await recordAttempt(false);
         return NextResponse.json({ error: "This class isn't available to you yet" }, { status: 403 });
     }
     if (access.formats[format] !== "open") {
+        await recordAttempt(false);
         return NextResponse.json(
             { error: "This format requires an active partnership" },
             { status: 403 }
@@ -77,6 +91,7 @@ export async function GET(req: Request) {
 
     const fileId = klass.files[format];
     if (!fileId) {
+        await recordAttempt(false);
         return NextResponse.json({ error: "This file isn't available yet" }, { status: 404 });
     }
 
@@ -107,6 +122,7 @@ export async function GET(req: Request) {
             console.warn(
                 `[class/file] refusing to proxy ${klass.slug}/${format} — ${meta.size} bytes exceeds ${PROXY_MAX_BYTES}`
             );
+            await recordAttempt(false);
             return NextResponse.json(
                 { error: "This file is too large to open here. Please use the player on the class page." },
                 { status: 413 }
@@ -154,8 +170,10 @@ export async function GET(req: Request) {
         headers.set("Cache-Control", "private, no-store");
         headers.set("X-Content-Type-Options", "nosniff");
 
+        await recordAttempt(true);
         return new Response(body, { status, headers });
     } catch (err) {
+        await recordAttempt(false);
         if (err instanceof DriveUnavailableError) {
             return NextResponse.json({ error: err.userMessage }, { status: err.status });
         }

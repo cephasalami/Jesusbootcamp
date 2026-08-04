@@ -15,7 +15,9 @@ const TOKEN_ENV = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_AP
 
 export const isKvConfigured = Boolean(URL_ENV && TOKEN_ENV);
 
-async function command<T>(args: (string | number)[]): Promise<T | null> {
+export type KvCommand = (string | number)[];
+
+async function command<T>(args: KvCommand): Promise<T | null> {
     if (!isKvConfigured) return null;
     try {
         const res = await fetch(URL_ENV as string, {
@@ -38,6 +40,36 @@ async function command<T>(args: (string | number)[]): Promise<T | null> {
         return (json?.result ?? null) as T | null;
     } catch (err) {
         console.warn(`[kv] ${args[0]} errored (non-fatal):`, err);
+        return null;
+    }
+}
+
+/**
+ * Run a small group of Redis commands together. Like the single-command
+ * helpers above, this fails softly: analytics must never make course delivery
+ * fail if KV is temporarily unavailable.
+ */
+export async function kvPipeline<T = unknown>(commands: KvCommand[]): Promise<(T | null)[] | null> {
+    if (!isKvConfigured || commands.length === 0) return commands.length === 0 ? [] : null;
+    try {
+        const res = await fetch(`${URL_ENV as string}/pipeline`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${TOKEN_ENV}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(commands.map((args) => args.map(String))),
+            cache: "no-store",
+            signal: AbortSignal.timeout(2_000),
+        });
+        if (!res.ok) {
+            console.warn(`[kv] pipeline failed: ${res.status}`);
+            return null;
+        }
+        const json = (await res.json()) as Array<{ result?: T; error?: string }>;
+        return json.map((entry) => (entry?.error ? null : (entry?.result ?? null)) as T | null);
+    } catch (err) {
+        console.warn("[kv] pipeline errored (non-fatal):", err);
         return null;
     }
 }

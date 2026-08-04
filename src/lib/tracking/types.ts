@@ -49,6 +49,28 @@ export type MailchimpMetrics = ProviderStatus & {
   series: Array<{ date: string; count: number }>;
 };
 
+/** Read-only engagement summary for every sent Mailchimp campaign. */
+export type MailchimpCampaignMetrics = ProviderStatus & {
+  /** Number of sent campaigns returned by Mailchimp's Reports endpoint. */
+  totalCampaigns: number;
+  /** Sum across campaigns; a subscriber can contribute to more than one. */
+  totalOpens: number;
+  /** Sum of unique campaign clickers across campaigns. */
+  totalClicks: number;
+  /** The data is cached server-side to protect Mailchimp's API. */
+  cachedAt: number | null;
+  campaigns: Array<{
+    id: string;
+    title: string;
+    sentAt: number | null;
+    emailsSent: number;
+    opens: number;
+    openRate: number;
+    clicks: number;
+    clickRate: number;
+  }>;
+};
+
 /** Ad-side impressions / clicks / spend from the Meta Marketing API. */
 export type MetaAdsMetrics = ProviderStatus & {
   datePreset: string;

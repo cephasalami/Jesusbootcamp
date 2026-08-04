@@ -358,3 +358,23 @@
   font-size: 0.82rem;
   margin: 0;
 }
+
+/* The dashboard is deliberately a single column on phones. KPI cards remain
+   tappable, while wide audit tables retain their columns inside a contained
+   horizontal scroll area instead of forcing the whole page to overflow. */
+@media (max-width: 600px) {
+  .page { padding: 1.15rem 0.8rem 2.5rem; }
+  .header { margin-bottom: 1.2rem; }
+  .toolbar { width: 100%; }
+  .toolbar > *, .toolbar button { flex: 1; }
+  .toolbar form { display: flex; }
+  .btn, .btnGhost { text-align: center; }
+  .legend { gap: 0.5rem 0.8rem; }
+  .legendItem:last-child { width: 100%; margin-left: 0 !important; }
+  .section { margin-top: 1.35rem; }
+  .card, .notConnected { padding: 1rem; }
+  .kpi { padding: 0.9rem; }
+  .kpiValue { font-size: 1.45rem; }
+  .table { min-width: 440px; font-size: 0.8rem; }
+  .table th, .table td { padding: 0.6rem 0.7rem; }
+}
