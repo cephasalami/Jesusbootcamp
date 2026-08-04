@@ -1,5 +1,20 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import {
+  Activity,
+  BarChart3,
+  BookOpen,
+  CircleDollarSign,
+  Database,
+  Gauge,
+  LayoutDashboard,
+  Mail,
+  Megaphone,
+  MousePointer2,
+  ReceiptText,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { verifySessionToken, TRACKING_COOKIE } from "@/lib/tracking-auth";
 import { readStripeMetrics } from "@/lib/tracking/stripe-metrics";
 import { readMetaAds } from "@/lib/tracking/meta-ads";
@@ -9,21 +24,20 @@ import { readMailchimpCampaignMetrics } from "@/lib/tracking/mailchimp-campaign-
 import { readMaterialAccessMetrics, type MaterialAccessFormat } from "@/lib/tracking/material-access";
 import { getManifest } from "@/lib/manifest";
 import { FORMAT_LABELS } from "@/lib/access";
-import { PIXELS, TRACKED_EVENTS } from "@/config/pixels";
 import Toolbar from "./Toolbar";
 import styles from "./tracking.module.css";
 
-// Always render fresh: reads cookies + live third-party data.
 export const dynamic = "force-dynamic";
 
-// ── Formatting helpers ───────────────────────────────────────────────────────
-const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
+type SourceState = "live" | "off" | "err";
+
+const fmtInt = (value: number) => Math.round(value).toLocaleString("en-US");
+const fmtPct = (value: number) => `${value.toFixed(2)}%`;
 const fmtUsdCents = (cents: number) =>
   `$${(cents / 100).toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
-const fmtPct = (n: number) => `${n.toFixed(2)}%`;
 
 function fmtMoney(amount: number, currency: string): string {
   try {
@@ -35,69 +49,134 @@ function fmtMoney(amount: number, currency: string): string {
 
 function fmtWhen(ms: number): string {
   const diff = Date.now() - ms;
-  const mins = Math.round(diff / 60000);
+  const mins = Math.round(diff / 60_000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.round(hrs / 24);
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
   if (days < 30) return `${days}d ago`;
   return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function fmtSentAt(ms: number | null): string {
   if (ms == null) return "—";
-  return new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(ms).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function materialFormatLabel(format: MaterialAccessFormat): string {
   return format === "quiz" ? "Quiz" : FORMAT_LABELS[format];
 }
 
-// ── Small presentational helpers (server components) ─────────────────────────
-function Kpi({
+function sourceState(connected: boolean, error?: string): SourceState {
+  return !connected ? "off" : error ? "err" : "live";
+}
+
+function SourceBadge({ state }: { state: SourceState }) {
+  const label = state === "live" ? "Live" : state === "err" ? "Needs attention" : "Not connected";
+  return <span className={`${styles.sourceBadge} ${styles[`source${state}`]}`}>{label}</span>;
+}
+
+function MetricCard({
+  icon,
   label,
   value,
-  sub,
-  muted,
+  detail,
+  muted = false,
+  accent = false,
 }: {
+  icon: React.ReactNode;
   label: string;
   value: string;
-  sub: string;
+  detail: string;
   muted?: boolean;
+  accent?: boolean;
 }) {
   return (
-    <div className={styles.kpi}>
-      <p className={styles.kpiLabel}>{label}</p>
-      <p className={`${styles.kpiValue} ${muted ? styles.kpiValueMuted : ""}`}>{value}</p>
-      <p className={styles.kpiSub}>{sub}</p>
+    <article className={`${styles.metricCard} ${accent ? styles.metricCardAccent : ""}`}>
+      <div className={styles.metricHead}>
+        <span className={styles.metricIcon}>{icon}</span>
+        <span className={styles.metricLabel}>{label}</span>
+      </div>
+      <strong className={`${styles.metricValue} ${muted ? styles.metricMuted : ""}`}>{value}</strong>
+      <span className={styles.metricDetail}>{detail}</span>
+    </article>
+  );
+}
+
+function SectionHeading({
+  icon,
+  title,
+  subtitle,
+  state,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  state: SourceState;
+}) {
+  return (
+    <div className={styles.sectionHeading}>
+      <span className={styles.sectionIcon}>{icon}</span>
+      <div>
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </div>
+      <SourceBadge state={state} />
     </div>
   );
 }
 
-function Chip({ state }: { state: "live" | "off" | "err" }) {
-  if (state === "live") return <span className={`${styles.chip} ${styles.chipLive}`}>Connected</span>;
-  if (state === "err") return <span className={`${styles.chip} ${styles.chipErr}`}>Error</span>;
-  return <span className={`${styles.chip} ${styles.chipOff}`}>Not connected</span>;
+function EmptySource({ title, hint }: { title: string; hint: React.ReactNode }) {
+  return (
+    <div className={styles.emptySource}>
+      <strong>{title}</strong>
+      <p>{hint}</p>
+    </div>
+  );
 }
 
-function NotConnected({ title, hint }: { title: string; hint: React.ReactNode }) {
+function ActivityBars({
+  series,
+  label,
+  emptyLabel,
+}: {
+  series: Array<{ date: string; count: number }>;
+  label: string;
+  emptyLabel: string;
+}) {
+  if (series.length === 0) return <p className={styles.chartEmpty}>{emptyLabel}</p>;
+  const max = Math.max(1, ...series.map((day) => day.count));
   return (
-    <div className={styles.notConnected}>
-      <p className={styles.notConnectedTitle}>{title}</p>
-      <p className={styles.connectHint}>{hint}</p>
+    <div className={styles.chart} aria-label={label}>
+      <div className={styles.chartBars}>
+        {series.map((day) => (
+          <span
+            key={day.date}
+            className={styles.chartBar}
+            style={{ height: `${Math.max(3, (day.count / max) * 100)}%` }}
+            title={`${day.date}: ${day.count}`}
+          />
+        ))}
+      </div>
+      <div className={styles.chartAxis}>
+        <span>{series[0]?.date}</span>
+        <span>{series[series.length - 1]?.date}</span>
+      </div>
     </div>
   );
 }
 
 export default async function TrackingDashboard() {
-  // ── Gate ──────────────────────────────────────────────────────────────────
   const cookieStore = await cookies();
   if (!verifySessionToken(cookieStore.get(TRACKING_COOKIE)?.value)) {
     redirect("/tracking/login");
   }
 
-  // ── Gather data (each provider catches its own errors) ──────────────────────
   const [stripe, meta, first, mailchimp, campaignReports, materials, classes] = await Promise.all([
     readStripeMetrics(),
     readMetaAds(),
@@ -108,29 +187,21 @@ export default async function TrackingDashboard() {
     getManifest(),
   ]);
 
-  const metaOk = meta.connected && !meta.error;
   const stripeOk = stripe.connected && !stripe.error;
+  const metaOk = meta.connected && !meta.error;
   const firstOk = first.connected && !first.error;
-  const mcOk = mailchimp.connected && !mailchimp.error;
+  const campaignsOk = campaignReports.connected && !campaignReports.error;
+  const materialsOk = materials.connected && !materials.error;
 
-  const metaState = !meta.connected ? "off" : meta.error ? "err" : "live";
-  const stripeState = !stripe.connected ? "off" : stripe.error ? "err" : "live";
-  const firstState = !first.connected ? "off" : first.error ? "err" : "live";
-  const mcState = !mailchimp.connected ? "off" : mailchimp.error ? "err" : "live";
-  const campaignReportsState = !campaignReports.connected
-    ? "off"
-    : campaignReports.error
-      ? "err"
-      : "live";
-  const materialsState = !materials.connected ? "off" : materials.error ? "err" : "live";
+  const stripeState = sourceState(stripe.connected, stripe.error);
+  const metaState = sourceState(meta.connected, meta.error);
+  const firstState = sourceState(first.connected, first.error);
+  const mailchimpState = sourceState(mailchimp.connected, mailchimp.error);
+  const campaignState = sourceState(campaignReports.connected, campaignReports.error);
+  const materialState = sourceState(materials.connected, materials.error);
 
-  const totalBookUnits = stripeOk ? stripe.bookSales.reduce((s, b) => s + b.units, 0) : 0;
-  const mcSeriesMax = mcOk ? Math.max(1, ...mailchimp.series.map((d) => d.count)) : 1;
-  // First-party form-fill signal = Lead events we mirror on form submit.
-  const firstPartyLeads = firstOk
-    ? first.byEvent.find((e) => e.name === "Lead")?.total ?? 0
-    : 0;
-
+  const totalBookUnits = stripeOk ? stripe.bookSales.reduce((sum, book) => sum + book.units, 0) : 0;
+  const firstPartyLeads = firstOk ? first.byEvent.find((event) => event.name === "Lead")?.total ?? 0 : 0;
   const classTitles = new Map(classes.map((klass) => [klass.slug, klass.title]));
   const materialClasses = materials.byClass
     .map((klass) => ({
@@ -143,726 +214,210 @@ export default async function TrackingDashboard() {
   const leastAccessedClass = [...materialClasses].sort((a, b) => a.opened - b.opened)[0] ?? null;
   const mostOpenedEmail = [...campaignReports.campaigns].sort((a, b) => b.opens - a.opens)[0] ?? null;
   const leastOpenedEmail = [...campaignReports.campaigns].sort((a, b) => a.opens - b.opens)[0] ?? null;
+  const aov = stripeOk && stripe.conversions > 0 ? stripe.revenueCents / stripe.conversions : null;
+  const costPerConversion = stripeOk && metaOk && stripe.conversions > 0 ? meta.spend / stripe.conversions : null;
+  const conversionRate = stripeOk && metaOk && meta.clicks > 0 ? (stripe.conversions / meta.clicks) * 100 : null;
+  const greetingHour = new Date().getHours();
+  const greeting = greetingHour < 12 ? "morning" : greetingHour < 18 ? "afternoon" : "evening";
+  const updated = new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
 
-  // ── Cross-source derived metrics ────────────────────────────────────────────
-  const aov =
-    stripeOk && stripe.conversions > 0 ? stripe.revenueCents / stripe.conversions : null;
-  const convRate =
-    stripeOk && metaOk && meta.clicks > 0 ? (stripe.conversions / meta.clicks) * 100 : null;
-  const costPerConv =
-    stripeOk && metaOk && stripe.conversions > 0 ? meta.spend / stripe.conversions : null;
-
-  const buttonClicks = firstOk ? Math.max(0, first.totalEvents - first.pageViews) : 0;
-  const seriesMax = firstOk ? Math.max(1, ...first.series.map((d) => d.count)) : 1;
-
-  const updated = new Date().toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const sources = [
+    { label: "Course access log", state: materialState, note: "KV event counters" },
+    { label: "Mailchimp campaigns", state: campaignState, note: "Sent email reports" },
+    { label: "Mailchimp audience", state: mailchimpState, note: "Subscribers and signups" },
+    { label: "First-party events", state: firstState, note: "Page and action events" },
+    { label: "Stripe", state: stripeState, note: "Paid, non-refunded charges" },
+    { label: "Meta Ads", state: metaState, note: "Advertising performance" },
+  ];
 
   return (
     <main className={styles.page}>
-      <div className={styles.shell}>
-        {/* Header */}
-        <header className={styles.header}>
-          <div className={styles.headerTop}>
-            <div>
-              <h1 className={styles.title}>Tracking &amp; Analytics</h1>
-              <p className={styles.subtitle}>
-                Pixels, ad performance, on-site engagement and real conversions in one place.
-                Every number is read live from its source — nothing on this page is simulated or
-                estimated.
-              </p>
-            </div>
+      <div className={styles.appShell}>
+        <aside className={styles.sidebar}>
+          <a className={styles.brand} href="#overview" aria-label="Jesus Boot Camp dashboard overview">
+            <span className={styles.brandMark}>J</span>
+            <span>
+              <strong>Jesus Boot Camp</strong>
+              <small>Owner dashboard</small>
+            </span>
+          </a>
+          <nav className={styles.sideNav} aria-label="Dashboard sections">
+            <a className={styles.sideNavCurrent} href="#overview"><LayoutDashboard size={17} />Overview</a>
+            <a href="#materials"><BookOpen size={17} />Course access</a>
+            <a href="#campaigns"><Mail size={17} />Email performance</a>
+            <a href="#growth"><Activity size={17} />Growth</a>
+            <a href="#sales"><CircleDollarSign size={17} />Sales</a>
+            <a href="#sources"><Database size={17} />Data sources</a>
+          </nav>
+          <div className={styles.sideNote}>
+            <ShieldCheck size={17} />
+            <span>Private, password-protected reporting. No dashboard figure is estimated.</span>
+          </div>
+        </aside>
+
+        <div className={styles.workspace}>
+          <header className={styles.topbar}>
+            <div className={styles.breadcrumb}><Gauge size={15} /> Live reporting <span>•</span> Last refreshed {updated}</div>
             <Toolbar />
-          </div>
-          <div className={styles.legend}>
-            <span className={styles.legendItem}>
-              <span className={`${styles.dot} ${styles.dotLive}`} /> Connected &amp; live
-            </span>
-            <span className={styles.legendItem}>
-              <span className={`${styles.dot} ${styles.dotOff}`} /> Not connected yet
-            </span>
-            <span className={styles.legendItem}>
-              <span className={`${styles.dot} ${styles.dotErr}`} /> Connected, errored
-            </span>
-            <span className={styles.legendItem} style={{ marginLeft: "auto" }}>
-              Last updated {updated}
-            </span>
-          </div>
-        </header>
+          </header>
 
-        {/* Top-line snapshot */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Snapshot</h2>
-            <span className={styles.sourceTag}>Ads · last 30 days &nbsp;|&nbsp; Sales · last 30 days</span>
-          </div>
-          <div className={styles.grid}>
-            <Kpi
-              label="Impressions"
-              value={metaOk ? fmtInt(meta.impressions) : "—"}
-              sub={metaOk ? "Meta Ads · ad impressions" : "Meta Ads not connected"}
-              muted={!metaOk}
-            />
-            <Kpi
-              label="Clicks"
-              value={metaOk ? fmtInt(meta.clicks) : "—"}
-              sub={metaOk ? `CTR ${fmtPct(meta.ctr)}` : "Meta Ads not connected"}
-              muted={!metaOk}
-            />
-            <Kpi
-              label="Ad Spend"
-              value={metaOk ? fmtMoney(meta.spend, meta.currency) : "—"}
-              sub={metaOk ? "Meta Ads · last 30d" : "Meta Ads not connected"}
-              muted={!metaOk}
-            />
-            <Kpi
-              label="Conversions"
-              value={stripeOk ? fmtInt(stripe.conversions) : "—"}
-              sub={stripeOk ? `Stripe · ${stripe.today.conversions} today` : "Stripe not connected"}
-              muted={!stripeOk}
-            />
-            <Kpi
-              label="Revenue"
-              value={stripeOk ? fmtUsdCents(stripe.revenueCents) : "—"}
-              sub={stripeOk ? `Stripe · ${fmtUsdCents(stripe.today.revenueCents)} today` : "Stripe not connected"}
-              muted={!stripeOk}
-            />
-            <Kpi
-              label="Books sold"
-              value={stripeOk ? fmtInt(totalBookUnits) : "—"}
-              sub={stripeOk ? "Stripe · units, last 30d" : "Stripe not connected"}
-              muted={!stripeOk}
-            />
-            <Kpi
-              label="Form fills"
-              value={mcOk ? fmtInt(mailchimp.newSignupsWindow) : "—"}
-              sub={mcOk ? `Mailchimp · new in ${mailchimp.windowDays}d` : "Mailchimp not connected"}
-              muted={!mcOk}
-            />
-            <Kpi
-              label="Page Views"
-              value={firstOk ? fmtInt(first.pageViews) : "—"}
-              sub={firstOk ? "First-party · all-time" : "Event store not connected"}
-              muted={!firstOk}
-            />
-          </div>
-        </section>
-
-        {/* Ad performance — Meta */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Course material engagement</h2>
-            <span className={styles.sourceTag}>
-              Source: secured course access log &nbsp; <Chip state={materialsState} />
-            </span>
-          </div>
-
-          {!materials.connected ? (
-            <NotConnected
-              title="Material access logging needs the existing KV store"
-              hint={
-                <>
-                  Set <code>UPSTASH_REDIS_REST_URL</code> and <code>UPSTASH_REDIS_REST_TOKEN</code>
-                  (or the Vercel <code>KV_REST_API_*</code> equivalents). No additional database is needed.
-                </>
-              }
-            />
-          ) : (
-            <>
-              {materials.error ? <p className={styles.errorBanner}>Material log error: {materials.error}</p> : null}
-              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
-                <Kpi label="Materials opened" value={fmtInt(materials.totalOpened)} sub="Successful opens and downloads" />
-                <Kpi label="Failed attempts" value={fmtInt(materials.totalFailed)} sub="Access or delivery could not complete" />
-                <Kpi
-                  label="Most accessed class"
-                  value={mostAccessedClass ? `Class ${mostAccessedClass.classSlug.toUpperCase()}` : "-"}
-                  sub={mostAccessedClass ? `${fmtInt(mostAccessedClass.opened)} opens - ${mostAccessedClass.title}` : "No material access yet"}
-                  muted={!mostAccessedClass}
-                />
-                <Kpi
-                  label="Least accessed class"
-                  value={leastAccessedClass ? `Class ${leastAccessedClass.classSlug.toUpperCase()}` : "-"}
-                  sub={leastAccessedClass ? `${fmtInt(leastAccessedClass.opened)} opens - ${leastAccessedClass.title}` : "No material access yet"}
-                  muted={!leastAccessedClass}
-                />
+          <div className={styles.content}>
+            <section id="overview" className={styles.hero}>
+              <div className={styles.heroCopy}>
+                <p className={styles.eyebrow}>Performance overview</p>
+                <h1>Good {greeting}, team.</h1>
+                <p>Course participation, email engagement, audience growth, sales and acquisition in one protected place.</p>
               </div>
+              <div className={styles.heroStatus}>
+                <span className={styles.liveDot} /> Live sources refresh as new provider data becomes available
+              </div>
+            </section>
 
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Class</th>
-                      <th>Material</th>
-                      <th className={styles.num}>Opened</th>
-                      <th className={styles.num}>Failed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {materialClasses.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className={styles.muted}>No material access has been recorded yet.</td>
-                      </tr>
-                    ) : (
-                      materialClasses.flatMap((klass) =>
-                        klass.formats.map((format, index) => (
+            <section className={styles.overviewGrid} aria-label="Live performance snapshot">
+              <MetricCard icon={<BookOpen size={16} />} label="Material opens" value={materialsOk ? fmtInt(materials.totalOpened) : "—"} detail={materialsOk ? "Successful opens and downloads" : "Course access log not connected"} muted={!materialsOk} accent />
+              <MetricCard icon={<Mail size={16} />} label="Email opens" value={campaignsOk ? fmtInt(campaignReports.totalOpens) : "—"} detail={campaignsOk ? "Unique opens across sent campaigns" : "Mailchimp reports not connected"} muted={!campaignsOk} />
+              <MetricCard icon={<MousePointer2 size={16} />} label="Website page views" value={firstOk ? fmtInt(first.pageViews) : "—"} detail={firstOk ? "All-time first-party events" : "First-party events not connected"} muted={!firstOk} />
+              <MetricCard icon={<ReceiptText size={16} />} label="Revenue" value={stripeOk ? fmtUsdCents(stripe.revenueCents) : "—"} detail={stripeOk ? "Successful charges in the last 30 days" : "Stripe not connected"} muted={!stripeOk} />
+            </section>
+
+            <section className={styles.dashboardGrid}>
+              <article className={`${styles.panel} ${styles.activityPanel}`}>
+                <div className={styles.panelHead}>
+                  <div>
+                    <p className={styles.panelLabel}>On-site activity</p>
+                    <h2>Event volume</h2>
+                  </div>
+                  <SourceBadge state={firstState} />
+                </div>
+                {first.connected && !first.error ? (
+                  <>
+                    <div className={styles.activityFigures}>
+                      <strong>{fmtInt(first.totalEvents)}</strong>
+                      <span>tracked events all-time</span>
+                    </div>
+                    <ActivityBars series={first.series} label="First-party events over recent days" emptyLabel="No first-party activity has been recorded yet." />
+                  </>
+                ) : (
+                  <EmptySource title="On-site activity is not available" hint={<>Connect the existing KV store to record <code>PageView</code>, lead and action events.</>} />
+                )}
+              </article>
+
+              <article className={styles.panel}>
+                <div className={styles.panelHead}>
+                  <div>
+                    <p className={styles.panelLabel}>Course engagement</p>
+                    <h2>Access focus</h2>
+                  </div>
+                  <SourceBadge state={materialState} />
+                </div>
+                <div className={styles.focusList}>
+                  <div><span>Most accessed</span><strong>{mostAccessedClass ? `Class ${mostAccessedClass.classSlug.toUpperCase()}` : "—"}</strong><small>{mostAccessedClass ? `${fmtInt(mostAccessedClass.opened)} opens · ${mostAccessedClass.title}` : "No access data yet"}</small></div>
+                  <div><span>Least accessed</span><strong>{leastAccessedClass ? `Class ${leastAccessedClass.classSlug.toUpperCase()}` : "—"}</strong><small>{leastAccessedClass ? `${fmtInt(leastAccessedClass.opened)} opens · ${leastAccessedClass.title}` : "No access data yet"}</small></div>
+                  <div><span>Failed attempts</span><strong>{materialsOk ? fmtInt(materials.totalFailed) : "—"}</strong><small>{materialsOk ? "Logged after validation or delivery failure" : "Course access log not connected"}</small></div>
+                </div>
+              </article>
+
+              <article className={styles.panel}>
+                <div className={styles.panelHead}>
+                  <div>
+                    <p className={styles.panelLabel}>Email performance</p>
+                    <h2>Campaign leader</h2>
+                  </div>
+                  <SourceBadge state={campaignState} />
+                </div>
+                <div className={styles.emailLeader}>
+                  <span className={styles.leaderIcon}><Mail size={20} /></span>
+                  <div>
+                    <strong>{mostOpenedEmail?.title ?? "No sent campaigns yet"}</strong>
+                    <p>{mostOpenedEmail ? `${fmtInt(mostOpenedEmail.opens)} unique opens · ${fmtPct(mostOpenedEmail.openRate)} open rate` : "Mailchimp report data will appear here."}</p>
+                  </div>
+                </div>
+                <div className={styles.miniStats}>
+                  <span><strong>{campaignsOk ? fmtInt(campaignReports.totalCampaigns) : "—"}</strong>sent campaigns</span>
+                  <span><strong>{campaignsOk ? fmtInt(campaignReports.totalClicks) : "—"}</strong>unique clicks</span>
+                </div>
+              </article>
+            </section>
+
+            <section id="materials" className={styles.dataSection}>
+              <SectionHeading icon={<BookOpen size={18} />} title="Course material access" subtitle="Every successful or failed learner access attempt, aggregated by class and format." state={materialState} />
+              {!materials.connected ? (
+                <EmptySource title="Material logging needs the existing KV store" hint={<>Set <code>UPSTASH_REDIS_REST_URL</code> and <code>UPSTASH_REDIS_REST_TOKEN</code> (or Vercel&apos;s <code>KV_REST_API_*</code> values).</>} />
+              ) : materials.error ? (
+                <p className={styles.errorBanner}>Course access log error: {materials.error}</p>
+              ) : (
+                <div className={styles.tableCard}>
+                  <div className={styles.tableMeta}><span>{fmtInt(materials.totalOpened)} successful opens</span><span>{fmtInt(materials.totalFailed)} failed attempts</span></div>
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                      <thead><tr><th>Class</th><th>Material</th><th className={styles.num}>Opened</th><th className={styles.num}>Failed</th></tr></thead>
+                      <tbody>
+                        {materialClasses.length === 0 ? <tr><td colSpan={4} className={styles.emptyCell}>No course material access has been recorded yet.</td></tr> : materialClasses.flatMap((klass) => klass.formats.map((format, index) => (
                           <tr key={`${klass.classSlug}-${format.format}`}>
-                            <td>{index === 0 ? <><strong>Class {klass.classSlug.toUpperCase()}</strong><br /><span className={styles.muted}>{klass.title}</span></> : null}</td>
-                            <td>{materialFormatLabel(format.format)}</td>
-                            <td className={styles.num}>{fmtInt(format.opened)}</td>
-                            <td className={styles.num}>{fmtInt(format.failed)}</td>
+                            <td>{index === 0 ? <><strong>Class {klass.classSlug.toUpperCase()}</strong><small>{klass.title}</small></> : null}</td>
+                            <td>{materialFormatLabel(format.format)}</td><td className={styles.num}>{fmtInt(format.opened)}</td><td className={styles.num}>{fmtInt(format.failed)}</td>
                           </tr>
-                        ))
-                      )
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </section>
-
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Email campaign performance</h2>
-            <span className={styles.sourceTag}>
-              Source: Mailchimp Reports API &nbsp; <Chip state={campaignReportsState} />
-            </span>
-          </div>
-
-          {!campaignReports.connected ? (
-            <NotConnected
-              title="Connect Mailchimp to show sent-email opens and clicks"
-              hint={<>Set <code>MAILCHIMP_API_KEY</code>, <code>MAILCHIMP_API_SERVER</code> and <code>MAILCHIMP_AUDIENCE_ID</code>.</>}
-            />
-          ) : (
-            <>
-              {campaignReports.error ? <p className={styles.errorBanner}>Mailchimp report error: {campaignReports.error}</p> : null}
-              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
-                <Kpi label="Sent campaigns" value={fmtInt(campaignReports.totalCampaigns)} sub="Mailchimp campaign reports" />
-                <Kpi label="Campaign opens" value={fmtInt(campaignReports.totalOpens)} sub="Sum of unique opens by campaign" />
-                <Kpi label="Campaign clicks" value={fmtInt(campaignReports.totalClicks)} sub="Sum of unique clicks by campaign" />
-                <Kpi
-                  label="Most opened email"
-                  value={mostOpenedEmail ? fmtInt(mostOpenedEmail.opens) : "-"}
-                  sub={mostOpenedEmail ? mostOpenedEmail.title : "No sent campaigns yet"}
-                  muted={!mostOpenedEmail}
-                />
-                <Kpi
-                  label="Least opened email"
-                  value={leastOpenedEmail ? fmtInt(leastOpenedEmail.opens) : "-"}
-                  sub={leastOpenedEmail ? leastOpenedEmail.title : "No sent campaigns yet"}
-                  muted={!leastOpenedEmail}
-                />
-              </div>
-
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Sent email</th>
-                      <th>Sent</th>
-                      <th className={styles.num}>Recipients</th>
-                      <th className={styles.num}>Unique opens</th>
-                      <th className={styles.num}>Open rate</th>
-                      <th className={styles.num}>Unique clicks</th>
-                      <th className={styles.num}>Click rate</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {campaignReports.campaigns.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className={styles.muted}>No sent Mailchimp campaigns found yet.</td>
-                      </tr>
-                    ) : (
-                      campaignReports.campaigns.map((campaign) => (
-                        <tr key={campaign.id}>
-                          <td>{campaign.title}</td>
-                          <td className={styles.mono}>{fmtSentAt(campaign.sentAt)}</td>
-                          <td className={styles.num}>{fmtInt(campaign.emailsSent)}</td>
-                          <td className={styles.num}>{fmtInt(campaign.opens)}</td>
-                          <td className={styles.num}>{fmtPct(campaign.openRate)}</td>
-                          <td className={styles.num}>{fmtInt(campaign.clicks)}</td>
-                          <td className={styles.num}>{fmtPct(campaign.clickRate)}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <p className={styles.kpiSub}>
-                {campaignReports.cachedAt
-                  ? `Mailchimp report data cached ${fmtWhen(campaignReports.cachedAt)}; refreshes at most once every 15 minutes.`
-                  : "Mailchimp report data refreshes at most once every 15 minutes."}
-              </p>
-            </>
-          )}
-        </section>
-
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Ad performance</h2>
-            <span className={styles.sourceTag}>
-              Source: Meta Marketing API &nbsp; <Chip state={metaState} />
-            </span>
-          </div>
-
-          {!meta.connected ? (
-            <NotConnected
-              title="Connect Meta Ads to see impressions, clicks &amp; spend"
-              hint={
-                <>
-                  Add a Meta System-User token with the <code>ads_read</code> permission as{" "}
-                  <code>META_ACCESS_TOKEN</code> and your account as <code>META_AD_ACCOUNT_ID</code>{" "}
-                  (e.g. <code>act_1234567890</code>).
-                </>
-              }
-            />
-          ) : (
-            <>
-              {meta.error ? <p className={styles.errorBanner}>Meta API error: {meta.error}</p> : null}
-              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
-                <Kpi label="Reach" value={fmtInt(meta.reach)} sub="Unique accounts" />
-                <Kpi label="CTR" value={fmtPct(meta.ctr)} sub="Click-through rate" />
-                <Kpi label="CPC" value={fmtMoney(meta.cpc, meta.currency)} sub="Avg cost / click" />
-                <Kpi label="Pixel purchases" value={fmtInt(meta.purchases)} sub="Attributed by pixel" />
-                <Kpi
-                  label="Cost / conversion"
-                  value={costPerConv != null ? fmtMoney(costPerConv, meta.currency) : "—"}
-                  sub="Spend ÷ Stripe sales"
-                  muted={costPerConv == null}
-                />
-                <Kpi
-                  label="Ad → sale rate"
-                  value={convRate != null ? fmtPct(convRate) : "—"}
-                  sub="Stripe sales ÷ ad clicks"
-                  muted={convRate == null}
-                />
-              </div>
-
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Campaign</th>
-                      <th className={styles.num}>Impressions</th>
-                      <th className={styles.num}>Clicks</th>
-                      <th className={styles.num}>CTR</th>
-                      <th className={styles.num}>Spend</th>
-                      <th className={styles.num}>Purchases</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {meta.campaigns.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className={styles.muted}>
-                          No campaign data in the last 30 days.
-                        </td>
-                      </tr>
-                    ) : (
-                      meta.campaigns.map((c) => (
-                        <tr key={c.name}>
-                          <td>{c.name}</td>
-                          <td className={styles.num}>{fmtInt(c.impressions)}</td>
-                          <td className={styles.num}>{fmtInt(c.clicks)}</td>
-                          <td className={styles.num}>{fmtPct(c.ctr)}</td>
-                          <td className={styles.num}>{fmtMoney(c.spend, meta.currency)}</td>
-                          <td className={styles.num}>{fmtInt(c.purchases)}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </section>
-
-        {/* Conversions & revenue — Stripe */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Conversions &amp; revenue</h2>
-            <span className={styles.sourceTag}>
-              Source: Stripe &nbsp; <Chip state={stripeState} />
-            </span>
-          </div>
-
-          {!stripe.connected ? (
-            <NotConnected
-              title="Connect Stripe to show real sales"
-              hint={<>Set <code>STRIPE_SECRET_KEY</code> to show real conversions and revenue.</>}
-            />
-          ) : (
-            <>
-              {stripe.error ? (
-                <p className={styles.errorBanner}>Stripe error: {stripe.error}</p>
-              ) : null}
-              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
-                <Kpi label="Conversions (30d)" value={fmtInt(stripe.conversions)} sub="Successful charges" />
-                <Kpi label="Revenue (30d)" value={fmtUsdCents(stripe.revenueCents)} sub="Net of refunds" />
-                <Kpi label="Today" value={fmtInt(stripe.today.conversions)} sub={`${fmtUsdCents(stripe.today.revenueCents)} today`} />
-                <Kpi
-                  label="Avg order value"
-                  value={aov != null ? fmtUsdCents(aov) : "—"}
-                  sub="Revenue ÷ conversions"
-                  muted={aov == null}
-                />
-              </div>
-
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>When</th>
-                      <th>Customer</th>
-                      <th>Item</th>
-                      <th className={styles.num}>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stripe.recent.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className={styles.muted}>
-                          No successful charges in the last 30 days.
-                        </td>
-                      </tr>
-                    ) : (
-                      stripe.recent.map((r, i) => (
-                        <tr key={i}>
-                          <td className={styles.mono}>{fmtWhen(r.createdMs)}</td>
-                          <td>{r.email ?? <span className={styles.muted}>—</span>}</td>
-                          <td>{r.description ?? <span className={styles.muted}>—</span>}</td>
-                          <td className={styles.num}>{fmtUsdCents(r.amountCents)}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {stripe.capped ? (
-                <p className={styles.kpiSub}>
-                  Showing the {stripe.windowDays}-day window; older/oldest charges beyond the scan
-                  cap aren&apos;t included, so totals are a lower bound.
-                </p>
-              ) : null}
-            </>
-          )}
-        </section>
-
-        {/* Book sales — Stripe (attributed from order metadata) */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Book sales</h2>
-            <span className={styles.sourceTag}>
-              Source: Stripe order metadata &nbsp; <Chip state={stripeState} />
-            </span>
-          </div>
-
-          {!stripeOk ? (
-            <NotConnected
-              title="Per-book sales need Stripe connected"
-              hint={
-                <>
-                  Once <code>STRIPE_SECRET_KEY</code> is set, each order is attributed to the
-                  book(s) it contains — main product, order bump and one-click upsell.
-                </>
-              }
-            />
-          ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Book</th>
-                    <th className={styles.num}>Units sold (30d)</th>
-                    <th className={styles.num}>Share</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stripe.bookSales.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className={styles.muted}>
-                        No book sales in the last 30 days.
-                      </td>
-                    </tr>
-                  ) : (
-                    stripe.bookSales.map((b) => (
-                      <tr key={b.slug}>
-                        <td>{b.title}</td>
-                        <td className={styles.num}>{fmtInt(b.units)}</td>
-                        <td className={styles.num}>
-                          {totalBookUnits > 0 ? fmtPct((b.units / totalBookUnits) * 100) : "—"}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                  {stripe.bookSales.length > 0 ? (
-                    <tr>
-                      <td>
-                        <strong>Total units</strong>
-                      </td>
-                      <td className={styles.num}>
-                        <strong>{fmtInt(totalBookUnits)}</strong>
-                      </td>
-                      <td className={styles.num} />
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-
-        {/* On-site engagement — first-party */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>On-site engagement &amp; button clicks</h2>
-            <span className={styles.sourceTag}>
-              Source: First-party collector &nbsp; <Chip state={firstState} />
-            </span>
-          </div>
-
-          {!first.connected ? (
-            <NotConnected
-              title="Turn on the first-party event store to count page views &amp; button clicks"
-              hint={
-                <>
-                  Create an Upstash Redis database and set <code>UPSTASH_REDIS_REST_URL</code> and{" "}
-                  <code>UPSTASH_REDIS_REST_TOKEN</code>. The site already sends events (PageView,
-                  InitiateCheckout, Lead, DonateIntent, VideoPlay) — they&apos;ll start counting the
-                  moment the store is connected.
-                </>
-              }
-            />
-          ) : (
-            <>
-              {first.error ? (
-                <p className={styles.errorBanner}>Event store error: {first.error}</p>
-              ) : null}
-              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
-                <Kpi label="Page views" value={fmtInt(first.pageViews)} sub="All-time" />
-                <Kpi label="Button / action events" value={fmtInt(buttonClicks)} sub="Checkout, leads, donate, video" />
-                <Kpi label="Total events" value={fmtInt(first.totalEvents)} sub="All event types" />
-              </div>
-
-              {/* 14-day sparkline */}
-              {first.series.length > 0 ? (
-                <div className={styles.card} style={{ marginBottom: "0.85rem" }}>
-                  <p className={styles.kpiLabel}>Events — last {first.series.length} days</p>
-                  <div className={styles.spark}>
-                    {first.series.map((d) => (
-                      <div
-                        key={d.date}
-                        className={styles.sparkBar}
-                        style={{ height: `${(d.count / seriesMax) * 100}%` }}
-                        title={`${d.date}: ${d.count}`}
-                      />
-                    ))}
-                  </div>
-                  <div className={styles.sparkLabels}>
-                    <span>{first.series[0]?.date}</span>
-                    <span>{first.series[first.series.length - 1]?.date}</span>
+                        )))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              ) : null}
+              )}
+            </section>
 
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Event</th>
-                      <th className={styles.num}>Count (all-time)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {first.byEvent.length === 0 ? (
-                      <tr>
-                        <td colSpan={2} className={styles.muted}>
-                          No events recorded yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      first.byEvent.map((e) => (
-                        <tr key={e.name}>
-                          <td>{e.name}</td>
-                          <td className={styles.num}>{fmtInt(e.total)}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </section>
-
-        {/* Forms filled — Mailchimp (+ first-party) */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Forms filled</h2>
-            <span className={styles.sourceTag}>
-              Source: Mailchimp audience &nbsp; <Chip state={mcState} />
-            </span>
-          </div>
-
-          {!mailchimp.connected ? (
-            <NotConnected
-              title="Connect Mailchimp to show form &amp; lead signups"
-              hint={
-                <>
-                  Set <code>MAILCHIMP_API_KEY</code>, <code>MAILCHIMP_API_SERVER</code> and{" "}
-                  <code>MAILCHIMP_AUDIENCE_ID</code>. Every newsletter / free-Handbook form already
-                  posts to <code>/api/subscribe</code> → Mailchimp, so signups will appear here.
-                </>
-              }
-            />
-          ) : (
-            <>
-              {mailchimp.error ? (
-                <p className={styles.errorBanner}>Mailchimp error: {mailchimp.error}</p>
-              ) : null}
-              <div className={styles.grid} style={{ marginBottom: "0.85rem" }}>
-                <Kpi label="Total subscribers" value={fmtInt(mailchimp.totalSubscribers)} sub="Currently subscribed" />
-                <Kpi
-                  label={`New signups (${mailchimp.windowDays}d)`}
-                  value={fmtInt(mailchimp.newSignupsWindow)}
-                  sub="Opt-ins via forms"
-                />
-                <Kpi label="Total contacts" value={fmtInt(mailchimp.totalContacts)} sub="All-time audience" />
-                <Kpi
-                  label="Form-fill events"
-                  value={firstOk ? fmtInt(firstPartyLeads) : "—"}
-                  sub="First-party Lead events"
-                  muted={!firstOk}
-                />
-              </div>
-
-              {mailchimp.series.some((d) => d.count > 0) ? (
-                <div className={styles.card} style={{ marginBottom: "0.85rem" }}>
-                  <p className={styles.kpiLabel}>Signups — last {mailchimp.series.length} days</p>
-                  <div className={styles.spark}>
-                    {mailchimp.series.map((d) => (
-                      <div
-                        key={d.date}
-                        className={styles.sparkBar}
-                        style={{ height: `${(d.count / mcSeriesMax) * 100}%` }}
-                        title={`${d.date}: ${d.count}`}
-                      />
-                    ))}
-                  </div>
-                  <div className={styles.sparkLabels}>
-                    <span>{mailchimp.series[0]?.date}</span>
-                    <span>{mailchimp.series[mailchimp.series.length - 1]?.date}</span>
+            <section id="campaigns" className={styles.dataSection}>
+              <SectionHeading icon={<Mail size={18} />} title="Sent email campaigns" subtitle="Real Mailchimp campaign report data, cached server-side for 15 minutes." state={campaignState} />
+              {!campaignReports.connected ? (
+                <EmptySource title="Mailchimp campaign reporting is not connected" hint={<>Set <code>MAILCHIMP_API_KEY</code>, <code>MAILCHIMP_API_SERVER</code> and <code>MAILCHIMP_AUDIENCE_ID</code>.</>} />
+              ) : campaignReports.error ? (
+                <p className={styles.errorBanner}>Mailchimp campaign report error: {campaignReports.error}</p>
+              ) : (
+                <div className={styles.tableCard}>
+                  <div className={styles.tableMeta}><span>{fmtInt(campaignReports.totalCampaigns)} sent campaigns</span><span>{fmtInt(campaignReports.totalOpens)} unique opens</span><span>{fmtInt(campaignReports.totalClicks)} unique clicks</span><span>{campaignReports.cachedAt ? `Cached ${fmtWhen(campaignReports.cachedAt)}` : "Refreshing report cache"}</span></div>
+                  <div className={styles.tableWrap}>
+                    <table className={styles.table}>
+                      <thead><tr><th>Sent email</th><th>Sent</th><th className={styles.num}>Recipients</th><th className={styles.num}>Opens</th><th className={styles.num}>Open rate</th><th className={styles.num}>Clicks</th><th className={styles.num}>Click rate</th></tr></thead>
+                      <tbody>{campaignReports.campaigns.length === 0 ? <tr><td colSpan={7} className={styles.emptyCell}>No sent Mailchimp campaigns found yet.</td></tr> : campaignReports.campaigns.map((campaign) => <tr key={campaign.id}><td className={styles.campaignName}>{campaign.title}</td><td>{fmtSentAt(campaign.sentAt)}</td><td className={styles.num}>{fmtInt(campaign.emailsSent)}</td><td className={styles.num}>{fmtInt(campaign.opens)}</td><td className={styles.num}>{fmtPct(campaign.openRate)}</td><td className={styles.num}>{fmtInt(campaign.clicks)}</td><td className={styles.num}>{fmtPct(campaign.clickRate)}</td></tr>)}</tbody>
+                    </table>
                   </div>
                 </div>
-              ) : null}
+              )}
+            </section>
 
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Recent signup</th>
-                      <th className={styles.num}>When</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mailchimp.recent.length === 0 ? (
-                      <tr>
-                        <td colSpan={2} className={styles.muted}>
-                          No signups yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      mailchimp.recent.map((r, i) => (
-                        <tr key={i}>
-                          <td>{r.email}</td>
-                          <td className={styles.num}>
-                            {Number.isFinite(r.ms) ? fmtWhen(r.ms) : "—"}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </section>
+            <section id="growth" className={styles.twoColumnSection}>
+              <article className={styles.dataCard}>
+                <SectionHeading icon={<Users size={18} />} title="Audience growth" subtitle="Mailchimp audience and opt-in activity." state={mailchimpState} />
+                {!mailchimp.connected ? <EmptySource title="Audience data is not connected" hint={<>Connect Mailchimp to read real subscriber and signup figures.</>} /> : mailchimp.error ? <p className={styles.errorBanner}>Mailchimp audience error: {mailchimp.error}</p> : <>
+                  <div className={styles.inlineMetrics}><MetricCard icon={<Users size={15} />} label="Subscribers" value={fmtInt(mailchimp.totalSubscribers)} detail="Currently subscribed" /><MetricCard icon={<Mail size={15} />} label="New signups" value={fmtInt(mailchimp.newSignupsWindow)} detail={`Last ${mailchimp.windowDays} days`} /><MetricCard icon={<MousePointer2 size={15} />} label="Form events" value={firstOk ? fmtInt(firstPartyLeads) : "—"} detail="First-party lead signals" muted={!firstOk} /></div>
+                  <ActivityBars series={mailchimp.series} label="Mailchimp signups over recent days" emptyLabel="No recent signup activity has been reported." />
+                </>}
+              </article>
 
-        {/* Pixels & events installed (always available — read from config) */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Pixels installed</h2>
-            <span className={styles.sourceTag}>Source: site configuration</span>
-          </div>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Provider</th>
-                  <th>Pixel ID</th>
-                  <th>Scope</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {PIXELS.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <span className={styles.pill}>{p.provider}</span> {p.label}
-                    </td>
-                    <td className={styles.mono}>{p.id}</td>
-                    <td className={styles.muted}>{p.scope}</td>
-                    <td>{p.active ? <Chip state="live" /> : <Chip state="off" />}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+              <article className={styles.dataCard}>
+                <SectionHeading icon={<Megaphone size={18} />} title="Acquisition" subtitle="Meta advertising and site action performance." state={metaState} />
+                {!meta.connected ? <EmptySource title="Meta Ads is not connected" hint={<>Set <code>META_ACCESS_TOKEN</code> and <code>META_AD_ACCOUNT_ID</code> to load real ad delivery data.</>} /> : meta.error ? <p className={styles.errorBanner}>Meta Ads error: {meta.error}</p> : <div className={styles.inlineMetrics}><MetricCard icon={<BarChart3 size={15} />} label="Impressions" value={fmtInt(meta.impressions)} detail="Last 30 days" /><MetricCard icon={<MousePointer2 size={15} />} label="Ad clicks" value={fmtInt(meta.clicks)} detail={`CTR ${fmtPct(meta.ctr)}`} /><MetricCard icon={<CircleDollarSign size={15} />} label="Spend" value={fmtMoney(meta.spend, meta.currency)} detail={costPerConversion != null ? `${fmtMoney(costPerConversion, meta.currency)} per conversion` : "No conversion cost yet"} /><MetricCard icon={<Gauge size={15} />} label="Ad to sale" value={conversionRate != null ? fmtPct(conversionRate) : "—"} detail="Stripe conversions divided by ad clicks" muted={conversionRate == null} /></div>}
+              </article>
+            </section>
 
-        {/* Events fired */}
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Events being tracked</h2>
-            <span className={styles.sourceTag}>Sent to Meta + first-party collector</span>
-          </div>
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Event</th>
-                  <th>Type</th>
-                  <th>Fires when</th>
-                  <th>Where</th>
-                </tr>
-              </thead>
-              <tbody>
-                {TRACKED_EVENTS.map((e) => (
-                  <tr key={e.name}>
-                    <td className={styles.mono}>{e.name}</td>
-                    <td>
-                      <span className={styles.pill}>{e.kind}</span>
-                    </td>
-                    <td className={styles.muted}>{e.when}</td>
-                    <td className={styles.muted}>{e.where}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+            <section id="sales" className={styles.twoColumnSection}>
+              <article className={styles.dataCard}>
+                <SectionHeading icon={<CircleDollarSign size={18} />} title="Sales and revenue" subtitle="Successful, non-refunded Stripe charges from the last 30 days." state={stripeState} />
+                {!stripe.connected ? <EmptySource title="Stripe is not connected" hint={<>Set <code>STRIPE_SECRET_KEY</code> to load sales and revenue.</>} /> : stripe.error ? <p className={styles.errorBanner}>Stripe error: {stripe.error}</p> : <div className={styles.inlineMetrics}><MetricCard icon={<ReceiptText size={15} />} label="Conversions" value={fmtInt(stripe.conversions)} detail="Successful charges" /><MetricCard icon={<CircleDollarSign size={15} />} label="Revenue" value={fmtUsdCents(stripe.revenueCents)} detail={`${fmtUsdCents(stripe.today.revenueCents)} today`} /><MetricCard icon={<Gauge size={15} />} label="Average order" value={aov != null ? fmtUsdCents(aov) : "—"} detail="Revenue divided by conversions" muted={aov == null} /><MetricCard icon={<BookOpen size={15} />} label="Books sold" value={fmtInt(totalBookUnits)} detail="Units in this period" /></div>}
+              </article>
 
-        <p className={styles.footerNote}>
-          <strong>How the numbers are sourced.</strong> Ad impressions, clicks, CTR, CPC and spend
-          come from the Meta Marketing API for your ad account. Conversions, revenue and per-book
-          sales come from Stripe (successful, non-refunded charges; books attributed from each
-          order&apos;s metadata). Forms filled / lead signups come from your Mailchimp audience. Page
-          views and button/action clicks come from a first-party collector that mirrors every pixel
-          event to our own store. Anything marked <em>Not connected</em> simply needs its credentials
-          added in the environment — until then it shows a dash, never a made-up figure.
-        </p>
+              <article className={styles.dataCard}>
+                <SectionHeading icon={<ReceiptText size={18} />} title="Book sales" subtitle="Units attributed from the real Stripe order metadata." state={stripeState} />
+                {!stripeOk ? <EmptySource title="Book sales require Stripe" hint={<>Connect Stripe to attribute main products, order bumps and upsells.</>} /> : <div className={styles.tableWrap}><table className={`${styles.table} ${styles.compactTable}`}><thead><tr><th>Book</th><th className={styles.num}>Units</th><th className={styles.num}>Share</th></tr></thead><tbody>{stripe.bookSales.length === 0 ? <tr><td colSpan={3} className={styles.emptyCell}>No book sales in the last 30 days.</td></tr> : stripe.bookSales.map((book) => <tr key={book.slug}><td>{book.title}</td><td className={styles.num}>{fmtInt(book.units)}</td><td className={styles.num}>{totalBookUnits > 0 ? fmtPct((book.units / totalBookUnits) * 100) : "—"}</td></tr>)}</tbody></table></div>}
+              </article>
+            </section>
+
+            <section id="sources" className={styles.dataSection}>
+              <SectionHeading icon={<Database size={18} />} title="Data-source health" subtitle="Every dashboard value is read from these real sources. Unavailable sources never show invented values." state="live" />
+              <div className={styles.sourceGrid}>{sources.map((source) => <article key={source.label} className={styles.sourceCard}><div><strong>{source.label}</strong><span>{source.note}</span></div><SourceBadge state={source.state} /></article>)}</div>
+              {leastOpenedEmail ? <p className={styles.footnote}>Lowest current email open count: <strong>{leastOpenedEmail.title}</strong> ({fmtInt(leastOpenedEmail.opens)} unique opens).</p> : null}
+            </section>
+          </div>
+        </div>
       </div>
     </main>
   );
