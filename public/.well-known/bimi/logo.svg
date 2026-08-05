@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny-ps" viewBox="0 0 112 112" width="112" height="112">
+  <title>Jesus Boot Camp</title>
+  <desc>A gold cross inside a double gold ring on a dark field.</desc>
+  <rect x="0" y="0" width="112" height="112" fill="#1A1A1A"/>
+  <circle cx="56" cy="56" r="48" fill="none" stroke="#C9A84C" stroke-width="5"/>
+  <circle cx="56" cy="56" r="41" fill="none" stroke="#E0BF6F" stroke-width="1.5"/>
+  <path d="M51 24 L61 24 L61 42 L76 42 L76 52 L61 52 L61 88 L51 88 L51 52 L36 52 L36 42 L51 42 Z" fill="#E0BF6F"/>
+</svg>
