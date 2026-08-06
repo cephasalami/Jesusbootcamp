@@ -111,6 +111,12 @@ export async function kvSetAdd(key: string, value: string, ttlSeconds: number): 
     return true;
 }
 
+/** Remove one value from a Redis set. `false` means KV was unavailable. */
+export async function kvSetRemove(key: string, value: string): Promise<boolean> {
+    const removed = await command<number>(["SREM", key, value]);
+    return removed !== null;
+}
+
 /** Read every member of a Redis set. Null means KV was unavailable. */
 export async function kvSetMembers(key: string): Promise<string[] | null> {
     return command<string[]>(["SMEMBERS", key]);

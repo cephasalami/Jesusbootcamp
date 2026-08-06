@@ -49,6 +49,12 @@ before(() => {
                 kvSets.set(key, values);
                 return json({ result: values.size === sizeBefore ? 0 : 1 });
             }
+            if (command === "SREM") {
+                const values = kvSets.get(key);
+                const removed = values?.delete(value) ?? false;
+                if (values?.size === 0) kvSets.delete(key);
+                return json({ result: removed ? 1 : 0 });
+            }
             if (command === "SMEMBERS") {
                 return json({ result: [...(kvSets.get(key) ?? [])] });
             }
@@ -98,6 +104,7 @@ const {
     DEVICE_COOKIE_NAME,
     DEVICE_COOKIE_OPTIONS,
     DEVICE_TOKEN_TTL_SEC,
+    MAX_REMEMBERED_DEVICES,
     TOKEN_INDEX_TTL_SEC,
     issueDeviceToken,
     issueToken,
@@ -201,6 +208,26 @@ describe("class-link identity", () => {
         const identity = await resolveSubscriberIdentity(linkToken, deviceToken);
         assert.equal(identity?.source, "url");
         assert.equal(identity?.subscriber.email, linkEmail);
+    });
+
+    test("keeps the newest three remembered devices for one subscriber", async () => {
+        const email = "three-devices@example.com";
+        seed(email, "9".repeat(64));
+
+        const first = await issueDeviceToken(email);
+        const second = await issueDeviceToken(email);
+        const third = await issueDeviceToken(email);
+        assert.equal(MAX_REMEMBERED_DEVICES, 3);
+        assert.equal((await resolveByDeviceToken(first))?.email, email);
+        assert.equal((await resolveByDeviceToken(second))?.email, email);
+        assert.equal((await resolveByDeviceToken(third))?.email, email);
+
+        const fourth = await issueDeviceToken(email);
+        assert.equal(await resolveByDeviceToken(first), null, "the oldest device should be removed");
+        assert.equal((await resolveByDeviceToken(second))?.email, email);
+        assert.equal((await resolveByDeviceToken(third))?.email, email);
+        assert.equal((await resolveByDeviceToken(fourth))?.email, email);
+        assert.equal(kvSets.get(`jbc:devices:${email}`)?.size, MAX_REMEMBERED_DEVICES);
     });
 
     test("rotates one subscriber's token and leaves every other subscriber untouched", async () => {

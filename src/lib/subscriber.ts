@@ -26,6 +26,7 @@ import {
     kvSetJson,
     kvDel,
     kvSetAdd,
+    kvSetRemove,
     kvSetMembers,
     subscriberCacheKey,
     tokenIndexKey,
@@ -42,6 +43,8 @@ const SNAPSHOT_TTL_SEC = 60;
 export const TOKEN_INDEX_TTL_SEC = 400 * 24 * 60 * 60;
 /** Device recognition lasts as long as the durable CTOKEN index. */
 export const DEVICE_TOKEN_TTL_SEC = TOKEN_INDEX_TTL_SEC;
+/** A subscriber can remain recognised on a phone, tablet, and computer. */
+export const MAX_REMEMBERED_DEVICES = 3;
 export const DEVICE_COOKIE_NAME = "__Host-jbc_device";
 export const DEVICE_COOKIE_OPTIONS = {
     httpOnly: true,
@@ -64,7 +67,17 @@ type DeviceIndex = {
     email: string;
     /** Binds this device to the exact CTOKEN generation that created it. */
     ctokenDigest: string;
+    /** Lets us remove the oldest remembered device when the cap is reached. */
+    issuedAt: number;
 };
+
+// Keep issue order deterministic when two device cookies are minted in the
+// same millisecond (useful both for the cap and for the test suite).
+let lastDeviceIssuedAt = 0;
+function nextDeviceIssuedAt(): number {
+    lastDeviceIssuedAt = Math.max(Date.now(), lastDeviceIssuedAt + 1);
+    return lastDeviceIssuedAt;
+}
 
 /** Cryptographically random, unguessable access token. */
 export function generateToken(): string {
@@ -164,9 +177,49 @@ export async function issueDeviceToken(email: string): Promise<string> {
     const index: DeviceIndex = {
         email: clean,
         ctokenDigest: digestToken(snap.token),
+        issuedAt: nextDeviceIssuedAt(),
     };
     const indexKey = deviceIndexKey(tokenDigest);
     const reverseKey = subscriberDevicesKey(clean);
+
+    const existingDigests = await kvSetMembers(reverseKey);
+    if (existingDigests == null) {
+        throw new Error("Remembered devices could not be read from KV");
+    }
+    const existingIndexes = await Promise.all(
+        existingDigests.map(async (digest) => ({
+            digest,
+            index: await kvGetJson<DeviceIndex>(deviceIndexKey(digest)),
+        }))
+    );
+    const staleDigests = existingIndexes.filter((entry) => !entry.index).map((entry) => entry.digest);
+    const liveDevices = existingIndexes
+        .filter((entry): entry is { digest: string; index: DeviceIndex } => entry.index != null)
+        .sort(
+            (a, b) =>
+                (Number.isFinite(a.index.issuedAt) ? a.index.issuedAt : 0) -
+                    (Number.isFinite(b.index.issuedAt) ? b.index.issuedAt : 0) ||
+                a.digest.localeCompare(b.digest)
+        );
+    // We add the new device below, so only the newest two existing devices may
+    // remain. Old records from before `issuedAt` existed sort first and are
+    // therefore safely cleaned up on the next device sign-in.
+    const digestsToEvict = liveDevices
+        .slice(0, Math.max(0, liveDevices.length - (MAX_REMEMBERED_DEVICES - 1)))
+        .map((entry) => entry.digest);
+
+    const removals = [...staleDigests, ...digestsToEvict];
+    if (removals.length) {
+        const removed = await Promise.all(
+            removals.map(async (digest) => {
+                await kvDel(deviceIndexKey(digest));
+                return kvSetRemove(reverseKey, digest);
+            })
+        );
+        if (removed.some((success) => !success)) {
+            throw new Error("An old remembered device could not be revoked");
+        }
+    }
 
     await kvSetJson(indexKey, index, DEVICE_TOKEN_TTL_SEC);
     const reverseAdded = await kvSetAdd(reverseKey, tokenDigest, DEVICE_TOKEN_TTL_SEC);
