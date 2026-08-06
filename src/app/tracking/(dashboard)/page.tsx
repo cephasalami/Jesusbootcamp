@@ -24,6 +24,7 @@ import {
   ShareBar,
   SourceBadge,
   sourceState,
+  unavailableDetail,
 } from "../ui";
 import { fmtDateTime, fmtInt, fmtPct, fmtUsdCents, renderedAt, share } from "../format";
 import styles from "../tracking.module.css";
@@ -105,7 +106,7 @@ export default async function OverviewScreen() {
           icon={<BookOpen size={16} />}
           label="Material opens"
           value={materialsOk ? fmtInt(materials.totalOpened) : "—"}
-          detail={materialsOk ? "Successful opens and downloads, all-time" : "Course access log not connected"}
+          detail={materialsOk ? "Successful opens and downloads, all-time" : unavailableDetail(materials, "Course access log")}
           muted={!materialsOk}
           accent
           href="/tracking/course"
@@ -114,7 +115,7 @@ export default async function OverviewScreen() {
           icon={<Mail size={16} />}
           label="Email opens"
           value={campaignsOk ? fmtInt(campaigns.totalOpens) : "—"}
-          detail={campaignsOk ? `Unique opens across ${fmtInt(campaigns.totalCampaigns)} sent campaigns` : "Mailchimp reports not connected"}
+          detail={campaignsOk ? `Unique opens across ${fmtInt(campaigns.totalCampaigns)} sent campaigns` : unavailableDetail(campaigns, "Mailchimp reports")}
           muted={!campaignsOk}
           href="/tracking/email"
         />
@@ -122,7 +123,7 @@ export default async function OverviewScreen() {
           icon={<Users size={16} />}
           label="Subscribers"
           value={mailchimpOk ? fmtInt(mailchimp.totalSubscribers) : "—"}
-          detail={mailchimpOk ? `${fmtInt(mailchimp.newSignupsWindow)} new in the last ${mailchimp.windowDays} days` : "Mailchimp audience not connected"}
+          detail={mailchimpOk ? `${fmtInt(mailchimp.newSignupsWindow)} new in the last ${mailchimp.windowDays} days` : unavailableDetail(mailchimp, "Mailchimp audience")}
           muted={!mailchimpOk}
           href="/tracking/audience"
         />
@@ -130,7 +131,7 @@ export default async function OverviewScreen() {
           icon={<CircleDollarSign size={16} />}
           label="Revenue"
           value={stripeOk ? fmtUsdCents(stripe.revenueCents) : "—"}
-          detail={stripeOk ? `${fmtInt(stripe.conversions)} orders in the last ${stripe.windowDays} days` : "Stripe not connected"}
+          detail={stripeOk ? `${fmtInt(stripe.conversions)} orders in the last ${stripe.windowDays} days` : unavailableDetail(stripe, "Stripe")}
           muted={!stripeOk}
           href="/tracking/sales"
         />
@@ -214,10 +215,12 @@ export default async function OverviewScreen() {
           state={sourceState(materials.connected, materials.error)}
           action={<CardLink href="/tracking/course">Open</CardLink>}
         >
-          {!materialsOk ? (
+          {materials.error ? (
+            <ErrorBanner label="Course access log error" message={materials.error} />
+          ) : !materials.connected ? (
             <EmptySource
-              title="Course access log is not available"
-              hint="Class-by-class engagement appears once the access log is connected."
+              title="Course access log is not connected"
+              hint="Class-by-class engagement appears once the KV credentials are set."
             />
           ) : (
             <div className={styles.focusList}>
@@ -255,10 +258,12 @@ export default async function OverviewScreen() {
           state={sourceState(campaigns.connected, campaigns.error)}
           action={<CardLink href="/tracking/email">All campaigns</CardLink>}
         >
-          {!campaignsOk ? (
+          {campaigns.error ? (
+            <ErrorBanner label="Mailchimp report error" message={campaigns.error} />
+          ) : !campaigns.connected ? (
             <EmptySource
-              title="Campaign reporting is not available"
-              hint="Sent-email performance appears once Mailchimp reporting is connected."
+              title="Campaign reporting is not connected"
+              hint="Sent-email performance appears once the Mailchimp credentials are set."
             />
           ) : (
             <>

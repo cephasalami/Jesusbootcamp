@@ -807,8 +807,10 @@
 @media (max-width: 960px) {
   .appShell { grid-template-columns: 1fr; border-radius: 20px; }
   .sidebar { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1rem; min-height: auto; padding: 0.85rem 1rem; border-right: 0; border-bottom: 1px solid var(--color-card-border); }
-  .sideNav { display: flex; justify-content: flex-end; gap: 0.2rem; overflow-x: auto; }
-  .sideNav a { min-height: 35px; padding: 0.42rem 0.55rem; white-space: nowrap; }
+  /* Start at the left, not the right: with `justify-content: flex-end` an
+     overflowing row hides its FIRST items, which put Overview out of reach. */
+  .sideNav { display: flex; justify-content: flex-start; gap: 0.2rem; overflow-x: auto; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+  .sideNav a { min-height: 35px; flex: 0 0 auto; padding: 0.42rem 0.55rem; white-space: nowrap; }
   .sideNote { display: none; }
   .overviewSplit { grid-template-columns: 1fr; }
 }

@@ -7,7 +7,7 @@
 
 import { createHash } from "node:crypto";
 import { FORMAT_KEYS, type FormatKey } from "../access.ts";
-import { isKvConfigured, kvPipeline } from "../kv.ts";
+import { isKvConfigured, kvPipeline, type KvCommand } from "../kv.ts";
 import type { ProviderStatus } from "./types.ts";
 
 export const MATERIAL_ACCESS_FORMATS = [...FORMAT_KEYS, "quiz"] as const;
@@ -60,6 +60,25 @@ export type MaterialAccessActivity = ProviderStatus & {
 
 const ROOT = "jbc:material-access:v1";
 const EVENT_LOG_LIMIT = 2_000;
+
+/**
+ * A KV read for the DASHBOARD, as opposed to the fail-soft reads that serve
+ * class delivery.
+ *
+ * kvPipeline returns null when KV is unreachable. Treating that as "no rows"
+ * is far worse here than surfacing an error: an empty result renders as a
+ * confident zero next to a "Live" badge, which is exactly the fabricated figure
+ * this dashboard promises never to show. So retry once — the shared client uses
+ * a deliberately tight 2s timeout that a multi-command pipeline can trip — and
+ * then throw so the caller renders "needs attention" instead.
+ */
+async function kvRead<T = unknown>(commands: KvCommand[]): Promise<(T | null)[]> {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+        const out = await kvPipeline<T>(commands);
+        if (out) return out;
+    }
+    throw new Error("KV did not respond");
+}
 
 function int(value: unknown): number {
     const n = typeof value === "number" ? value : Number.parseInt(String(value ?? ""), 10);
@@ -125,20 +144,25 @@ export async function readMaterialAccessMetrics(): Promise<MaterialAccessMetrics
     }
 
     try {
-        const classResult = await kvPipeline<string[]>([["SMEMBERS", `${ROOT}:classes`]]);
-        const classSlugs = Array.isArray(classResult?.[0])
+        const classResult = await kvRead<string[]>([["SMEMBERS", `${ROOT}:classes`]]);
+        const classSlugs = Array.isArray(classResult[0])
             ? [...(classResult[0] as string[])].map(String).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
             : [];
 
-        const formatsPerClass = await Promise.all(
-            classSlugs.map(async (classSlug) => {
-                const out = await kvPipeline<string[]>([["SMEMBERS", `${ROOT}:class:${classSlug}:formats`]]);
-                const formats = Array.isArray(out?.[0])
-                    ? (out[0] as string[]).filter(isMaterialFormat).sort()
-                    : [];
-                return { classSlug, formats };
-            })
-        );
+        // One pipeline for every class's format set. Issuing these per class cost
+        // an HTTP round trip each, which is what pushed a course with a handful
+        // of classes past the KV client's timeout.
+        const formatSets = classSlugs.length
+            ? await kvRead<string[]>(
+                  classSlugs.map((classSlug) => ["SMEMBERS", `${ROOT}:class:${classSlug}:formats`])
+              )
+            : [];
+        const formatsPerClass = classSlugs.map((classSlug, index) => ({
+            classSlug,
+            formats: Array.isArray(formatSets[index])
+                ? (formatSets[index] as string[]).filter(isMaterialFormat).sort()
+                : [],
+        }));
 
         const reads = [
             ["GET", `${ROOT}:total:opened`],
@@ -150,8 +174,7 @@ export async function readMaterialAccessMetrics(): Promise<MaterialAccessMetrics
                 ])
             ),
         ];
-        const values = await kvPipeline(reads);
-        if (!values) throw new Error("KV unavailable");
+        const values = await kvRead(reads);
 
         let offset = 2;
         const byClass = formatsPerClass.map(({ classSlug, formats }) => ({
@@ -234,8 +257,7 @@ export async function readMaterialAccessActivity(options: {
     }
 
     try {
-        const out = await kvPipeline<string[]>([["LRANGE", `${ROOT}:events`, 0, EVENT_LOG_LIMIT - 1]]);
-        if (!out) throw new Error("KV unavailable");
+        const out = await kvRead<string[]>([["LRANGE", `${ROOT}:events`, 0, EVENT_LOG_LIMIT - 1]]);
         const rows = Array.isArray(out[0]) ? (out[0] as unknown[]) : [];
 
         const parsed = rows

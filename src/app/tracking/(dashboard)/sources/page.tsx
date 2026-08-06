@@ -168,8 +168,9 @@ export default async function SourcesScreen() {
         <ul className={styles.ruleList}>
           <li>
             <strong>Nothing is estimated.</strong> Every figure is read from a provider on request. A
-            source that cannot be reached renders a &ldquo;Not connected&rdquo; state with its setup hint
-            instead of a number.
+            source that has not been configured renders &ldquo;Not connected&rdquo; with its setup hint;
+            one that is configured but failing renders &ldquo;Needs attention&rdquo; with the error. Neither
+            ever falls back to a zero, because a zero is indistinguishable from a real one.
           </li>
           <li>
             <strong>Windows are labelled.</strong> Stripe and Meta report a rolling 30 days; Mailchimp

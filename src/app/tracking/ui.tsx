@@ -15,6 +15,18 @@ export function sourceState(connected: boolean, error?: string): SourceState {
   return !connected ? "off" : error ? "err" : "live";
 }
 
+/**
+ * Why a card has no number. "Not connected" and "failing right now" are very
+ * different situations for whoever is reading the dashboard — the first is a
+ * setup task, the second is an outage — so never describe one as the other.
+ */
+export function unavailableDetail(
+  source: { connected: boolean; error?: string },
+  label: string
+): string {
+  return source.error ? `${label} is not responding right now` : `${label} not connected`;
+}
+
 export function SourceBadge({ state }: { state: SourceState }) {
   const label = state === "live" ? "Live" : state === "err" ? "Needs attention" : "Not connected";
   return <span className={`${styles.sourceBadge} ${styles[`source${state}`]}`}>{label}</span>;

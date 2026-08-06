@@ -11,6 +11,7 @@ import {
   SourceBadge,
   TableCard,
   sourceState,
+  unavailableDetail,
 } from "../../ui";
 import { fmtDate, fmtInt, fmtPct, fmtWhen, share } from "../../format";
 import styles from "../../tracking.module.css";
@@ -18,6 +19,13 @@ import styles from "../../tracking.module.css";
 export const dynamic = "force-dynamic";
 
 const PER_PAGE = 50;
+
+/**
+ * Smallest send that can win or lose the best/worst panels. Without a floor a
+ * one-recipient test send scores 100% and permanently owns "best open rate",
+ * which is true but useless — and reads as a broken statistic.
+ */
+const MIN_SEND_FOR_RANKING = 50;
 
 type Campaign = Awaited<ReturnType<typeof readMailchimpCampaignMetrics>>["campaigns"][number];
 
@@ -60,10 +68,9 @@ export default async function EmailScreen(props: PageProps<"/tracking/email">) {
   const weightedOpenRate = share(reports.totalOpens, reports.totalRecipients);
   const weightedClickRate = share(reports.totalClicks, reports.totalRecipients);
 
-  const best = [...reports.campaigns].sort((a, b) => b.openRate - a.openRate)[0] ?? null;
-  const worst =
-    [...reports.campaigns].filter((c) => c.emailsSent > 0).sort((a, b) => a.openRate - b.openRate)[0] ??
-    null;
+  const rankable = reports.campaigns.filter((c) => c.emailsSent >= MIN_SEND_FOR_RANKING);
+  const best = [...rankable].sort((a, b) => b.openRate - a.openRate)[0] ?? null;
+  const worst = [...rankable].sort((a, b) => a.openRate - b.openRate)[0] ?? null;
 
   const link = (next: { sort?: SortKey; page?: number }) => {
     const query = new URLSearchParams();
@@ -143,7 +150,7 @@ export default async function EmailScreen(props: PageProps<"/tracking/email">) {
               detail={
                 audience.connected && !audience.error
                   ? `Mailchimp's own list average · ${fmtPct(audience.avgClickRate)} click rate`
-                  : "Mailchimp audience not connected"
+                  : unavailableDetail(audience, "Mailchimp audience")
               }
               muted={!(audience.connected && !audience.error)}
               href="/tracking/audience"
@@ -154,7 +161,7 @@ export default async function EmailScreen(props: PageProps<"/tracking/email">) {
             <Panel
               icon={<Mail size={18} />}
               title="Best open rate"
-              subtitle="The campaign that landed hardest with this audience."
+              subtitle={`The campaign that landed hardest, among sends of at least ${MIN_SEND_FOR_RANKING} recipients.`}
               state={state}
             >
               {best ? (
@@ -181,7 +188,7 @@ export default async function EmailScreen(props: PageProps<"/tracking/email">) {
             <Panel
               icon={<Mail size={18} />}
               title="Lowest open rate"
-              subtitle="Worth a look — subject line, send time or list segment."
+              subtitle={`Worth a look — subject line, send time or list segment. Sends under ${MIN_SEND_FOR_RANKING} recipients are excluded.`}
               state={state}
             >
               {worst ? (
