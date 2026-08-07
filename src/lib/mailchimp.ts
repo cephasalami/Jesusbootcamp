@@ -41,35 +41,72 @@ function splitName(name?: string): { FNAME?: string; LNAME?: string } {
     return { FNAME: parts[0], LNAME: parts.slice(1).join(" ") || undefined };
 }
 
-/** Apply purchase tags to a buyer (adds them to the audience if new). */
+/**
+ * How a BRAND-NEW contact enters the audience. Never affects anyone already on
+ * it — Mailchimp only reads `status_if_new` when it creates the member.
+ *
+ * `pending` is double opt-in: Mailchimp emails a confirmation link and the
+ * contact stays unconfirmed (and unmailable by automations) until they click.
+ */
+type OptInStatus = "subscribed" | "pending";
+
+/**
+ * Apply purchase tags to a buyer (adds them to the audience if new).
+ *
+ * Deliberately stays SINGLE opt-in. A purchase is an existing business
+ * relationship and the fulfillment email is transactional — gating a paid
+ * book behind a marketing confirmation click would mean a customer pays and
+ * receives nothing until they find and click a second email.
+ */
 export function tagPurchase(opts: {
     email: string;
     name?: string;
     tags: string[];
 }): Promise<void> {
-    return upsertAndTag(opts);
+    return upsertAndTag({ ...opts, statusIfNew: "subscribed" });
 }
 
 /**
  * Add a free-Handbook subscriber to the audience and tag them
  * `handbook-subscriber` so leads can be segmented from buyers.
+ *
+ * Double opt-in: this is a marketing list join, so the confirmation click is
+ * what proves the address is real and wanted. It keeps typo'd and junk
+ * addresses off the list (they were driving a 2-3% bounce rate) and gives the
+ * domain an immediate positive engagement signal.
  */
 export function subscribeToHandbook(opts: {
     email: string;
     name?: string;
 }): Promise<void> {
-    return upsertAndTag({ email: opts.email, name: opts.name, tags: [SUBSCRIBER_TAG] });
+    return upsertAndTag({
+        email: opts.email,
+        name: opts.name,
+        tags: [SUBSCRIBER_TAG],
+        statusIfNew: "pending",
+    });
 }
 
 /**
  * Add a contact from the /join page and apply `jbc-course-start` — the trigger
  * tag for the 90-day Jesus Boot Camp class sequence.
+ *
+ * Double opt-in, same reasoning as the Handbook. Note the consequence: the tag
+ * is applied immediately but Mailchimp will NOT run the class automation for a
+ * `pending` contact, so the sequence starts when they confirm, not when they
+ * submit the form. That is the intended gate — /api/join never returns the
+ * access token to the browser, so the only way to reach a class is the email.
  */
 export function subscribeToCourse(opts: {
     email: string;
     name?: string;
 }): Promise<void> {
-    return upsertAndTag({ email: opts.email, name: opts.name, tags: [COURSE_START_TAG] });
+    return upsertAndTag({
+        email: opts.email,
+        name: opts.name,
+        tags: [COURSE_START_TAG],
+        statusIfNew: "pending",
+    });
 }
 
 /**
@@ -81,8 +118,10 @@ async function upsertAndTag(opts: {
     email: string;
     name?: string;
     tags: string[];
+    /** Defaults to `subscribed` so a caller can never silently gate delivery. */
+    statusIfNew?: OptInStatus;
 }): Promise<void> {
-    const { email, name, tags } = opts;
+    const { email, name, tags, statusIfNew = "subscribed" } = opts;
 
     if (!API_KEY || !API_SERVER || !AUDIENCE_ID) {
         throw new Error("Mailchimp environment variables are missing");
@@ -99,14 +138,15 @@ async function upsertAndTag(opts: {
     };
 
     // 1) Upsert the member. `status_if_new` only applies to brand-new members,
-    //    so an existing subscriber's status is never downgraded.
+    //    so an existing subscriber's status is never downgraded — a confirmed
+    //    contact who signs up again is never knocked back to `pending`.
     const merge_fields = splitName(name);
     const putRes = await fetch(base, {
         method: "PUT",
         headers,
         body: JSON.stringify({
             email_address: email,
-            status_if_new: "subscribed",
+            status_if_new: statusIfNew,
             ...(merge_fields.FNAME ? { merge_fields } : {}),
         }),
     });
