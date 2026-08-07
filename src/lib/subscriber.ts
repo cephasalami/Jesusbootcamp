@@ -34,6 +34,7 @@ import {
     subscriberDevicesKey,
     isKvConfigured,
 } from "./kv.ts";
+import { readProfile, writeProfile, backfillProfile } from "./subscriber-store.ts";
 import type { Subscriber } from "./access.ts";
 
 /** Short by design: long enough to absorb a burst of clicks, short enough that
@@ -114,8 +115,8 @@ function toSubscriber(snap: Snapshot): Subscriber {
     };
 }
 
-/** Build a snapshot from a live Mailchimp read. */
-async function readSnapshot(email: string): Promise<Snapshot | null> {
+/** Build a snapshot from a live Mailchimp read. The fallback, not the default. */
+async function readSnapshotFromMailchimp(email: string): Promise<Snapshot | null> {
     const member = await getMember(email);
     if (!member) return null;
     return {
@@ -126,6 +127,43 @@ async function readSnapshot(email: string): Promise<Snapshot | null> {
         courseStart: member.mergeFields[COURSE_START_FIELD] ?? null,
         hasCourseTag: member.tags.includes(COURSE_START_TAG),
     };
+}
+
+/**
+ * Build a snapshot, preferring our own durable store.
+ *
+ * KV is the system of record, so a class render normally costs zero Mailchimp
+ * calls. Mailchimp is consulted only when we have no record yet — an existing
+ * subscriber from before this store existed, or a KV outage — and the result is
+ * backfilled so the next request is served locally.
+ *
+ * Ordering matters: a KV failure and a genuine miss both return null from
+ * readProfile, and both correctly fall through to Mailchimp. That is what stops
+ * an Upstash blip from locking anybody out of their course.
+ */
+async function readSnapshot(email: string): Promise<Snapshot | null> {
+    const profile = await readProfile(email);
+    if (profile) {
+        return {
+            email: profile.email,
+            token: profile.token,
+            partner: profile.partner,
+            courseStart: profile.courseStart,
+            hasCourseTag: profile.enrolled,
+        };
+    }
+
+    const fromMailchimp = await readSnapshotFromMailchimp(email);
+    if (!fromMailchimp) return null;
+
+    await backfillProfile({
+        email: fromMailchimp.email,
+        token: fromMailchimp.token,
+        courseStart: fromMailchimp.courseStart,
+        partner: fromMailchimp.partner,
+        enrolled: fromMailchimp.hasCourseTag,
+    });
+    return fromMailchimp;
 }
 
 /** Cached snapshot read (60s), falling back to a live read. */
@@ -286,6 +324,16 @@ export async function issueToken(
     const courseStart =
         opts.setCourseStartIfMissing && !existing?.courseStart ? todayIso() : undefined;
 
+    // 1) Our own store first, and verified — this is the system of record. If it
+    //    cannot be written we must not hand back a token that nothing remembers.
+    await writeProfile(email, {
+        token,
+        ...(courseStart ? { courseStart } : {}),
+    });
+
+    // 2) Mirror to Mailchimp. Still required, and not merely for compatibility:
+    //    every class email builds its link from the *|CTOKEN|* merge tag, so a
+    //    token that never reaches Mailchimp produces broken links in the drip.
     await setCourseFields({ email, token, courseStart });
     await kvSetJson(tokenIndexKey(token), email.trim().toLowerCase(), TOKEN_INDEX_TTL_SEC);
     const indexedEmail = await kvGetJson<string>(tokenIndexKey(token));
@@ -314,6 +362,9 @@ export async function revokeToken(email: string): Promise<boolean> {
     const existing = await readSnapshot(clean);
     if (!existing) return false;
 
+    // Clear our record first. Revocation must take effect in the store the
+    // access checks actually read, even if the Mailchimp write then fails.
+    await writeProfile(clean, { token: "" });
     await setCourseFields({ email: clean, token: "" });
     if (existing.token) await kvDel(tokenIndexKey(existing.token));
     await revokeDeviceTokens(clean);

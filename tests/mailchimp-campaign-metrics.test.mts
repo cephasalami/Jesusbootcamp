@@ -74,5 +74,7 @@ test("reads sent-campaign opens/clicks from Reports and serves later reads from 
     assert.equal(first.campaigns[0].opens, 14);
     assert.equal(second.totalOpens, 19);
     assert.equal(reportRequests, 1);
-    assert.ok(kv.has("jbc:tracking:mailchimp-campaign-reports:v1"));
+    // v2: the key was bumped when report rates started being stored as
+    // percentages, so a v1 payload (fractions) could never be served as v2.
+    assert.ok(kv.has("jbc:tracking:mailchimp-campaign-reports:v2"));
 });

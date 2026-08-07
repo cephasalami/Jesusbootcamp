@@ -5,6 +5,7 @@
 // delivery email with the download link.
 import { createHash } from "crypto";
 import { invalidateSubscriberCache } from "./kv.ts";
+import { writeProfile } from "./subscriber-store.ts";
 
 const API_KEY = process.env.MAILCHIMP_API_KEY;
 const API_SERVER = process.env.MAILCHIMP_API_SERVER;
@@ -97,16 +98,24 @@ export function subscribeToHandbook(opts: {
  * submit the form. That is the intended gate — /api/join never returns the
  * access token to the browser, so the only way to reach a class is the email.
  */
-export function subscribeToCourse(opts: {
+export async function subscribeToCourse(opts: {
     email: string;
     name?: string;
 }): Promise<void> {
-    return upsertAndTag({
+    await upsertAndTag({
         email: opts.email,
         name: opts.name,
         tags: [COURSE_START_TAG],
         statusIfNew: "pending",
     });
+    // Record enrolment in our own store too — this is what the class pages read.
+    // Best-effort: the Mailchimp tag above is what drives the email journey, and
+    // a missing profile is repaired by the read path's Mailchimp fallback.
+    try {
+        await writeProfile(opts.email, { enrolled: true });
+    } catch (err) {
+        console.warn(`[mailchimp] course enrolment not mirrored to KV for ${opts.email}:`, err);
+    }
 }
 
 /**
@@ -258,6 +267,10 @@ export async function activatePartner(opts: {
         PTIER: amount ?? tier,
         ...(stripeCustomerId ? { STRIPEID: stripeCustomerId } : {}),
     });
+    // The class pages read partner status from OUR store, so this is the write
+    // that actually unlocks the gated formats. The tag above still matters — it
+    // is what triggers the Mailchimp partner journey.
+    await writeProfile(email, { partner: true });
     // Drop the cached class-page snapshot so a new partner's formats unlock on
     // their very next request. (Mirrors deactivatePartner — Part 6.)
     await invalidateSubscriberCache(email);
@@ -278,6 +291,9 @@ export async function deactivatePartner(opts: { email: string }): Promise<void> 
         "partner-custom",
     ]);
     await setMergeFieldsBestEffort(email, { PARTNER: "false", PTIER: "" });
+    // Revoke in our own store — this is the read the access check performs, so
+    // a cancellation that only reached Mailchimp would leave the gate open.
+    await writeProfile(email, { partner: false });
     // Drop the cached class-page snapshot so the revoke lands on the subscriber's
     // VERY NEXT request rather than after the cache TTL. (Part 6.)
     await invalidateSubscriberCache(email);
