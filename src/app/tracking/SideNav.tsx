@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Mail,
   Megaphone,
+  UserPlus,
   Users,
 } from "lucide-react";
 import styles from "./tracking.module.css";
@@ -21,6 +22,7 @@ export const SCREENS = [
   { href: "/tracking/audience", label: "Audience", Icon: Users },
   { href: "/tracking/sales", label: "Sales", Icon: CircleDollarSign },
   { href: "/tracking/ads", label: "Acquisition", Icon: Megaphone },
+  { href: "/tracking/enroll", label: "Enrol by hand", Icon: UserPlus },
   { href: "/tracking/sources", label: "Data sources", Icon: Database },
 ] as const;
 

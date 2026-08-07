@@ -782,6 +782,40 @@
 .ruleList { display: grid; gap: 0.7rem; margin: 0; padding-left: 1.1rem; color: var(--color-grey); font-size: 0.76rem; line-height: 1.55; }
 .ruleList strong { color: var(--color-navy); }
 
+/* ── Hand enrolment ──────────────────────────────────────────────────────── */
+
+.enrollForm { display: grid; gap: 0.5rem; }
+.textarea {
+  width: 100%;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--color-card-border);
+  border-radius: 11px;
+  background: #fffaf0;
+  color: var(--color-navy);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+.textarea:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18); }
+.textarea:disabled { opacity: 0.6; }
+
+.enrollActions { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.enrollCount { color: var(--color-grey); font-size: 0.74rem; }
+.enrollActions .btn { display: inline-flex; align-items: center; gap: 0.4rem; }
+.enrollActions .btn:disabled { opacity: 0.5; cursor: default; transform: none; background: var(--color-navy); }
+
+.enrollResult {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-card-border);
+  border-radius: 12px;
+  background: #f7f1e8;
+}
+.enrollResult p { margin: 0; color: var(--color-navy); font-size: 0.82rem; }
+.enrollFailures { margin: 0.6rem 0 0; padding-left: 1.1rem; color: var(--color-grey); font-size: 0.74rem; line-height: 1.6; }
+.enrollFailures code { padding: 0.05rem 0.25rem; border-radius: 4px; background: #f3ead9; color: #5d4816; }
+
 /* ── Login ───────────────────────────────────────────────────────────────── */
 
 .loginPage { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; background: radial-gradient(circle at 50% 0, rgba(224, 191, 111, 0.28), transparent 28rem), var(--color-cream); }

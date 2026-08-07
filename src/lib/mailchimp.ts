@@ -119,6 +119,37 @@ export async function subscribeToCourse(opts: {
 }
 
 /**
+ * Enrol someone an admin is personally vouching for — the people Paul sends
+ * over by name to be added by hand.
+ *
+ * SINGLE opt-in on purpose. These contacts did not fill in a form, so a
+ * "confirm your subscription" email is one they never asked for and will not
+ * recognise; almost none would click it, and Mailchimp will not run the class
+ * automation for a contact left `pending`. Routing hand-added people through
+ * the public double opt-in path is precisely how they end up receiving nothing.
+ *
+ * This is the ONLY way to bypass confirmation, it is reachable only behind the
+ * /tracking password, and the caller is asserting a real relationship with the
+ * person. Do not wire it to a public form.
+ */
+export async function enrolVouchedContact(opts: {
+    email: string;
+    name?: string;
+}): Promise<void> {
+    await upsertAndTag({
+        email: opts.email,
+        name: opts.name,
+        tags: [COURSE_START_TAG],
+        statusIfNew: "subscribed",
+    });
+    try {
+        await writeProfile(opts.email, { enrolled: true });
+    } catch (err) {
+        console.warn(`[mailchimp] vouched enrolment not mirrored to KV for ${opts.email}:`, err);
+    }
+}
+
+/**
  * Ensure the contact is on the audience (subscribed if new) and apply the given
  * tags. Idempotent — safe to call more than once (e.g. a retried webhook).
  * Throws on Mailchimp failure so the caller can log / retry.
