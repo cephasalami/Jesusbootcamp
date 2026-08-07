@@ -118,8 +118,14 @@ export async function backfillProfile(
             partner: profile.partner,
             enrolled: profile.enrolled,
         });
-    } catch {
-        // A failed backfill is harmless — the Mailchimp read already served
-        // this request and the next one will simply try again.
+    } catch (err) {
+        // A failed backfill is harmless for THIS request — the Mailchimp read
+        // already served it and the next visit retries. But it must not be
+        // silent: if these fail persistently the migration never progresses,
+        // every read keeps falling back to Mailchimp, and the only symptom is
+        // scripts/count-subscriber-profiles.mjs sitting at zero with no clue
+        // why. Logging is the difference between "not exercised yet" and
+        // "quietly broken".
+        console.warn(`[subscriber-store] backfill failed for ${profile.email}:`, err);
     }
 }
