@@ -215,11 +215,6 @@ async function upsertAndTag(opts: {
         "Content-Type": "application/json",
     };
 
-    // A payment confirms a contact who is merely unconfirmed. See the doc on
-    // `confirmOnPayment` for why this is limited to `pending` and nothing else.
-    const upgradeToSubscribed =
-        confirmOnPayment && (await currentStatus(email)) === "pending";
-
     // 1) Upsert the member. `status_if_new` only applies to brand-new members,
     //    so an existing subscriber's status is never downgraded — a confirmed
     //    contact who signs up again is never knocked back to `pending`.
@@ -230,7 +225,6 @@ async function upsertAndTag(opts: {
         body: JSON.stringify({
             email_address: email,
             status_if_new: statusIfNew,
-            ...(upgradeToSubscribed ? { status: "subscribed" } : {}),
             ...(merge_fields.FNAME ? { merge_fields } : {}),
         }),
     });
@@ -250,6 +244,46 @@ async function upsertAndTag(opts: {
     if (tagRes.status >= 400) {
         const detail = await tagRes.text();
         throw new Error(`Mailchimp tagging failed (${tagRes.status}): ${detail}`);
+    }
+
+    // 3) Only now, and only best-effort, confirm a payer who was left pending.
+    if (confirmOnPayment) await confirmPendingContact(email);
+}
+
+/**
+ * Upgrade a `pending` contact to `subscribed` after a payment. BEST-EFFORT: it
+ * never throws, and it runs only after the upsert and tags have already
+ * succeeded.
+ *
+ * Both properties are load-bearing. Mailchimp rejects this outright for a
+ * contact in a COMPLIANCE STATE — someone who unsubscribed, marked mail as
+ * spam, or hard-bounced — with a 400. Attempting it inline would turn that 400
+ * into a thrown error that fails the whole purchase or partner webhook, so a
+ * customer would pay and never even get tagged. A person who cannot be mailed
+ * must not also break fulfilment.
+ *
+ * Compliance state is deliberately unfixable from here: only the contact
+ * themselves can opt back in. When we hit one, say so loudly enough to act on.
+ */
+async function confirmPendingContact(email: string): Promise<void> {
+    try {
+        if ((await currentStatus(email)) !== "pending") return;
+        const { base, headers } = memberEndpoint(email);
+        const res = await fetch(base, {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ status: "subscribed" }),
+        });
+        if (res.status >= 400) {
+            const detail = (await res.text()).slice(0, 300);
+            console.warn(
+                `[mailchimp] ${email} paid but could NOT be confirmed (${res.status}). ` +
+                    `Likely a compliance state (unsubscribed / spam complaint / hard bounce), ` +
+                    `which only they can undo. They will receive nothing until they opt in again. ${detail}`
+            );
+        }
+    } catch (err) {
+        console.warn(`[mailchimp] confirmation attempt failed for ${email} (non-fatal):`, err);
     }
 }
 
@@ -321,9 +355,8 @@ export async function activatePartner(opts: {
     // as `pending` from 2021 and then subscribed. `status_if_new` cannot fix it,
     // because it only ever applies at creation. Limited to `pending` for the
     // same consent reasons documented on `confirmOnPayment`.
-    const upgradeToSubscribed = (await currentStatus(email)) === "pending";
-
-    // Upsert the member first so tags/merge-fields have a target.
+    // Upsert the member first so tags/merge-fields have a target. The pending
+    // upgrade happens separately at the end — see confirmPendingContact.
     const merge_fields = splitName(name);
     const putRes = await fetch(base, {
         method: "PUT",
@@ -331,7 +364,6 @@ export async function activatePartner(opts: {
         body: JSON.stringify({
             email_address: email,
             status_if_new: "subscribed",
-            ...(upgradeToSubscribed ? { status: "subscribed" } : {}),
             ...(merge_fields.FNAME ? { merge_fields } : {}),
         }),
     });
@@ -351,6 +383,11 @@ export async function activatePartner(opts: {
         PTIER: amount ?? tier,
         ...(stripeCustomerId ? { STRIPEID: stripeCustomerId } : {}),
     });
+    // A partner left `pending` would carry every partner tag and merge field yet
+    // remain unmailable — paying monthly and receiving silence. Best-effort and
+    // last, so a contact Mailchimp refuses to confirm still gets everything else.
+    await confirmPendingContact(email);
+
     // The class pages read partner status from OUR store, so this is the write
     // that actually unlocks the gated formats. The tag above still matters — it
     // is what triggers the Mailchimp partner journey.
