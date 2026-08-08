@@ -1,8 +1,21 @@
-// Import a contact CSV through the public /api/join endpoint — the same route
-// used by the Join form. The script audits by default; --apply is required to
-// submit contacts. Batching stays below the endpoint's 20-per-minute limit.
+// Import a CSV of contacts an admin is personally vouching for.
+//
+// ⚠️ This used to POST to the public /api/join endpoint. It must NOT: /join is
+// now DOUBLE OPT-IN, so every contact imported that way lands as `pending`,
+// never clicks a confirmation they did not ask for, and Mailchimp refuses to
+// run the class automation for them. The symptom is silent and total — the
+// contact exists, looks fine in the audience, and receives nothing. That is
+// almost certainly what happened to the batch added by hand.
+//
+// It now calls the vouched-enrolment path directly (same as the "Enrol by hand"
+// screen at /tracking/enroll), which adds them as confirmed and starts the
+// sequence. Only run this on people who genuinely expect to hear from us.
+//
+// The script audits by default; --apply is required to write anything.
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { enrolVouchedContact } from "../src/lib/mailchimp.ts";
+import { issueToken } from "../src/lib/subscriber.ts";
 
 type Contact = { email: string; firstName: string };
 type Enrollment = {
@@ -16,13 +29,14 @@ const apply = process.argv.includes("--apply");
 const verify = process.argv.includes("--verify") || process.argv.includes("--only-unenrolled");
 const onlyUnenrolled = process.argv.includes("--only-unenrolled");
 const fileArg = process.argv.find((argument) => argument.startsWith("--file="));
-const baseUrlArg = process.argv.find((argument) => argument.startsWith("--base-url="));
 const file = fileArg?.slice("--file=".length);
-const baseUrl = (baseUrlArg?.slice("--base-url=".length) || "https://jesusbootcamp.org").replace(/\/$/, "");
 const batchSize = 15;
-const batchPauseMs = 60_000;
+// Short courtesy pause between batches. This used to be 60s to survive
+// /api/join's 20-per-minute IP limit; calling the library directly removes that
+// constraint, so this only paces Mailchimp's API now.
+const batchPauseMs = 2_000;
 
-if (!file) throw new Error('Usage: --file="C:\\path\\contacts.csv" [--apply] [--base-url=https://jesusbootcamp.org]');
+if (!file) throw new Error('Usage: --file="C:\\path\\contacts.csv" [--apply] [--verify] [--only-unenrolled]');
 
 function parseCsv(text: string): string[][] {
     const rows: string[][] = [];
@@ -181,43 +195,28 @@ if (onlyUnenrolled) {
 
 const results: Array<{ email: string; status: number; success: boolean; error?: string }> = [];
 
+/**
+ * Enrol one vouched contact: add as CONFIRMED + course tag, then issue their
+ * access token and stamp the drip clock. Both steps matter — a contact with the
+ * tag but no CTOKEN/CSTART reaches a class page and is failed safe to only the
+ * free intro classes, with no unlock date to show them.
+ */
 async function submit(contact: Contact): Promise<{ email: string; status: number; success: boolean; error?: string }> {
-    const body = JSON.stringify({ email: contact.email, firstName: contact.firstName });
     let lastError = "";
     for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-            const response = await fetch(`${baseUrl}/api/join`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Accept: "application/json" },
-                body,
-                signal: AbortSignal.timeout(30_000),
-            });
-
-            // In case another browser session used this shared IP limit, wait
-            // out its window and retry the same contact.
-            if (response.status === 429 && attempt < 3) {
-                await new Promise((resolve) => setTimeout(resolve, batchPauseMs));
-                continue;
-            }
-
-            const payload = (await response.json().catch(() => ({}))) as { error?: string; success?: boolean };
-            if (response.status >= 500 && attempt < 3) {
-                lastError = payload.error || `The join endpoint returned ${response.status}`;
-                await new Promise((resolve) => setTimeout(resolve, attempt * 1_000));
-                continue;
-            }
-            return {
+            await enrolVouchedContact({
                 email: contact.email,
-                status: response.status,
-                success: response.ok && payload.success === true,
-                ...(payload.error ? { error: payload.error } : {}),
-            };
+                ...(contact.firstName ? { name: contact.firstName } : {}),
+            });
+            await issueToken(contact.email, { setCourseStartIfMissing: true });
+            return { email: contact.email, status: 200, success: true };
         } catch (error) {
-            lastError = String(error);
-            if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 1_000));
+            lastError = error instanceof Error ? error.message : String(error);
+            if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 1_500));
         }
     }
-    return { email: contact.email, status: 0, success: false, error: lastError || "Network request failed" };
+    return { email: contact.email, status: 0, success: false, error: lastError || "Enrolment failed" };
 }
 
 for (let offset = 0; offset < contacts.length; offset += batchSize) {
