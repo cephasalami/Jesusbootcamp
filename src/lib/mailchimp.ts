@@ -64,7 +64,7 @@ export function tagPurchase(opts: {
     name?: string;
     tags: string[];
 }): Promise<void> {
-    return upsertAndTag({ ...opts, statusIfNew: "subscribed" });
+    return upsertAndTag({ ...opts, statusIfNew: "subscribed", confirmOnPayment: true });
 }
 
 /**
@@ -154,14 +154,52 @@ export async function enrolVouchedContact(opts: {
  * tags. Idempotent — safe to call more than once (e.g. a retried webhook).
  * Throws on Mailchimp failure so the caller can log / retry.
  */
+/**
+ * Read a contact's current subscription status. Returns null when they are not
+ * on the audience yet, or when the lookup fails — callers must treat "unknown"
+ * as "do not change anything".
+ */
+async function currentStatus(email: string): Promise<string | null> {
+    if (!API_KEY || !API_SERVER || !AUDIENCE_ID) return null;
+    try {
+        const res = await fetch(
+            `https://${API_SERVER}.api.mailchimp.com/3.0/lists/${AUDIENCE_ID}/members/${subscriberHash(
+                email
+            )}?fields=status`,
+            { headers: { Authorization: `apikey ${API_KEY}` } }
+        );
+        if (!res.ok) return null;
+        return String(((await res.json()) as { status?: string }).status ?? "") || null;
+    } catch {
+        return null;
+    }
+}
+
 async function upsertAndTag(opts: {
     email: string;
     name?: string;
     tags: string[];
     /** Defaults to `subscribed` so a caller can never silently gate delivery. */
     statusIfNew?: OptInStatus;
+    /**
+     * Payment paths set this. A completed payment is unambiguous consent, so a
+     * buyer sitting `pending` should be confirmed rather than left unmailable —
+     * otherwise someone pays and silently receives nothing.
+     *
+     * It upgrades ONLY from `pending`, and that restriction is load-bearing:
+     *
+     *   • `unsubscribed` is a decision the person made. Quietly re-subscribing
+     *     them because they later bought something is a compliance breach and a
+     *     reliable way to earn spam complaints — the very thing keeping this
+     *     domain out of inboxes.
+     *   • `cleaned` means the address hard-bounced. Mailing it again damages
+     *     sender reputation for everyone else on the list.
+     *
+     * An unknown status (lookup failed) changes nothing.
+     */
+    confirmOnPayment?: boolean;
 }): Promise<void> {
-    const { email, name, tags, statusIfNew = "subscribed" } = opts;
+    const { email, name, tags, statusIfNew = "subscribed", confirmOnPayment = false } = opts;
 
     if (!API_KEY || !API_SERVER || !AUDIENCE_ID) {
         throw new Error("Mailchimp environment variables are missing");
@@ -177,6 +215,11 @@ async function upsertAndTag(opts: {
         "Content-Type": "application/json",
     };
 
+    // A payment confirms a contact who is merely unconfirmed. See the doc on
+    // `confirmOnPayment` for why this is limited to `pending` and nothing else.
+    const upgradeToSubscribed =
+        confirmOnPayment && (await currentStatus(email)) === "pending";
+
     // 1) Upsert the member. `status_if_new` only applies to brand-new members,
     //    so an existing subscriber's status is never downgraded — a confirmed
     //    contact who signs up again is never knocked back to `pending`.
@@ -187,6 +230,7 @@ async function upsertAndTag(opts: {
         body: JSON.stringify({
             email_address: email,
             status_if_new: statusIfNew,
+            ...(upgradeToSubscribed ? { status: "subscribed" } : {}),
             ...(merge_fields.FNAME ? { merge_fields } : {}),
         }),
     });
@@ -271,6 +315,14 @@ export async function activatePartner(opts: {
     const { email, name, tier, amount, stripeCustomerId } = opts;
     const { base, headers } = memberEndpoint(email);
 
+    // A partner who was still `pending` would carry every partner tag and merge
+    // field yet remain unmailable — paying monthly and receiving silence. That
+    // is not hypothetical: it is exactly what happened to a contact who existed
+    // as `pending` from 2021 and then subscribed. `status_if_new` cannot fix it,
+    // because it only ever applies at creation. Limited to `pending` for the
+    // same consent reasons documented on `confirmOnPayment`.
+    const upgradeToSubscribed = (await currentStatus(email)) === "pending";
+
     // Upsert the member first so tags/merge-fields have a target.
     const merge_fields = splitName(name);
     const putRes = await fetch(base, {
@@ -279,6 +331,7 @@ export async function activatePartner(opts: {
         body: JSON.stringify({
             email_address: email,
             status_if_new: "subscribed",
+            ...(upgradeToSubscribed ? { status: "subscribed" } : {}),
             ...(merge_fields.FNAME ? { merge_fields } : {}),
         }),
     });
