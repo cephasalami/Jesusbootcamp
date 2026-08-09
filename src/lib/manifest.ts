@@ -8,10 +8,13 @@
 // survive an instance being recycled. If the Sheet is unreachable when the
 // cache expires we serve the last known good manifest and log loudly — a few
 // stale minutes is far better than every class page breaking.
-import { getAccessToken } from "./google-auth";
-import { kvGetJson, kvSetJson } from "./kv";
-import { parseManifestRows } from "./manifest-parse";
-import type { ClassRecord } from "./access";
+// Explicit .ts extensions (as in subscriber.ts, kv.ts and the rest of lib):
+// Next resolves either form, but Node's ESM loader only resolves the explicit
+// one — and `scripts/*.mts` import this module directly.
+import { getAccessToken } from "./google-auth.ts";
+import { kvGetJson, kvSetJson } from "./kv.ts";
+import { parseManifestRows } from "./manifest-parse.ts";
+import type { ClassRecord } from "./access.ts";
 
 const SHEET_ID = process.env.CLASS_MANIFEST_SHEET_ID;
 /** A1 range covering every column through `quiz_url` (11 columns: A-K). */
