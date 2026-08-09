@@ -439,6 +439,7 @@ export default async function ClassPage({
                                                     <>
                                                         <DocumentViewer
                                                             src={href}
+                                                            downloadHref={`${href}&download=1`}
                                                             label={FORMAT_LABELS[key]}
                                                             classTitle={klass.title}
                                                             buttonClass={styles.openBtn}

@@ -20,6 +20,10 @@
 # production
 /build
 
+# pdf.js worker + runtime data, copied out of node_modules by
+# scripts/sync-pdfjs-assets.mjs
+/public/pdfjs
+
 # misc
 .DS_Store
 *.pem

@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, Pause, Play, Share2, Check, MessageCircle, Volume2, X } from "lucide-react";
 import { shouldPrebufferPodcast } from "@/lib/media-warmup";
+import PdfCanvas from "./PdfCanvas";
 import styles from "./page.module.css";
 
 type TrackedMaterial = "video" | "brief" | "podcast" | "quiz";
@@ -208,14 +209,19 @@ export function PreviewPlayer({
  * returns a learner to the email rather than to their class.  This viewer
  * preserves the class underneath, and gives browser Back the same close-only
  * behaviour as the video popup.
+ *
+ * The pages are drawn by PdfCanvas rather than handed to an <iframe>, because
+ * no mobile browser can display an embedded PDF — see the note there.
  */
 export function DocumentViewer({
     src,
+    downloadHref,
     label,
     classTitle,
     buttonClass,
 }: {
     src: string;
+    downloadHref: string;
     label: string;
     classTitle: string;
     buttonClass: string;
@@ -303,7 +309,9 @@ export function DocumentViewer({
                     </button>
                 </header>
                 <div className={styles.documentModalFrame}>
-                    <iframe src={src} title={viewerLabel} />
+                    {/* key={src}: a new document gets a clean viewer rather
+                        than one holding the previous file's pages. */}
+                    <PdfCanvas key={src} src={src} downloadHref={downloadHref} label={label} />
                 </div>
             </section>
         </div>
