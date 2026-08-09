@@ -1,0 +1,47 @@
+{
+  "_comment": [
+    "Class drip emails, uploaded to SendGrid by scripts/upload-sendgrid-templates.mts.",
+    "The HTML here is the SOURCE OF TRUTH — edit it, re-run the script, and SendGrid",
+    "gets a new version. Editing in SendGrid's UI instead means the next upload",
+    "silently overwrites your change, so make edits here.",
+    "",
+    "`slug` must match the class slug in the manifest Sheet exactly. Note 4a: the",
+    "class the audience knows as 'Class 4' has manifest slug '4a', and there is no",
+    "class '4' — /class/4 renders 'we couldn't find that class'.",
+    "",
+    "`subject` is what the recipient sees in their inbox. SendGrid does not derive",
+    "it from the HTML <title>."
+  ],
+  "templates": [
+    {
+      "slug": "0",
+      "file": "0.html",
+      "name": "JBC Class 0 — What is the Jesus Boot Camp",
+      "subject": "What is the Jesus Boot Camp?"
+    },
+    {
+      "slug": "1",
+      "file": "1.html",
+      "name": "JBC Class 1 — Born Again",
+      "subject": "What it means to be born again"
+    },
+    {
+      "slug": "2",
+      "file": "2.html",
+      "name": "JBC Class 2 — Who You Are in Christ",
+      "subject": "Who you are in Christ"
+    },
+    {
+      "slug": "3",
+      "file": "3.html",
+      "name": "JBC Class 3 — The Man With a Vision",
+      "subject": "The man with a vision"
+    },
+    {
+      "slug": "4a",
+      "file": "4a.html",
+      "name": "JBC Class 4a — All Laborers In The Harvest",
+      "subject": "We're ALL laborers in the harvest"
+    }
+  ]
+}
