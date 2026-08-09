@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ManageCourseMaterialsScreen() {
     const classes = await getManifest();
+    const lastClass = [...classes].sort((a, b) => b.sequencePosition - a.sequencePosition)[0] ?? null;
 
     return (
         <>
@@ -37,7 +38,17 @@ export default async function ManageCourseMaterialsScreen() {
                         subtitle="This adds a blank row to the manifest. The class stays as coming soon until you attach its materials."
                         wide
                     >
-                        <CreateClassForm />
+                        <CreateClassForm
+                            lastClass={
+                                lastClass
+                                    ? {
+                                        slug: lastClass.slug,
+                                        sequencePosition: lastClass.sequencePosition,
+                                        title: lastClass.title,
+                                    }
+                                    : null
+                            }
+                        />
                     </Panel>
 
                     {classes.length === 0 ? (

@@ -15,10 +15,14 @@ function emptyMaterials(): Record<MaterialLinkFormat, string> {
     return Object.fromEntries(MATERIAL_LINK_FORMATS.map((format) => [format, ""])) as Record<MaterialLinkFormat, string>;
 }
 
-export default function CreateClassForm() {
+type LastClass = { slug: string; sequencePosition: number; title: string };
+
+export default function CreateClassForm({ lastClass }: { lastClass: LastClass | null }) {
     const router = useRouter();
     const [slug, setSlug] = useState("");
-    const [sequencePosition, setSequencePosition] = useState("");
+    const [sequencePosition, setSequencePosition] = useState(
+        lastClass ? String(lastClass.sequencePosition + 1) : ""
+    );
     const [title, setTitle] = useState("");
     const [materials, setMaterials] = useState<Record<MaterialLinkFormat, string>>(emptyMaterials);
     const [result, setResult] = useState<CreateClassState | null>(null);
@@ -33,7 +37,7 @@ export default function CreateClassForm() {
             if (!next.ok) return;
 
             setSlug("");
-            setSequencePosition("");
+            setSequencePosition(String(Number(sequencePosition) + 1));
             setTitle("");
             setMaterials(emptyMaterials());
             // The material-link selector receives its class list from the
@@ -44,6 +48,24 @@ export default function CreateClassForm() {
 
     return (
         <form className={styles.form} onSubmit={submit}>
+            <section className={styles.lastClass} aria-label="Last class in manifest">
+                <div>
+                    <p>Last class in the manifest</p>
+                    <small>
+                        {lastClass
+                            ? `The next release position is prefilled as ${lastClass.sequencePosition + 1}.`
+                            : "No classes yet — start with release position 0."}
+                    </small>
+                </div>
+                {lastClass ? (
+                    <dl>
+                        <div><dt>Class slug</dt><dd>{lastClass.slug.toUpperCase()}</dd></div>
+                        <div><dt>Release position</dt><dd>{lastClass.sequencePosition}</dd></div>
+                        <div><dt>Class title</dt><dd>{lastClass.title}</dd></div>
+                    </dl>
+                ) : null}
+            </section>
+
             <div className={styles.createGrid}>
                 <label className={styles.field}>
                     <span>Class slug</span>

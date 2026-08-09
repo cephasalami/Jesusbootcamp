@@ -15,6 +15,48 @@
   gap: 0.9rem;
 }
 
+.lastClass {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 12px;
+  background: #fff8e9;
+}
+
+.lastClass p,
+.lastClass small {
+  display: block;
+  margin: 0;
+}
+
+.lastClass p {
+  color: var(--color-navy);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.lastClass small {
+  margin-top: 0.18rem;
+  color: var(--color-grey);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.lastClass dl {
+  display: grid;
+  grid-template-columns: auto auto minmax(170px, 1fr);
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.lastClass dl > div { min-width: 0; }
+.lastClass dt { color: var(--color-grey); font-size: 0.62rem; font-weight: 700; }
+.lastClass dd { margin: 0.18rem 0 0; color: var(--color-navy); font-size: 0.74rem; font-weight: 750; }
+.lastClass dl > div:last-child dd { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .createMaterials {
   display: grid;
   gap: 0.8rem;
@@ -206,6 +248,9 @@
   .fieldGrid,
   .createGrid,
   .materialGrid { grid-template-columns: 1fr; }
+  .lastClass { align-items: flex-start; flex-direction: column; }
+  .lastClass dl { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lastClass dl > div:last-child { grid-column: 1 / -1; }
   .previewHeader { align-items: flex-start; flex-direction: column; }
   .previewFrame { height: 460px; }
 }
