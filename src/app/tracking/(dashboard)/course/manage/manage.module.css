@@ -9,6 +9,12 @@
   gap: 0.9rem;
 }
 
+.createGrid {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.7fr) minmax(155px, 0.9fr) minmax(220px, 1.8fr);
+  gap: 0.9rem;
+}
+
 .field {
   display: grid;
   gap: 0.42rem;
@@ -168,7 +174,8 @@
 .notes strong { color: var(--color-navy); }
 
 @media (max-width: 620px) {
-  .fieldGrid { grid-template-columns: 1fr; }
+  .fieldGrid,
+  .createGrid { grid-template-columns: 1fr; }
   .previewHeader { align-items: flex-start; flex-direction: column; }
   .previewFrame { height: 460px; }
 }

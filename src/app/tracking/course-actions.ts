@@ -3,7 +3,8 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { TRACKING_COOKIE, verifySessionToken } from "@/lib/tracking-auth";
-import { updateManifestMaterialLink } from "@/lib/manifest";
+import { createManifestClass, updateManifestMaterialLink } from "@/lib/manifest";
+import { validateNewManifestClass } from "@/lib/manifest-class";
 import {
     MATERIAL_LINK_FORMATS,
     materialValueFromInput,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/material-link";
 
 export type SaveMaterialLinkState = { ok: true; value: string } | { ok: false; error: string };
+export type CreateClassState = { ok: true; slug: string } | { ok: false; error: string };
 
 /**
  * Every dashboard mutation verifies the signed session itself. Server Actions
@@ -53,4 +55,30 @@ export async function saveCourseMaterialLink(input: {
     revalidatePath("/tracking/course/manage");
     revalidatePath(`/class/${encodeURIComponent(classSlug)}`);
     return { ok: true, value };
+}
+
+/** Append a validated, blank-material class row to the single source-of-truth manifest. */
+export async function createCourseClass(input: {
+    slug: string;
+    sequencePosition: string;
+    title: string;
+}): Promise<CreateClassState> {
+    const cookieStore = await cookies();
+    if (!verifySessionToken(cookieStore.get(TRACKING_COOKIE)?.value)) {
+        return { ok: false, error: "Your dashboard session has expired. Sign in again before creating a class." };
+    }
+
+    const parsed = validateNewManifestClass({
+        slug: String(input?.slug ?? ""),
+        sequencePosition: String(input?.sequencePosition ?? ""),
+        title: String(input?.title ?? ""),
+    });
+    if (!parsed.ok) return parsed;
+
+    const result = await createManifestClass(parsed.value);
+    if (!result.ok) return result;
+
+    revalidatePath("/tracking/course");
+    revalidatePath("/tracking/course/manage");
+    return { ok: true, slug: parsed.value.slug };
 }

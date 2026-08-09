@@ -1,6 +1,7 @@
 import { BookOpen, ShieldCheck } from "lucide-react";
 import { getManifest, isManifestConfigured } from "@/lib/manifest";
 import { BackLink, EmptySource, Footnote, Panel, ScreenHeader } from "../../../ui";
+import CreateClassForm from "./CreateClassForm";
 import MaterialLinkManager from "./MaterialLinkManager";
 import styles from "./manage.module.css";
 
@@ -13,8 +14,8 @@ export default async function ManageCourseMaterialsScreen() {
         <>
             <ScreenHeader
                 eyebrow="Course materials"
-                title="Add a material link"
-                subtitle="Paste a Google Drive sharing link, check its preview, then save it directly to the class manifest. Learners receive the same material on their class page."
+                title="Manage classes and materials"
+                subtitle="Create a class row, then paste each Google Drive material link, preview it and save it to the same learner-facing manifest."
             >
                 <BackLink href="/tracking/course" label="Back to course access" />
             </ScreenHeader>
@@ -28,22 +29,35 @@ export default async function ManageCourseMaterialsScreen() {
                         </>
                     }
                 />
-            ) : classes.length === 0 ? (
-                <EmptySource
-                    title="No classes are available to edit"
-                    hint="The manifest could not be loaded. Check the Sheet connection, then refresh before trying again."
-                />
             ) : (
-                <Panel
-                    icon={<BookOpen size={18} />}
-                    title="Material link"
-                    subtitle="Save one link at a time so it is clear which class material is changing."
-                    wide
-                >
-                    <MaterialLinkManager
-                        classes={classes.map((klass) => ({ slug: klass.slug, title: klass.title }))}
-                    />
-                </Panel>
+                <>
+                    <Panel
+                        icon={<BookOpen size={18} />}
+                        title="Create a class"
+                        subtitle="This adds a blank row to the manifest. The class stays as coming soon until you attach its materials."
+                        wide
+                    >
+                        <CreateClassForm />
+                    </Panel>
+
+                    {classes.length === 0 ? (
+                        <EmptySource
+                            title="No existing classes are available to edit"
+                            hint="Create the first class above, or refresh after the manifest connection is restored."
+                        />
+                    ) : (
+                        <Panel
+                            icon={<BookOpen size={18} />}
+                            title="Material link"
+                            subtitle="Save one link at a time so it is clear which class material is changing."
+                            wide
+                        >
+                            <MaterialLinkManager
+                                classes={classes.map((klass) => ({ slug: klass.slug, title: klass.title }))}
+                            />
+                        </Panel>
+                    )}
+                </>
             )}
 
             <Panel

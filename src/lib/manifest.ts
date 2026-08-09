@@ -16,9 +16,10 @@ import { kvGetJson, kvSetJson } from "./kv.ts";
 import { parseManifestRows } from "./manifest-parse.ts";
 import type { ClassRecord } from "./access.ts";
 import { manifestColumnForMaterial, type MaterialLinkFormat } from "./material-link.ts";
+import type { NewManifestClass } from "./manifest-class.ts";
 
 const SHEET_ID = process.env.CLASS_MANIFEST_SHEET_ID;
-/** A1 range covering every column through `quiz_url` (11 columns: A-K). */
+/** A1 range covering every column through `sendgrid_template_id` (11 columns: A-K). */
 const SHEET_RANGE = process.env.CLASS_MANIFEST_RANGE ?? "A1:K200";
 
 const TTL_MS = 7 * 60 * 1000; // inside the 5-10 min window the spec asks for
@@ -318,6 +319,94 @@ export async function updateManifestMaterialLink(input: {
     } catch (err) {
         console.error("[manifest] material update errored:", err);
         return { ok: false, error: "Google could not save the material link. Nothing was changed; please try again." };
+    }
+
+    invalidateManifestCache();
+    return { ok: true };
+}
+
+/**
+ * Append a brand-new class to the manifest. Every material cell is deliberately
+ * blank: a class only becomes publishable as each Drive link is added through
+ * the material manager, and an empty cell renders as "Coming soon" rather than
+ * a broken learner link.
+ */
+export async function createManifestClass(input: NewManifestClass): Promise<ManifestWriteResult> {
+    if (!SHEET_ID) {
+        return { ok: false, error: "The class manifest Sheet is not configured in this environment." };
+    }
+    if (fixtureClasses()) {
+        return { ok: false, error: "Classes cannot be created while a local manifest fixture is active." };
+    }
+
+    const token = await getAccessToken();
+    if (!token) return { ok: false, error: "Google credentials are unavailable. Please try again later." };
+
+    const rows = await readManifestRowsForWrite(token);
+    if (!rows?.length) {
+        return { ok: false, error: "The manifest Sheet could not be read before creating a class. Nothing was changed." };
+    }
+
+    const headers = rows[0].map((header) => header.trim().toLowerCase());
+    const slugColumn = headers.indexOf("slug");
+    const sequenceColumn = headers.indexOf("sequence_position");
+    const titleColumn = headers.indexOf("title");
+    if (slugColumn === -1 || sequenceColumn === -1 || titleColumn === -1) {
+        return {
+            ok: false,
+            error: "The manifest Sheet needs slug, sequence_position and title columns before a class can be created.",
+        };
+    }
+
+    const wantSlug = input.slug.toLowerCase();
+    if (rows.slice(1).some((row) => row[slugColumn]?.trim().toLowerCase() === wantSlug)) {
+        return { ok: false, error: `Class ${input.slug.toUpperCase()} already exists. Choose a different class slug.` };
+    }
+    if (rows.slice(1).some((row) => {
+        const rawPosition = row[sequenceColumn]?.trim() ?? "";
+        if (!/^\d+$/.test(rawPosition)) return false;
+        return Number(rawPosition) === input.sequencePosition;
+    })) {
+        return {
+            ok: false,
+            error: `Release position ${input.sequencePosition} is already used. Choose the next unused position so the drip order stays clear.`,
+        };
+    }
+
+    const row = headers.map((header) => {
+        if (header === "slug") return input.slug;
+        if (header === "sequence_position") return String(input.sequencePosition);
+        if (header === "title") return input.title;
+        return "";
+    });
+    const url =
+        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SHEET_ID)}` +
+        `/values/${encodeURIComponent(SHEET_RANGE)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ majorDimension: "ROWS", values: [row] }),
+            cache: "no-store",
+            signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) {
+            console.error(`[manifest] class creation failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
+            return {
+                ok: false,
+                error:
+                    res.status === 403
+                        ? "Google denied the update. Share the manifest Sheet with the service account as an Editor."
+                        : "Google could not create the class. Nothing was changed; please try again.",
+            };
+        }
+    } catch (err) {
+        console.error("[manifest] class creation errored:", err);
+        return { ok: false, error: "Google could not create the class. Nothing was changed; please try again." };
     }
 
     invalidateManifestCache();
