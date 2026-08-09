@@ -14,8 +14,6 @@
 const API_KEY = process.env.SENDGRID_API_KEY;
 const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "team@jesusbootcamp.org";
 const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Jesus Boot Camp";
-/** Optional: SendGrid unsubscribe group, so opt-outs are honoured by SendGrid. */
-const UNSUBSCRIBE_GROUP = process.env.SENDGRID_UNSUBSCRIBE_GROUP_ID;
 
 export const isSendGridConfigured = Boolean(API_KEY);
 
@@ -37,6 +35,15 @@ export async function sendTemplateEmail(input: {
     data: Record<string, string | number | null>;
     /** Groups sends in SendGrid's UI; use the class slug. */
     category?: string;
+    /**
+     * Unsubscribe group this email belongs to — see config/sendgrid-groups.ts.
+     *
+     * REQUIRED rather than optional, and deliberately not defaulted. A bulk
+     * email with no opt-out group is one SendGrid will not suppress on the
+     * recipient's behalf, and Gmail's bulk-sender rules expect one-click
+     * unsubscribe. Forgetting it should be a type error, not a silent send.
+     */
+    unsubscribeGroupId: number;
 }): Promise<SendResult> {
     if (!API_KEY) {
         return { ok: false, status: 0, detail: "SENDGRID_API_KEY is not set", retryable: false };
@@ -59,9 +66,7 @@ export async function sendTemplateEmail(input: {
                 ],
                 template_id: input.templateId,
                 ...(input.category ? { categories: [input.category] } : {}),
-                ...(UNSUBSCRIBE_GROUP
-                    ? { asm: { group_id: Number(UNSUBSCRIBE_GROUP) } }
-                    : {}),
+                asm: { group_id: input.unsubscribeGroupId },
                 // Open/click tracking is left to SendGrid's account defaults.
                 // Click tracking rewrites every link through a SendGrid domain,
                 // which is worth knowing about given the deliverability work:
