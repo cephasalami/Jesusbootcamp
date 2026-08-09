@@ -27,6 +27,23 @@ function json(body: unknown, status = 200): Response {
 before(() => {
     globalThis.fetch = async (input, init) => {
         const url = String(input);
+
+        // Upstash exposes two endpoints: one command at the root, and a batch
+        // at /pipeline. Both must be mocked — writeProfile deliberately uses
+        // the pipeline form so it can tell "key absent" from "request failed",
+        // and a mock that only answers the root form makes every such read look
+        // like an outage.
+        if (url === "https://kv.test/pipeline") {
+            const commands = JSON.parse(String(init?.body ?? "[]")) as string[][];
+            const results = commands.map((args) => {
+                const [command, key] = args;
+                if (command === "GET") return { result: kv.get(key) ?? null };
+                if (command === "SMEMBERS") return { result: [...(kvSets.get(key) ?? [])] };
+                return { result: null };
+            });
+            return json(results);
+        }
+
         if (url === "https://kv.test") {
             const args = JSON.parse(String(init?.body ?? "[]")) as string[];
             const [command, key, value] = args;

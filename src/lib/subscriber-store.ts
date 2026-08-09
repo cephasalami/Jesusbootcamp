@@ -80,7 +80,41 @@ export async function writeProfile(
     if (!clean) throw new Error("An email is required to write a subscriber profile");
     if (!isKvConfigured) throw new Error("KV is not configured — cannot persist the subscriber profile");
 
-    const existing = await readProfile(clean);
+    // ⚠️ Do NOT use readProfile here. It returns null for BOTH "no record" and
+    // "KV unreachable", and this is a MERGE: treating an unreachable store as
+    // "no record" makes every field absent from the patch fall back to its
+    // default, silently erasing whatever was there. That is not hypothetical —
+    // it wiped the access tokens of two live subscribers during a KV blip,
+    // and because a profile then existed, the read-path backfill would not
+    // repair them.
+    //
+    // kvPipeline distinguishes the two: null means the request failed, whereas
+    // [null] means the key genuinely is not there.
+    // Retry the read. Refusing to write is the safe outcome, but it is still a
+    // failed write, and kv.ts's 2s timeout is tripped often enough by a slow
+    // network that a single attempt would make legitimate writes flaky.
+    let read: (string | null)[] | null = null;
+    for (let attempt = 1; attempt <= 3 && read === null; attempt++) {
+        read = await kvPipeline<string>([["GET", profileKey(clean)]], 8_000);
+        if (read === null && attempt < 3) await new Promise((r) => setTimeout(r, attempt * 400));
+    }
+    if (read === null) {
+        throw new Error(
+            "Cannot read the existing subscriber profile — refusing to write, because merging " +
+                "a patch onto an unknown record would erase the fields it does not set"
+        );
+    }
+    let existing: SubscriberProfile | null = null;
+    const raw = read[0];
+    if (typeof raw === "string") {
+        try {
+            const parsed = JSON.parse(raw) as SubscriberProfile;
+            if (parsed && typeof parsed.email === "string") existing = parsed;
+        } catch {
+            // A corrupt record is safer to overwrite than to merge onto.
+        }
+    }
+
     const next: SubscriberProfile = {
         email: clean,
         token: patch.token ?? existing?.token ?? "",
