@@ -49,7 +49,20 @@ async function command<T>(args: KvCommand): Promise<T | null> {
  * helpers above, this fails softly: analytics must never make course delivery
  * fail if KV is temporarily unavailable.
  */
-export async function kvPipeline<T = unknown>(commands: KvCommand[]): Promise<(T | null)[] | null> {
+export async function kvPipeline<T = unknown>(
+    commands: KvCommand[],
+    /**
+     * Override the request timeout, in milliseconds.
+     *
+     * The 2s default exists because a class page or a checkout must never hang
+     * on KV during an outage — see the note at the top of this file. That is
+     * the right ceiling for a request-path lookup and the wrong one for a
+     * background job: a SCAN across thousands of keys legitimately takes longer
+     * than two seconds, and capping it there means the job simply never
+     * succeeds. Raise it only for work nobody is waiting on.
+     */
+    timeoutMs = 2_000
+): Promise<(T | null)[] | null> {
     if (!isKvConfigured || commands.length === 0) return commands.length === 0 ? [] : null;
     try {
         const res = await fetch(`${URL_ENV as string}/pipeline`, {
@@ -60,7 +73,7 @@ export async function kvPipeline<T = unknown>(commands: KvCommand[]): Promise<(T
             },
             body: JSON.stringify(commands.map((args) => args.map(String))),
             cache: "no-store",
-            signal: AbortSignal.timeout(2_000),
+            signal: AbortSignal.timeout(timeoutMs),
         });
         if (!res.ok) {
             console.warn(`[kv] pipeline failed: ${res.status}`);

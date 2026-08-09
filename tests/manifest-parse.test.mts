@@ -248,3 +248,45 @@ describe("manifest parsing", () => {
         assert.equal(classes[0].files.pdf, "pdf1");
     });
 });
+
+describe("sendgrid_template_id column", () => {
+    const H = ["slug", "sequence_position", "title", "sendgrid_template_id"];
+    const VALID = `d-${"a1b2c3d4".repeat(4)}`;
+
+    test("reads a valid dynamic template id", () => {
+        const { classes, warnings } = parseManifestRows([H, ["1", "1", "Born Again", VALID]]);
+        assert.equal(classes[0].sendgridTemplateId, VALID);
+        assert.deepEqual(warnings, []);
+    });
+
+    test("a blank cell simply means no drip email for that class", () => {
+        const { classes, warnings } = parseManifestRows([H, ["1", "1", "Born Again", "  "]]);
+        assert.equal(classes[0].sendgridTemplateId, undefined);
+        assert.deepEqual(warnings, [], "blank is normal, not a problem to report");
+    });
+
+    test("the column being absent entirely is fine", () => {
+        const { classes, warnings } = parseManifestRows([
+            ["slug", "sequence_position", "title"],
+            ["1", "1", "Born Again"],
+        ]);
+        assert.equal(classes[0].sendgridTemplateId, undefined);
+        assert.deepEqual(warnings, []);
+    });
+
+    test("rejects a malformed id loudly rather than failing at send time", () => {
+        // A pasted template NAME is the likeliest mistake, and SendGrid would
+        // answer an opaque 400 once per recipient.
+        const { classes, warnings } = parseManifestRows([H, ["1", "1", "Born Again", "Class 1 Template"]]);
+        assert.equal(classes[0].sendgridTemplateId, undefined, "must not pass a bad id through to SendGrid");
+        assert.equal(warnings.length, 1);
+        assert.match(warnings[0], /not a dynamic template id/);
+    });
+
+    test("rejects a legacy (non-dynamic) template id", () => {
+        const legacy = "13b8f94f-bcae-4ec6-b752-70d6cb59f932";
+        const { classes, warnings } = parseManifestRows([H, ["1", "1", "Born Again", legacy]]);
+        assert.equal(classes[0].sendgridTemplateId, undefined);
+        assert.match(warnings[0], /not a dynamic template id/);
+    });
+});

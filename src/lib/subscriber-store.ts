@@ -27,7 +27,7 @@
 // Mailchimp outage — which is the hot path, hit on every class render and
 // every file download.
 
-import { isKvConfigured, kvGetJson, kvSetJson } from "./kv.ts";
+import { isKvConfigured, kvGetJson, kvPipeline, kvSetJson, type KvCommand } from "./kv.ts";
 
 /** One subscriber's identity and entitlements. */
 export type SubscriberProfile = {
@@ -98,6 +98,50 @@ export async function writeProfile(
         throw new Error("The subscriber profile could not be verified after writing");
     }
     return next;
+}
+
+/**
+ * Every email that has a profile, for jobs that must ITERATE subscribers rather
+ * than look one up — the drip being the only such caller today.
+ *
+ * Returns null when KV cannot be read. A caller that is about to email people
+ * must treat that as "do nothing": an empty list and an unreadable store are
+ * indistinguishable here, and only one of them means "nobody is due".
+ *
+ * Uses SCAN, never KEYS. KEYS blocks the whole Redis instance for the duration
+ * of the sweep, which on a shared Upstash plan would stall live class-page
+ * reads while the cron runs.
+ */
+export async function listProfileEmails(): Promise<string[] | null> {
+    if (!isKvConfigured) return null;
+    const prefix = "jbc:profile:v1:";
+    const emails = new Set<string>();
+    let cursor = "0";
+
+    do {
+        const commands: KvCommand[] = [["SCAN", cursor, "MATCH", `${prefix}*`, "COUNT", 500]];
+
+        // A SCAN across thousands of keys does not fit kv.ts's 2s request-path
+        // timeout — measured at ~2.3s here, so every attempt failed and the
+        // day's drip would silently not go out. Nobody is waiting on a cron, so
+        // allow it real time, and retry for genuinely transient failures.
+        let page: unknown = null;
+        for (let attempt = 1; attempt <= 3 && page === null; attempt++) {
+            const out = await kvPipeline<[string, string[]]>(commands, 15_000);
+            if (out && Array.isArray(out[0])) page = out[0];
+            else if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 300));
+        }
+        // Still nothing after retries: fail closed. An empty list and an
+        // unreadable store are indistinguishable, and only one means "nobody".
+        if (page === null) return null;
+
+        const [next, keys] = page as [string, string[]];
+        cursor = String(next ?? "0");
+        for (const key of keys ?? []) emails.add(String(key).slice(prefix.length));
+        // SCAN can return the same key across cursor pages; the Set absorbs it.
+    } while (cursor !== "0");
+
+    return [...emails];
 }
 
 /**

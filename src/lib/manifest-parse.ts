@@ -169,6 +169,25 @@ export function parseManifestRows(rows: string[][]): ParseResult {
                 ? undefined
                 : validateQuizUrl(String(row[quizIdx] ?? ""), `row ${rowNo} (slug "${slug}")`, warnings);
 
+        // SendGrid dynamic-template id for this class's drip email. Lives in the
+        // Sheet for the same reason every file id does: so a class can be wired
+        // up without a deploy. Absent (or the column missing entirely) simply
+        // means the drip has nothing to send for this class and skips it.
+        const templateIdx = headers.indexOf("sendgrid_template_id");
+        const rawTemplate = templateIdx === -1 ? "" : String(row[templateIdx] ?? "").trim();
+        let sendgridTemplateId: string | undefined;
+        if (rawTemplate) {
+            // SendGrid dynamic template ids are always `d-` + 32 hex chars. A
+            // pasted name, a legacy (non-dynamic) id or a stray quote would all
+            // fail at send time with an opaque 400, one recipient at a time.
+            if (/^d-[a-f0-9]{32}$/i.test(rawTemplate)) sendgridTemplateId = rawTemplate;
+            else
+                warnings.push(
+                    `row ${rowNo} (slug "${slug}"): sendgrid_template_id "${rawTemplate}" is not a dynamic template id ` +
+                        `(expected d- followed by 32 hex characters) — the drip will skip this class`
+                );
+        }
+
         seenSlugs.add(slugKey);
         seenPositions.set(sequencePosition, slug);
         classes.push({
@@ -177,6 +196,7 @@ export function parseManifestRows(rows: string[][]): ParseResult {
             title: String(row[titleIdx] ?? "").trim() || `Class ${slug}`,
             files,
             ...(quizUrl ? { quizUrl } : {}),
+            ...(sendgridTemplateId ? { sendgridTemplateId } : {}),
         });
     }
 

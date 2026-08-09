@@ -59,6 +59,15 @@ export type ClassRecord = {
      * Undefined when the class has no quiz, in which case NO quiz row renders.
      */
     quizUrl?: string;
+    /**
+     * SendGrid dynamic-template id (`d-…`) for this class's drip email.
+     *
+     * Lives in the manifest Sheet alongside the file ids, so a class can be
+     * wired up without a deploy. Undefined when the column is blank or absent,
+     * in which case the drip has nothing to send for this class and skips it —
+     * never a broken send, and never a guessed template.
+     */
+    sendgridTemplateId?: string;
 };
 
 /** A subscriber resolved from Mailchimp. */
