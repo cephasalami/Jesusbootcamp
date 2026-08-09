@@ -106,9 +106,35 @@ const [enrolledMembers, partnerMembers] = await Promise.all([
     membersWithTag("partner-active"),
 ]);
 
+const normalise = (email: string) => email.trim().toLowerCase();
+
+// ⚠️ Mailchimp's SEGMENT-members endpoint does NOT return `tags`, even when
+// `members.tags` is requested in `fields` — it silently omits the key, while
+// the single-member endpoint returns them in full. Deriving enrolment from
+// `member.tags` here therefore yields `false` for EVERY contact, and because
+// resolveByToken refuses anyone whose profile says they are not enrolled, that
+// silently locks real subscribers out of their classes.
+//
+// Segment membership IS the tag, so use the set a contact came back in. That is
+// authoritative and cannot be affected by which fields the API chooses to send.
+const enrolledEmails = new Set(enrolledMembers.map((m) => normalise(m.email_address)));
+const partnerEmails = new Set(partnerMembers.map((m) => normalise(m.email_address)));
+
 const byEmail = new Map<string, Member>();
 for (const member of [...enrolledMembers, ...partnerMembers]) {
-    byEmail.set(member.email_address.trim().toLowerCase(), member);
+    byEmail.set(normalise(member.email_address), member);
+}
+
+// Sanity gate. Writing `enrolled: false` across the board is not a cosmetic
+// error: resolveByToken refuses anyone whose profile says they are not
+// enrolled, so it locks real subscribers out of their classes — and it looks
+// like a completely successful run. This exact failure shipped once, caused by
+// the segment endpoint omitting `tags`. Refuse to write rather than repeat it.
+if (enrolledMembers.length > 0 && enrolledEmails.size === 0) {
+    throw new Error(
+        "Read enrolled members but resolved none of their addresses — refusing to write " +
+            "profiles that would mark everyone as not enrolled."
+    );
 }
 
 const now = new Date();
@@ -128,15 +154,19 @@ const problems: string[] = [];
 
 for (const [email, member] of byEmail) {
     const merge = member.merge_fields ?? {};
-    const tags = (member.tags ?? []).map((t) => t.name);
     const token = String(merge.CTOKEN ?? "").trim();
     const courseStart = String(merge.CSTART ?? "").trim() || null;
     const profile = {
         email,
         token,
         courseStart,
-        partner: String(merge.PARTNER ?? "").trim().toLowerCase() === "true",
-        enrolled: tags.includes("jbc-course-start"),
+        // Either signal is sufficient: the tag drives the partner journey, the
+        // merge field drives the class gate, and they can briefly disagree
+        // while a webhook is mid-flight.
+        partner:
+            partnerEmails.has(email) ||
+            String(merge.PARTNER ?? "").trim().toLowerCase() === "true",
+        enrolled: enrolledEmails.has(email),
     };
 
     if (!token) {
