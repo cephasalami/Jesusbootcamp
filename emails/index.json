@@ -1,0 +1,53 @@
+{
+  "_comment": [
+    "Every email this app sends, uploaded to SendGrid by",
+    "scripts/upload-sendgrid-templates.mts. The HTML here is the SOURCE OF TRUTH —",
+    "edit it, re-run the script, and SendGrid gets a new active version. Edits made",
+    "in SendGrid's UI are silently overwritten by the next run.",
+    "",
+    "`slug` links a template to a class in the manifest Sheet. Templates with no",
+    "slug (transactional mail) are referenced by env var instead.",
+    "",
+    "Note 4a: the class the audience knows as Class 4 has manifest slug 4a, and",
+    "there is no class 4 — /class/4 renders \"we couldn't find that class\"."
+  ],
+  "templates": [
+    {
+      "slug": "0",
+      "file": "classes/0.html",
+      "name": "JBC Class 0 — What is the Jesus Boot Camp",
+      "subject": "What is the Jesus Boot Camp?"
+    },
+    {
+      "slug": "1",
+      "file": "classes/1.html",
+      "name": "JBC Class 1 — Born Again",
+      "subject": "What it means to be born again"
+    },
+    {
+      "slug": "2",
+      "file": "classes/2.html",
+      "name": "JBC Class 2 — Who You Are in Christ",
+      "subject": "Who you are in Christ"
+    },
+    {
+      "slug": "3",
+      "file": "classes/3.html",
+      "name": "JBC Class 3 — The Man With a Vision",
+      "subject": "The man with a vision"
+    },
+    {
+      "slug": "4a",
+      "file": "classes/4a.html",
+      "name": "JBC Class 4a — All Laborers In The Harvest",
+      "subject": "We're ALL laborers in the harvest"
+    },
+    {
+      "file": "book-delivery.html",
+      "name": "JBC Book delivery (transactional)",
+      "subject": "Your download is ready",
+      "env": "SENDGRID_BOOK_DELIVERY_TEMPLATE_ID",
+      "transactional": true
+    }
+  ]
+}

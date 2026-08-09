@@ -42,8 +42,18 @@ export async function sendTemplateEmail(input: {
      * email with no opt-out group is one SendGrid will not suppress on the
      * recipient's behalf, and Gmail's bulk-sender rules expect one-click
      * unsubscribe. Forgetting it should be a type error, not a silent send.
+     *
+     * Pass the literal "transactional" for mail that fulfils something the
+     * recipient PAID for — a book download, a receipt. Attaching a marketing
+     * group to those would let a newsletter opt-out suppress delivery of a
+     * purchase, so someone pays and receives nothing. Spelling it out means
+     * that can only ever happen on purpose.
+     *
+     * Note this does NOT set bypass_list_management: hard bounces and global
+     * unsubscribes still apply, because mailing those addresses damages the
+     * domain for everyone else.
      */
-    unsubscribeGroupId: number;
+    unsubscribeGroupId: number | "transactional";
 }): Promise<SendResult> {
     if (!API_KEY) {
         return { ok: false, status: 0, detail: "SENDGRID_API_KEY is not set", retryable: false };
@@ -66,7 +76,9 @@ export async function sendTemplateEmail(input: {
                 ],
                 template_id: input.templateId,
                 ...(input.category ? { categories: [input.category] } : {}),
-                asm: { group_id: input.unsubscribeGroupId },
+                ...(input.unsubscribeGroupId === "transactional"
+                    ? {}
+                    : { asm: { group_id: input.unsubscribeGroupId } }),
                 // Open/click tracking is left to SendGrid's account defaults.
                 // Click tracking rewrites every link through a SendGrid domain,
                 // which is worth knowing about given the deliverability work:

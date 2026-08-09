@@ -36,9 +36,19 @@ if (!API_KEY) {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const emailsDir = join(here, "..", "emails", "classes");
+const emailsDir = join(here, "..", "emails");
 
-type Entry = { slug: string; file: string; name: string; subject: string };
+type Entry = {
+    /** Class slug, for templates that map to a class in the manifest Sheet. */
+    slug?: string;
+    file: string;
+    name: string;
+    subject: string;
+    /** Env var the id belongs in, for templates with no class slug. */
+    env?: string;
+    /** Transactional mail carries no unsubscribe tag — see the checks below. */
+    transactional?: boolean;
+};
 const index = JSON.parse(await readFile(join(emailsDir, "index.json"), "utf8")) as {
     templates: Entry[];
 };
@@ -74,13 +84,23 @@ async function sg<T>(path: string, init?: RequestInit): Promise<{ status: number
     throw lastError;
 }
 
-/** Every dynamic template already on the account, by name. */
+/**
+ * Every dynamic template already on the account, by name. This is what makes
+ * re-running safe: a name we already know gets a NEW VERSION rather than a
+ * second template with the same name.
+ *
+ * ⚠️ The list lives under `result`, NOT `templates`. Reading the wrong key
+ * yields an empty map, every template then looks new, and --apply silently
+ * creates duplicates — while the ids already pasted into the manifest keep
+ * pointing at the originals, so edits appear to do nothing. Failing that way
+ * is invisible until someone wonders why a fix never reached recipients.
+ */
 async function existingByName(): Promise<Map<string, string>> {
     const found = new Map<string, string>();
     let url = "/templates?generations=dynamic&page_size=200";
     for (;;) {
         const { status, body } = await sg<{
-            templates?: Array<{ id: string; name: string }>;
+            result?: Array<{ id: string; name: string }>;
             _metadata?: { next?: string };
         }>(url);
         if (status === 403) {
@@ -90,7 +110,16 @@ async function existingByName(): Promise<Map<string, string>> {
             );
         }
         if (status >= 400) throw new Error(`Listing templates failed (${status})`);
-        for (const t of body.templates ?? []) found.set(t.name, t.id);
+
+        const page = body.result;
+        if (!Array.isArray(page)) {
+            throw new Error(
+                "Unexpected /v3/templates response: no `result` array. Refusing to continue, " +
+                    "because treating this as 'no templates exist' would create duplicates."
+            );
+        }
+        for (const t of page) found.set(t.name, t.id);
+
         const next = body._metadata?.next;
         if (!next) break;
         url = next.replace("https://api.sendgrid.com/v3", "");
@@ -102,7 +131,7 @@ const existing = await existingByName();
 console.log(apply ? "APPLYING" : "AUDIT ONLY — re-run with --apply to upload");
 console.log(`${existing.size} dynamic template(s) already on the account\n`);
 
-const results: Array<{ slug: string; id: string; action: string }> = [];
+const results: Array<{ slug: string | null; env: string | null; id: string; action: string }> = [];
 
 for (const entry of entries) {
     const html = await readFile(join(emailsDir, entry.file), "utf8");
@@ -111,11 +140,24 @@ for (const entry of entries) {
     // Mailchimp tag renders as literal text, and a missing {{class_url}} means
     // the CTA points nowhere.
     const problems: string[] = [];
+    const label = entry.slug ?? "txn";
+
+    // A leftover Mailchimp tag renders as literal text to a real recipient.
     if (/\*\|[A-Z_:]+\|\*/.test(html)) problems.push("still contains Mailchimp merge tags");
-    if (!html.includes("{{class_url}}")) problems.push("missing {{class_url}} on the CTA");
-    if (!html.includes("<%asm_group_unsubscribe_raw_url%>")) problems.push("missing the unsubscribe tag");
+
+    if (entry.transactional) {
+        // Fulfilment mail must NOT carry a marketing unsubscribe: a newsletter
+        // opt-out would then suppress delivery of something already paid for.
+        if (html.includes("<%asm_group_unsubscribe_raw_url%>")) {
+            problems.push("transactional template must not carry a marketing unsubscribe tag");
+        }
+    } else {
+        if (!html.includes("{{class_url}}")) problems.push("missing {{class_url}} on the CTA");
+        if (!html.includes("<%asm_group_unsubscribe_raw_url%>")) problems.push("missing the unsubscribe tag");
+    }
+
     if (problems.length) {
-        console.log(`  ! ${entry.slug}  SKIPPED — ${problems.join("; ")}`);
+        console.log(`  ! ${label}  SKIPPED — ${problems.join("; ")}`);
         continue;
     }
 
@@ -123,7 +165,7 @@ for (const entry of entries) {
     const action = templateId ? "new version" : "create";
 
     if (!apply) {
-        console.log(`  · ${entry.slug.padEnd(3)} ${action.padEnd(11)} ${entry.name}`);
+        console.log(`  · ${label.padEnd(4)} ${action.padEnd(11)} ${entry.name}`);
         continue;
     }
 
@@ -150,16 +192,28 @@ for (const entry of entries) {
     });
     if (status >= 400) throw new Error(`Uploading version for "${entry.name}" failed (${status}): ${JSON.stringify(body).slice(0, 200)}`);
 
-    results.push({ slug: entry.slug, id: templateId, action });
-    console.log(`  + ${entry.slug.padEnd(3)} ${action.padEnd(11)} ${templateId}  ${entry.name}`);
+    results.push({ slug: entry.slug ?? null, env: entry.env ?? null, id: templateId, action });
+    console.log(`  + ${label.padEnd(4)} ${action.padEnd(11)} ${templateId}  ${entry.name}`);
 }
 
 if (apply && results.length > 0) {
-    console.log("\nPaste into the manifest Sheet's `sendgrid_template_id` column:\n");
-    console.log("  class slug   sendgrid_template_id");
-    for (const r of results) console.log(`  ${r.slug.padEnd(12)} ${r.id}`);
-    console.log(
-        "\nThen set CLASS_MANIFEST_RANGE=A1:L200 in Vercel and redeploy, or the\n" +
-            "column exists in the Sheet but Google never returns it."
-    );
+    const classes = results.filter((r) => r.slug);
+    const envs = results.filter((r) => r.env);
+
+    if (classes.length > 0) {
+        console.log("\nPaste into the manifest Sheet's `sendgrid_template_id` column:\n");
+        console.log("  class slug   sendgrid_template_id");
+        for (const r of classes) console.log(`  ${(r.slug ?? "").padEnd(12)} ${r.id}`);
+        console.log(
+            "\nThen set CLASS_MANIFEST_RANGE=A1:L200 in Vercel and redeploy, or the\n" +
+                "column exists in the Sheet but Google never returns it."
+        );
+    }
+
+    if (envs.length > 0) {
+        // Transactional templates are not tied to a class, so they are wired up
+        // by environment variable rather than through the manifest.
+        console.log("\nSet in Vercel (and .env.local for local testing):\n");
+        for (const r of envs) console.log(`  ${r.env}=${r.id}`);
+    }
 }

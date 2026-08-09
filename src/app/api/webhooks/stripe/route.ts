@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import { tagPurchase, activatePartner, deactivatePartner } from "@/lib/mailchimp";
 import { sendCapiPurchase } from "@/lib/meta-capi";
+import { sendBookDelivery } from "@/lib/email/book-delivery";
 
 // PART 5 — Fulfillment. Verify the Stripe signature, then on a successful
 // PaymentIntent apply the purchase tags in Mailchimp (a Mailchimp automation
@@ -73,6 +74,30 @@ export async function POST(req: Request) {
                     const message = err instanceof Error ? err.message : "fulfillment error";
                     console.error(`[webhook] Mailchimp tag write FAILED for ${email}: ${message}`);
                     return NextResponse.json({ error: message }, { status: 500 });
+                }
+
+                // Deliver the download ourselves rather than depending on the
+                // Mailchimp automation. Runs AFTER tagging so the tag (which
+                // still drives the Mailchimp journey during the migration) is
+                // applied even if sending fails.
+                //
+                // While both are live a buyer may receive two delivery emails.
+                // That is the deliberate direction: duplicated beats undelivered
+                // for something already paid for. Turn the Mailchimp automation
+                // off once this is proven.
+                const delivery = await sendBookDelivery({ email, name, tags, paymentIntentId: pi.id });
+                if (delivery.status === "sent") {
+                    console.log(`[webhook] delivered [${delivery.books.join(", ")}] to ${email}`);
+                } else if (delivery.status === "failed") {
+                    // Someone has paid. Retry rather than swallow it — Stripe
+                    // backs off for up to three days, and an exhausted retry is
+                    // visible in the Stripe dashboard instead of silent.
+                    console.error(`[webhook] book delivery FAILED for ${email}: ${delivery.detail}`);
+                    return NextResponse.json({ error: delivery.detail }, { status: 500 });
+                } else if (delivery.status === "not-configured") {
+                    // Expected until SENDGRID_BOOK_DELIVERY_TEMPLATE_ID is set;
+                    // Mailchimp is still delivering, so this is not an error.
+                    console.warn(`[webhook] app-side delivery skipped for ${email} — no delivery template configured`);
                 }
             } else {
                 console.warn(
