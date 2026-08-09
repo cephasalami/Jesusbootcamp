@@ -14,9 +14,9 @@
 // to the caller so Stripe will retry the webhook, and the ledger exists to stop
 // duplicates rather than to stop sends.
 
-import { BOOK_BY_TAG } from "@/config/products";
-import { isKvConfigured, kvGetJson, kvSetJson } from "@/lib/kv";
-import { sendTemplateEmail } from "./sendgrid";
+import { BOOK_BY_TAG } from "../../config/products.ts";
+import { isKvConfigured, kvGetJson, kvSetJson } from "../kv.ts";
+import { sendTemplateEmail } from "./sendgrid.ts";
 
 /** Set to the SendGrid dynamic template id once the delivery email exists. */
 const TEMPLATE_ID = process.env.SENDGRID_BOOK_DELIVERY_TEMPLATE_ID;
