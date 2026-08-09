@@ -1,0 +1,20 @@
+.manageLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  background: var(--color-navy);
+  color: #fff;
+  font-size: 0.77rem;
+  font-weight: 750;
+  text-decoration: none;
+  box-shadow: 0 7px 16px rgba(26, 26, 26, 0.12);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.manageLink:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, CircleAlert, Layers, Users } from "lucide-react";
+import { BookOpen, CircleAlert, Layers, Plus, Users } from "lucide-react";
 import {
   readMaterialAccessActivity,
   readMaterialAccessMetrics,
@@ -20,6 +20,7 @@ import {
 } from "../../ui";
 import { fmtInt, fmtPct, fmtWhen, materialFormatLabel, share } from "../../format";
 import styles from "../../tracking.module.css";
+import manageStyles from "./CourseAccessLink.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -83,7 +84,11 @@ export default async function CourseAccessScreen() {
             ) : null}
           </>
         }
-      />
+      >
+        <Link className={manageStyles.manageLink} href="/tracking/course/manage">
+          <Plus size={16} /> Add material link
+        </Link>
+      </ScreenHeader>
 
       {!materials.connected ? (
         <EmptySource

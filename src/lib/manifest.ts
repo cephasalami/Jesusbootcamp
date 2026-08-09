@@ -15,6 +15,7 @@ import { getAccessToken } from "./google-auth.ts";
 import { kvGetJson, kvSetJson } from "./kv.ts";
 import { parseManifestRows } from "./manifest-parse.ts";
 import type { ClassRecord } from "./access.ts";
+import { manifestColumnForMaterial, type MaterialLinkFormat } from "./material-link.ts";
 
 const SHEET_ID = process.env.CLASS_MANIFEST_SHEET_ID;
 /** A1 range covering every column through `quiz_url` (11 columns: A-K). */
@@ -175,4 +176,150 @@ export async function getManifest(): Promise<ClassRecord[]> {
 /** Force the next getManifest() to re-read the sheet (used by tests/tools). */
 export function invalidateManifestCache(): void {
     memo = null;
+}
+
+type ManifestWriteResult = { ok: true } | { ok: false; error: string };
+
+/** Convert a zero-based spreadsheet column number into A1 notation. */
+function a1Column(column: number): string {
+    let value = column + 1;
+    let letters = "";
+    while (value > 0) {
+        const remainder = (value - 1) % 26;
+        letters = String.fromCharCode(65 + remainder) + letters;
+        value = Math.floor((value - 1) / 26);
+    }
+    return letters;
+}
+
+/**
+ * The manifest range is normally A1:K200. Respect a custom starting cell too
+ * so a sheet tab prefix or a shifted range cannot put a write in the wrong
+ * column or row.
+ */
+function rangeStart(range: string): { prefix: string; column: number; row: number } | null {
+    const match = range.trim().match(/^(.*!|)([A-Za-z]+)(\d+)(?::[A-Za-z]+\d+)?$/);
+    if (!match) return null;
+
+    const letters = match[2].toUpperCase();
+    let column = 0;
+    for (const letter of letters) column = column * 26 + letter.charCodeAt(0) - 64;
+    return { prefix: match[1], column: column - 1, row: Number(match[3]) };
+}
+
+async function readManifestRowsForWrite(token: string): Promise<string[][] | null> {
+    if (!SHEET_ID) return null;
+    const url =
+        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SHEET_ID)}` +
+        `/values/${encodeURIComponent(SHEET_RANGE)}?majorDimension=ROWS`;
+    try {
+        const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+            signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) {
+            console.error(`[manifest] unable to read before material update (${res.status}): ${(await res.text()).slice(0, 300)}`);
+            return null;
+        }
+        const json = (await res.json()) as { values?: unknown };
+        return Array.isArray(json.values)
+            ? json.values.map((row) => (Array.isArray(row) ? row.map((cell) => String(cell ?? "")) : []))
+            : [];
+    } catch (err) {
+        console.error("[manifest] unable to read before material update:", err);
+        return null;
+    }
+}
+
+/**
+ * Persist one material value from the protected dashboard. The sheet remains
+ * the single source of truth: learner-facing class pages continue to resolve
+ * every material fresh from this same manifest.
+ */
+export async function updateManifestMaterialLink(input: {
+    classSlug: string;
+    format: MaterialLinkFormat;
+    value: string;
+}): Promise<ManifestWriteResult> {
+    if (!SHEET_ID) {
+        return { ok: false, error: "The class manifest Sheet is not configured in this environment." };
+    }
+    if (fixtureClasses()) {
+        return { ok: false, error: "Material links cannot be saved while a local manifest fixture is active." };
+    }
+
+    const token = await getAccessToken();
+    if (!token) return { ok: false, error: "Google credentials are unavailable. Please try again later." };
+
+    const rows = await readManifestRowsForWrite(token);
+    if (!rows?.length) {
+        return { ok: false, error: "The manifest Sheet could not be read before saving. Nothing was changed." };
+    }
+
+    const headers = rows[0].map((header) => header.trim().toLowerCase());
+    const slugColumn = headers.indexOf("slug");
+    const materialColumn = headers.indexOf(manifestColumnForMaterial(input.format));
+    if (slugColumn === -1 || materialColumn === -1) {
+        return {
+            ok: false,
+            error: `The manifest Sheet needs both a slug column and ${manifestColumnForMaterial(input.format)} column before this material can be saved.`,
+        };
+    }
+
+    const wantSlug = input.classSlug.trim().toLowerCase();
+    const matchingRows = rows
+        .slice(1)
+        .map((row, index) => ({ row, index: index + 1 }))
+        .filter(({ row }) => row[slugColumn]?.trim().toLowerCase() === wantSlug);
+    if (matchingRows.length !== 1) {
+        return {
+            ok: false,
+            error:
+                matchingRows.length === 0
+                    ? "That class is no longer in the manifest Sheet. Refresh the page and try again."
+                    : "The manifest Sheet has duplicate class slugs. Fix the duplicates before saving a material link.",
+        };
+    }
+
+    const start = rangeStart(SHEET_RANGE);
+    if (!start) {
+        return { ok: false, error: "CLASS_MANIFEST_RANGE is not a supported A1 range, so no update was made." };
+    }
+
+    const rowNumber = start.row + matchingRows[0].index;
+    const columnName = a1Column(start.column + materialColumn);
+    const cell = `${start.prefix}${columnName}${rowNumber}`;
+    const url =
+        `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SHEET_ID)}` +
+        `/values/${encodeURIComponent(cell)}?valueInputOption=RAW`;
+
+    try {
+        const res = await fetch(url, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ values: [[input.value]] }),
+            cache: "no-store",
+            signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) {
+            console.error(`[manifest] material update failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
+            return {
+                ok: false,
+                error:
+                    res.status === 403
+                        ? "Google denied the update. Share the manifest Sheet with the service account as an Editor."
+                        : "Google could not save the material link. Nothing was changed; please try again.",
+            };
+        }
+    } catch (err) {
+        console.error("[manifest] material update errored:", err);
+        return { ok: false, error: "Google could not save the material link. Nothing was changed; please try again." };
+    }
+
+    invalidateManifestCache();
+    return { ok: true };
 }

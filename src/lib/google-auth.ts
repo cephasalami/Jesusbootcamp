@@ -19,10 +19,14 @@ import { JWT } from "google-auth-library";
  */
 const RAW = process.env.GOOGLE_SERVICE_ACCOUNT_JSON_BASE64;
 
-/** Read-only scopes — this account must never be able to write to Drive. */
+/**
+ * Drive stays read-only. The protected owner dashboard may update the class
+ * manifest Sheet, so it needs the spreadsheet write scope (the Sheet itself
+ * must still be shared with the service account as an Editor).
+ */
 const SCOPES = [
     "https://www.googleapis.com/auth/drive.readonly",
-    "https://www.googleapis.com/auth/spreadsheets.readonly",
+    "https://www.googleapis.com/auth/spreadsheets",
 ];
 
 export const isGoogleConfigured = Boolean(RAW);
