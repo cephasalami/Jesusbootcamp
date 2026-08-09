@@ -15,6 +15,35 @@
   gap: 0.9rem;
 }
 
+.createMaterials {
+  display: grid;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--color-card-border);
+  border-radius: 12px;
+  background: #fdfaf4;
+}
+
+.createMaterials legend {
+  padding: 0 0.3rem;
+  color: var(--color-navy);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.createMaterials legend span {
+  color: var(--color-grey);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.materialGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 0.9rem;
+}
+
 .field {
   display: grid;
   gap: 0.42rem;
@@ -175,7 +204,8 @@
 
 @media (max-width: 620px) {
   .fieldGrid,
-  .createGrid { grid-template-columns: 1fr; }
+  .createGrid,
+  .materialGrid { grid-template-columns: 1fr; }
   .previewHeader { align-items: flex-start; flex-direction: column; }
   .previewFrame { height: 460px; }
 }

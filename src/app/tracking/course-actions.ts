@@ -62,6 +62,7 @@ export async function createCourseClass(input: {
     slug: string;
     sequencePosition: string;
     title: string;
+    materials: Partial<Record<MaterialLinkFormat, string>>;
 }): Promise<CreateClassState> {
     const cookieStore = await cookies();
     if (!verifySessionToken(cookieStore.get(TRACKING_COOKIE)?.value)) {
@@ -72,6 +73,7 @@ export async function createCourseClass(input: {
         slug: String(input?.slug ?? ""),
         sequencePosition: String(input?.sequencePosition ?? ""),
         title: String(input?.title ?? ""),
+        materials: input?.materials ?? {},
     });
     if (!parsed.ok) return parsed;
 

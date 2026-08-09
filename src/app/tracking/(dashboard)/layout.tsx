@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Gauge, ShieldCheck } from "lucide-react";
 import { verifySessionToken, TRACKING_COOKIE } from "@/lib/tracking-auth";
 import SideNav, { ScreenCrumb } from "../SideNav";
@@ -22,7 +23,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className={styles.appShell}>
         <aside className={styles.sidebar}>
           <Link className={styles.brand} href="/tracking" aria-label="Jesus Boot Camp dashboard overview">
-            <span className={styles.brandMark}>J</span>
+            <Image
+              className={styles.brandLogo}
+              src="/icon.jpg"
+              alt="Jesus Boot Camp"
+              width={42}
+              height={42}
+              priority
+            />
             <span>
               <strong>Jesus Boot Camp</strong>
               <small>Owner dashboard</small>

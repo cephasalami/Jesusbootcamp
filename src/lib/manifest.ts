@@ -15,7 +15,11 @@ import { getAccessToken } from "./google-auth.ts";
 import { kvGetJson, kvSetJson } from "./kv.ts";
 import { parseManifestRows } from "./manifest-parse.ts";
 import type { ClassRecord } from "./access.ts";
-import { manifestColumnForMaterial, type MaterialLinkFormat } from "./material-link.ts";
+import {
+    MATERIAL_LINK_FORMATS,
+    manifestColumnForMaterial,
+    type MaterialLinkFormat,
+} from "./material-link.ts";
 import type { NewManifestClass } from "./manifest-class.ts";
 
 const SHEET_ID = process.env.CLASS_MANIFEST_SHEET_ID;
@@ -326,10 +330,9 @@ export async function updateManifestMaterialLink(input: {
 }
 
 /**
- * Append a brand-new class to the manifest. Every material cell is deliberately
- * blank: a class only becomes publishable as each Drive link is added through
- * the material manager, and an empty cell renders as "Coming soon" rather than
- * a broken learner link.
+ * Append a brand-new class to the manifest, including any material links that
+ * were ready when the class was created. Empty material cells stay "Coming
+ * soon" on the learner page rather than becoming broken links.
  */
 export async function createManifestClass(input: NewManifestClass): Promise<ManifestWriteResult> {
     if (!SHEET_ID) {
@@ -373,15 +376,31 @@ export async function createManifestClass(input: NewManifestClass): Promise<Mani
         };
     }
 
+    const materialValues = new Map(
+        MATERIAL_LINK_FORMATS.map((format) => [
+            manifestColumnForMaterial(format),
+            input.materials[format] ?? "",
+        ])
+    );
+    const unavailableMaterialColumns = MATERIAL_LINK_FORMATS
+        .filter((format) => input.materials[format] && !headers.includes(manifestColumnForMaterial(format)))
+        .map((format) => manifestColumnForMaterial(format));
+    if (unavailableMaterialColumns.length) {
+        return {
+            ok: false,
+            error: `The manifest Sheet is missing material column(s): ${unavailableMaterialColumns.join(", ")}.`,
+        };
+    }
+
     const row = headers.map((header) => {
         if (header === "slug") return input.slug;
-        if (header === "sequence_position") return String(input.sequencePosition);
+        if (header === "sequence_position") return input.sequencePosition;
         if (header === "title") return input.title;
-        return "";
+        return materialValues.get(header) ?? "";
     });
     const url =
         `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SHEET_ID)}` +
-        `/values/${encodeURIComponent(SHEET_RANGE)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+        `/values/${encodeURIComponent(SHEET_RANGE)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
 
     try {
         const res = await fetch(url, {
