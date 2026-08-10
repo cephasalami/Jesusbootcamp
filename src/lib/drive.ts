@@ -14,6 +14,7 @@
 //      `drivePreviewUrl` below.
 import { getAccessToken, isGoogleConfigured } from "./google-auth";
 import { readAudioDurationMs } from "./audio-duration";
+import { normalizeMediaType } from "./media-type";
 import { driveMetaCacheKey, isKvConfigured, kvGetJson, kvSetJson } from "./kv";
 
 export { isGoogleConfigured };
@@ -378,8 +379,10 @@ export async function fetchDriveFileStream(
 
     return {
         body: res.body,
-        contentType:
-            target?.mimeType ?? res.headers.get("content-type") ?? "application/octet-stream",
+        // Normalised, never passed through raw: we answer with `nosniff`, so a
+        // legacy label like `audio/x-m4a` is the browser's only clue about how
+        // to decode. See lib/media-type.ts.
+        contentType: target?.mimeType ?? normalizeMediaType(res.headers.get("content-type")),
         contentLength: res.headers.get("content-length"),
         status: res.status,
         contentRange: res.headers.get("content-range"),
