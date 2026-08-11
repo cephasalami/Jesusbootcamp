@@ -32,7 +32,15 @@ export async function sendTemplateEmail(input: {
     to: string;
     templateId: string;
     /** Handlebars values the template renders, e.g. { ctoken, first_name }. */
-    data: Record<string, string | number | null>;
+    /**
+     * Handlebars values the template renders.
+     *
+     * Booleans must be passed as REAL booleans, not "true"/"false" strings:
+     * Handlebars treats any non-empty string as truthy, so a {{#unless}} block
+     * fed the string "false" is hidden from everyone — silently, and in a way
+     * no send failure would reveal.
+     */
+    data: Record<string, string | number | boolean | null | Array<Record<string, string>>>;
     /** Groups sends in SendGrid's UI; use the class slug. */
     category?: string;
     /**

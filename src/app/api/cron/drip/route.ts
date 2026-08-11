@@ -148,6 +148,11 @@ export async function GET(req: Request) {
                 class_slug: klass.slug,
                 class_title: klass.title,
                 class_url: `https://jesusbootcamp.org/class/${klass.slug}?t=${profile.token}`,
+                // Drives {{#unless is_partner}} around the partnership CTA, so
+                // someone already giving monthly is never asked to "upgrade".
+                // Must stay a real boolean — Handlebars reads the string
+                // "false" as truthy and would hide the ask from everyone.
+                is_partner: profile.partner === true,
             },
         });
 

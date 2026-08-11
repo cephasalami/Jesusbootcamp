@@ -91,7 +91,7 @@ export async function sendBookDelivery(input: {
                 // email on the sending domain.
                 url: `${SITE}/api/download/${book.slug}`,
             })),
-        } as unknown as Record<string, string | number | null>,
+        },
     });
 
     if (!send.ok) return { status: "failed", detail: send.detail };

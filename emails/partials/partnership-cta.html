@@ -1,0 +1,38 @@
+<!--
+  PARTNERSHIP CTA — paste this <tr> directly AFTER the "read the class" button
+  row, so the two sit together.
+
+  WHICH EMAILS: class 4b onward. That is not an arbitrary cut-off — access.ts
+  sets FREE_THROUGH_SEQUENCE = 4, so positions 0-4 (slugs 0, 1, 2, 3, 4a) are
+  free for everyone and the partner gate starts at position 5, which is 4b. The
+  ask therefore appears on exactly the classes where partnership changes what
+  someone can open, and never before it means anything.
+
+  COPY: written to match the framing in config/partner.ts — the core classes
+  are ALWAYS free, partnership funds the mission and unlocks the extra
+  material, and nobody is shut out for not paying. Do not reword this into a
+  paywall. Paul has final say on the wording; treat this as a starting point.
+
+  It is a SECONDARY button by design: outlined rather than filled, so it does
+  not compete with the primary "read the class" CTA above it. The job of the
+  email is still to get them into the class.
+
+  ⚠️ HIDDEN FROM EXISTING PARTNERS via {{#unless is_partner}}. Asking someone
+  who already pays monthly to "upgrade to partnership" reads as though their
+  giving was never noticed, and is a good way to lose them. The drip supplies
+  `is_partner` from the subscriber profile.
+
+  `is_partner` MUST be a real boolean, never the string "false" — Handlebars
+  treats any non-empty string as truthy, so "false" would hide the block from
+  everyone and the ask would silently never appear.
+-->
+{{#unless is_partner}}
+<tr><td style="padding:0 42px 34px 42px;background-color:#ffffff;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr><td align="center" style="padding-top:26px;border-top:1px solid #e8dcc6;">
+      <p style="Margin:0 0 18px 0;font-family:Georgia,Times New Roman,serif;font-size:17px;line-height:1.6;color:#6b5d4d;font-style:italic;">Every class stays free, and always will. Partners are what make that possible &mdash; funding the extra material and putting this course into a new language every month.</p>
+      <a href="https://jesusbootcamp.org/partner/join" target="_blank" style="display:inline-block;background-color:#ffffff;color:#7b3f16;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.3;font-weight:bold;padding:13px 26px;border-radius:6px;border:2px solid #7b3f16;">Upgrade to partnership</a>
+    </td></tr>
+  </table>
+</td></tr>
+{{/unless}}
