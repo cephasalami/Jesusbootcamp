@@ -22,8 +22,9 @@ const HARD_FAIL_MS = 22000;
 const MAX_ATTEMPTS = 2;
 // Mirrors PARTNER_MIN_CENTS in config/partner.ts, which is the authority — the
 // server re-validates every amount and this only spares the giver a round trip.
-// Change both together, and note the on-page copy quotes the figure too.
-const CUSTOM_MIN_CENTS = 2500; // $25
+// Per Paul there is no minimum partnership; $1 is just the floor Stripe can
+// actually charge. See the note in config/partner.ts before changing it.
+const CUSTOM_MIN_CENTS = 100; // $1
 const CUSTOM_MIN_LABEL = formatUsd(CUSTOM_MIN_CENTS);
 
 type Selection = PartnerTierId | "custom";
@@ -147,15 +148,14 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                         &ldquo;disciplers&rdquo; globally who are desperate for a reproducible
                         model.
                     </p>
-                    {/* "$25 or more" is the Global Expansion letter's own figure.
-                        This line read "any amount" while the floor was $1; with
-                        the floor back at $25 that wording would promise access
-                        the checkout then refuses. Flagged for Paul alongside the
-                        rest of the pitch copy. */}
+                    {/* Paul's letter says "$25 or more" here. He has since ruled
+                        there is no minimum, so this says "any amount" — which is
+                        what the checkout actually accepts. Do not restore the
+                        figure without also restoring PARTNER_MIN_CENTS. */}
                     <p className={styles.pitchLead}>
                         Moving forward, the <strong>extra material</strong> below will be made
-                        available to those who partner with us with a monthly donation of{" "}
-                        {CUSTOM_MIN_LABEL} or more:
+                        available to those who partner with us with a monthly donation of any
+                        amount:
                     </p>
                 </section>
 
@@ -190,8 +190,8 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                 </span>
                 <div className={styles.card}>
                     <p className={styles.anyAmountLine}>
-                        Partner with a monthly donation of{" "}
-                        <strong>{CUSTOM_MIN_LABEL} or more</strong> — every gift fuels the mission.
+                        Partner with a monthly donation of <strong>any amount</strong> — every gift
+                        fuels the mission.
                     </p>
 
                     {/* ── Amount selection: presets + "Other amount" ── */}
@@ -246,7 +246,7 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                                 className={styles.customInput}
                                 value={customDollars}
                                 onChange={(e) => setCustomDollars(e.target.value)}
-                                placeholder={`${CUSTOM_MIN_CENTS / 100} or more`}
+                                placeholder="Enter amount"
                                 aria-label="Custom monthly amount in dollars"
                                 autoFocus
                             />

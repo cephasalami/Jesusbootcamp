@@ -19,6 +19,11 @@
 // (core is never withheld). Per Paul's instruction we still flag the paywall
 // framing as pending his sign-off before it goes live. See PartnerCTA and the
 // /partner/join pitch copy, marked with the same note.
+//
+// UPDATE (2026-08-11) — Paul has since ruled that there is NO minimum
+// partnership, superseding the letter's "$25 or more" as an enforced floor.
+// $25 remains the first preset and the figure the letter quotes, but any
+// amount now buys partnership in full. See PARTNER_MIN_CENTS below.
 
 import { formatUsd } from "./products";
 
@@ -27,12 +32,16 @@ export const PARTNER_INTERVAL = "month" as const;
 
 // Custom monthly gifts. Amounts outside this range are rejected server-side.
 //
-// The floor is $25 because that is what Paul's Global Expansion letter states
-// unlocks the extra material. It briefly sat at $1, which let someone subscribe
-// below the threshold the letter names and still be tagged `partner-active`.
-// Any change here must be matched in CUSTOM_MIN_CENTS in PartnerJoinClient and
-// in the on-page copy, which quotes the figure.
-export const PARTNER_MIN_CENTS = 2500; // $25 minimum
+// Paul's decision (2026-08-11): there is NO minimum partnership. His letter
+// names $25 as what unlocks the extra material, and this briefly enforced that
+// as a floor — but he wants anyone who can give something to be able to, at
+// whatever they can afford. So $1 here is a payment-processing floor, not an
+// offer threshold: Stripe cannot charge $0, and sub-dollar recurring charges
+// lose most of their value to fees.
+//
+// Do not reintroduce a real minimum without Paul saying so. Matched by
+// CUSTOM_MIN_CENTS in PartnerJoinClient, which only saves a round trip.
+export const PARTNER_MIN_CENTS = 100; // $1 — processing floor only
 export const PARTNER_MAX_CENTS = 100_000; // $1,000 sanity cap
 
 export type PartnerTierId = "25" | "50" | "100";
