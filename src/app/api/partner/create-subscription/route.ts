@@ -4,11 +4,13 @@ import { getStripe, isStripeConfigured } from "@/lib/stripe";
 import {
     PARTNER_CURRENCY,
     PARTNER_INTERVAL,
+    PARTNER_MIN_CENTS,
     getPartnerTier,
     partnerPriceId,
     partnerProductId,
     isValidCustomAmountCents,
 } from "@/config/partner";
+import { formatUsd } from "@/config/products";
 
 // Called when the partner clicks "Partner With Us" on /partner/join. Creates a
 // Customer + a monthly Subscription with `payment_behavior: default_incomplete`,
@@ -63,7 +65,7 @@ export async function POST(req: Request) {
         } else if (rawCustom !== null) {
             if (!isValidCustomAmountCents(rawCustom)) {
                 return NextResponse.json(
-                    { error: "Please enter a monthly amount of at least $1." },
+                    { error: `Please enter a monthly amount of at least ${formatUsd(PARTNER_MIN_CENTS)}.` },
                     { status: 400 }
                 );
             }

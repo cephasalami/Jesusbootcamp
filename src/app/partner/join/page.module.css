@@ -4,105 +4,204 @@
     --bg-cream: #F5F0E8;
     --bg-cream-alt: #EDEAE2;
     --text-primary: #1A1A1A;
-    --text-secondary: #5C5C5C;
+    --text-secondary: #57534C;
     --gold: #C9A84C;
     --green: #2D6A4F;
     --white: #FFFFFF;
     --line: #E6DFD1;
 
+    /* ── Type scale ──────────────────────────────────────────────────────
+       Nothing here is allowed below 13px. The previous scale bottomed out
+       at 11.5px, which put 31 separate elements under 15px on a 375px
+       screen — the page was legible to someone who already knew what it
+       said and hard work for everyone else.
+
+       --fs-input is 16px for a specific reason, not for looks: iOS Safari
+       zooms the whole viewport when a focused input is below 16px. On a
+       checkout that means tapping "Full name" shoves the layout sideways
+       mid-payment. Never drop it. */
+    --fs-eyebrow: 0.8125rem; /* 13px */
+    --fs-micro: 0.875rem; /* 14px  — hints, notes */
+    --fs-small: 0.9375rem; /* 15px  — labels */
+    --fs-body: 1.0625rem; /* 17px  — body copy */
+    --fs-lead: 1.125rem; /* 18px  — opening paragraph */
+    --fs-input: 1rem; /* 16px  — see note above */
+
     min-height: 100vh;
     font-family: var(--font-body), "Inter", sans-serif;
     color: var(--text-primary);
     background-color: var(--bg-cream);
-    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201, 168, 76, 0.1) 0%, transparent 60%);
-    padding: 28px 18px 64px;
-    line-height: 1.6;
+    background-image: radial-gradient(ellipse 90% 40% at 50% 0%, rgba(201, 168, 76, 0.14) 0%, transparent 62%);
+    padding: 22px 20px 72px;
+    font-size: var(--fs-body);
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
 }
 
 .container {
-    max-width: 560px;
+    max-width: 1120px;
     margin: 0 auto;
     width: 100%;
 }
 
+/* ── Header ── */
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 18px;
+    gap: 16px;
+    padding-bottom: 18px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--line);
 }
 
 .brand {
     font-family: var(--font-display), "Playfair Display", serif;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 1rem;
     letter-spacing: 0.08em;
 }
 
 .secure {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12.5px;
+    gap: 7px;
+    font-size: var(--fs-micro);
     font-weight: 600;
+    color: var(--green);
+    white-space: nowrap;
+}
+
+/* ── Two-column layout ──────────────────────────────────────────────────
+   Below 980px this is one column and the source order (pitch, then the
+   form) is what the reader gets. Above it the checkout moves alongside
+   the letter, so it is on screen from the first paint instead of two
+   thousand pixels below it.
+
+   Deliberately NOT sticky. The checkout column is ~1770px tall once the
+   Stripe element renders its payment tabs — far taller than any laptop
+   viewport. A sticky column pins as soon as its top edge reaches the
+   offset, which would leave everything past the fold, the pay button
+   included, permanently unreachable. */
+.layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* min-width:0 on both columns: grid items default to min-content, so a long
+   unbreakable string (a card number, an email) would otherwise widen the
+   column and push the page into horizontal scroll. */
+.pitchCol,
+.formCol {
+    min-width: 0;
+}
+
+@media (min-width: 980px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr) 440px;
+        gap: 64px;
+    }
+}
+
+/* ── Section rhythm ── */
+.sectionLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.sectionName {
+    font-size: var(--fs-eyebrow);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
     color: var(--green);
 }
 
 /* ── Pitch ── */
 .pitch {
-    margin-bottom: 20px;
-}
-
-.pitchEyebrow {
-    display: inline-block;
-    font-size: 11.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--green);
-    margin-bottom: 8px;
+    margin-bottom: 40px;
 }
 
 .pitchTitle {
     font-family: var(--font-display), "Playfair Display", serif;
     font-weight: 700;
-    font-size: 30px;
-    line-height: 1.15;
-    margin: 0 0 10px;
+    /* Fluid so it fills a phone without ever overflowing it. */
+    font-size: clamp(2rem, 7.5vw, 2.875rem);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0 0 20px;
+    text-wrap: balance;
 }
 
 .pitchLead {
-    font-size: 15.5px;
+    font-size: var(--fs-body);
     color: var(--text-secondary);
-    margin: 0 0 14px;
+    margin: 0 0 18px;
+    max-width: 62ch;
+}
+
+.pitchLead:first-of-type {
+    font-size: var(--fs-lead);
+    color: var(--text-primary);
+}
+
+.pitchLead strong {
+    color: var(--text-primary);
 }
 
 .pitchNote {
-    font-size: 14px;
+    font-size: var(--fs-body);
     color: var(--text-secondary);
-    margin: 14px 0 0;
-    padding: 12px 14px;
+    margin: 28px 0 0;
+    padding: 20px 22px;
     background-color: var(--bg-cream-alt);
-    border-radius: 10px;
-    line-height: 1.55;
+    border-left: 3px solid var(--gold);
+    border-radius: 4px 12px 12px 4px;
+    line-height: 1.6;
+}
+
+/* ── What partners unlock ───────────────────────────────────────────────
+   This list IS the offer, so it gets to look like it. Previously it was a
+   14.5px checklist crammed under four paragraphs of body copy and read as
+   fine print. */
+.unlocks {
+    margin-bottom: 40px;
 }
 
 .unlockList {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 11px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 620px) {
+    .unlockList {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    /* The scripture item is the longest and the strongest — let it run full
+       width rather than forcing a ragged two-line column beside a short one. */
+    .unlockItem:last-child {
+        grid-column: 1 / -1;
+    }
 }
 
 .unlockItem {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    font-size: 14.5px;
+    gap: 12px;
+    font-size: var(--fs-body);
     line-height: 1.5;
-    font-weight: 500;
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px;
 }
 
 .unlockItem strong {
@@ -111,34 +210,59 @@
 }
 
 .unlockCheck {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(45, 106, 79, 0.12);
     color: var(--green);
     flex-shrink: 0;
-    margin-top: 3px;
-}
-
-@media (max-width: 480px) {
-    .pitchTitle {
-        font-size: 25px;
-    }
+    margin-top: 1px;
 }
 
 /* ── Card ── */
 .card {
     background-color: var(--white);
     border: 1px solid var(--line);
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(26, 26, 26, 0.08);
-    padding: 24px;
+    border-radius: 18px;
+    box-shadow: 0 14px 44px rgba(26, 26, 26, 0.09);
+    padding: 26px 22px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 22px;
 }
 
-/* ── Tier cards ── */
+@media (min-width: 520px) {
+    .card {
+        padding: 30px 28px;
+    }
+}
+
+/* ── Tier cards ─────────────────────────────────────────────────────────
+   Two across on the narrowest screens rather than three: three $-amounts
+   side by side at 375px left each card ~100px wide, which is below a
+   comfortable tap target once padding is counted. */
 .tierGroup {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    /* Always three across. Two-across orphans $100 on a row of its own, which
+       reads as a different kind of option rather than the third of three.
+
+       minmax(0, 1fr), not 1fr: a bare 1fr floors each column at min-content,
+       and "/MONTH" is wide enough at 13px to push that floor past a third of
+       a 320px screen — the row then overflowed the card. */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+@media (min-width: 420px) {
+    .tierGroup {
+        gap: 12px;
+    }
+    .tierCard {
+        padding: 16px 10px;
+    }
 }
 
 .tierCard {
@@ -146,12 +270,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    gap: 2px;
+    gap: 3px;
+    min-height: 96px;
     background-color: var(--bg-cream-alt);
     border: 2px solid transparent;
-    border-radius: 12px;
-    padding: 18px 10px 16px;
+    border-radius: 14px;
+    /* Narrow side padding so three cards clear a 320px screen; roomier once
+       there is space for it. */
+    padding: 16px 4px;
     cursor: pointer;
     transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.12s ease;
     font-family: inherit;
@@ -161,31 +289,42 @@
     transform: translateY(-1px);
 }
 
+.tierCard:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+}
+
 .tierCardActive {
     border-color: var(--green);
-    background-color: rgba(45, 106, 79, 0.07);
+    background-color: rgba(45, 106, 79, 0.08);
 }
 
 .tierAmount {
     font-family: var(--font-display), "Playfair Display", serif;
     font-weight: 700;
-    font-size: 26px;
+    /* Fluid so "$100" still fits a ~105px card on a 375px phone. */
+    font-size: clamp(1.375rem, 6vw, 1.75rem);
     color: var(--text-primary);
     line-height: 1;
+    white-space: nowrap;
 }
 
 .tierPer {
-    font-size: 11.5px;
+    font-size: var(--fs-eyebrow);
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
-.tierLabel {
-    font-size: 12px;
+/* The values-line ("Unlocks all the extra material") is real copy, but at
+   three-across it can only ever be a cramped fragment. It moves under the
+   selector as a full-width line instead — see .tierLabelOut. */
+.tierLabelOut {
+    font-size: var(--fs-micro);
     color: var(--text-secondary);
-    margin-top: 6px;
-    line-height: 1.3;
+    text-align: center;
+    margin: -8px 0 0;
+    min-height: 1.4em;
 }
 
 .tierCheck {
@@ -195,29 +334,13 @@
     color: var(--green);
 }
 
-@media (max-width: 480px) {
-    .tierGroup {
-        grid-template-columns: 1fr;
-    }
-    .tierCard {
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 8px;
-        padding: 14px 16px;
-    }
-    .tierLabel {
-        margin-top: 0;
-        margin-left: auto;
-        text-align: right;
-    }
-}
-
-/* ── Any-amount (FIX 8) ── */
+/* ── Any-amount ── */
 .anyAmountLine {
-    font-size: 14.5px;
+    font-size: var(--fs-body);
     color: var(--text-secondary);
     text-align: center;
     margin: 0;
+    line-height: 1.55;
 }
 
 .anyAmountLine strong {
@@ -233,19 +356,24 @@
     width: 100%;
     background-color: var(--bg-cream-alt);
     border: 2px solid transparent;
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 14px;
+    padding: 15px;
     font-family: inherit;
-    font-size: 15px;
+    font-size: var(--fs-input);
     font-weight: 600;
     color: var(--text-primary);
     cursor: pointer;
     transition: border-color 0.18s ease, background-color 0.18s ease;
 }
 
+.otherCard:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+}
+
 .otherCardActive {
     border-color: var(--green);
-    background-color: rgba(45, 106, 79, 0.07);
+    background-color: rgba(45, 106, 79, 0.08);
 }
 
 .customWrap {
@@ -253,8 +381,8 @@
     align-items: center;
     gap: 8px;
     border: 1px solid #D9D2C4;
-    border-radius: 10px;
-    padding: 2px 14px;
+    border-radius: 12px;
+    padding: 2px 16px;
     background-color: var(--white);
 }
 
@@ -264,7 +392,7 @@
 }
 
 .customCurrency {
-    font-size: 20px;
+    font-size: 1.375rem;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -273,17 +401,17 @@
     flex: 1;
     min-width: 0;
     font-family: inherit;
-    font-size: 18px;
+    font-size: 1.25rem;
     font-weight: 600;
     border: none;
     outline: none;
     background: transparent;
-    padding: 12px 0;
+    padding: 13px 0;
     color: var(--text-primary);
 }
 
 .customPer {
-    font-size: 12px;
+    font-size: var(--fs-eyebrow);
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -294,28 +422,29 @@
 .fields {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
 }
 
 .field {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
 }
 
 .fieldLabel {
-    font-size: 13px;
+    font-size: var(--fs-small);
     font-weight: 600;
 }
 
 .input {
     font-family: inherit;
-    font-size: 15px;
+    /* 16px minimum — below this iOS zooms the page on focus. */
+    font-size: var(--fs-input);
     color: var(--text-primary);
     background-color: var(--white);
     border: 1px solid #D9D2C4;
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 14px 15px;
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -326,8 +455,9 @@
 }
 
 .fieldHint {
-    font-size: 12px;
+    font-size: var(--fs-micro);
     color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 /* ── Payment element ── */
@@ -350,7 +480,7 @@
     align-items: center;
     justify-content: center;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 12px;
     background: linear-gradient(100deg, var(--bg-cream-alt) 20%, #f3eee4 40%, var(--bg-cream-alt) 60%);
     background-size: 200% 100%;
     animation: paymentShimmer 1.4s ease-in-out infinite;
@@ -358,7 +488,7 @@
 }
 
 .paymentSkeletonText {
-    font-size: 13px;
+    font-size: var(--fs-micro);
     font-weight: 500;
     color: var(--text-secondary);
 }
@@ -384,39 +514,40 @@
     gap: 12px;
     border: 1px solid #E6B8B8;
     background-color: #FBEAEA;
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 12px;
+    padding: 18px;
 }
 
 .retryText {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--fs-small);
     color: #8A2B2B;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 .retryButton {
     align-self: flex-start;
     background-color: var(--green);
     color: var(--white);
-    font-size: 14px;
+    font-size: var(--fs-small);
     font-weight: 600;
     border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
+    border-radius: 9px;
+    padding: 11px 20px;
     cursor: pointer;
 }
 
 .recurringNote {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 12.5px;
+    gap: 9px;
+    font-size: var(--fs-micro);
     color: var(--text-secondary);
     background-color: var(--bg-cream-alt);
-    border-radius: 10px;
-    padding: 11px 14px;
+    border-radius: 12px;
+    padding: 13px 16px;
     margin: 0;
+    line-height: 1.5;
 }
 
 .recurringNote svg {
@@ -429,14 +560,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
     background: linear-gradient(180deg, #35795B 0%, var(--green) 55%, #275C45 100%);
     color: var(--white);
-    font-size: 16px;
+    font-size: 1.0625rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    padding: 17px 24px;
+    padding: 18px 24px;
     border: none;
-    border-radius: 11px;
+    border-radius: 12px;
     cursor: pointer;
     box-shadow: 0 10px 24px rgba(45, 106, 79, 0.32);
     transition: filter 0.18s ease, transform 0.18s ease;
@@ -456,9 +588,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 18px;
+    gap: 20px;
     flex-wrap: wrap;
-    font-size: 12px;
+    font-size: var(--fs-micro);
     color: var(--text-secondary);
     font-weight: 500;
 }
@@ -466,7 +598,7 @@
 .trustRow span {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
 }
 
 .trustRow svg {
@@ -477,26 +609,27 @@
     background-color: #FBEAEA;
     border: 1px solid #E6B8B8;
     color: #8A2B2B;
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 14px;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: var(--fs-small);
+    line-height: 1.5;
 }
 
 .configNotice {
     background-color: var(--white);
     border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 28px;
+    border-radius: 16px;
+    padding: 32px;
     text-align: center;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: var(--fs-small);
     box-shadow: 0 8px 28px rgba(26, 26, 26, 0.06);
 }
 
 .configNotice strong {
     display: block;
     color: var(--text-primary);
-    font-size: 16px;
+    font-size: 1.125rem;
     margin-bottom: 8px;
 }
 
@@ -504,5 +637,5 @@
     background-color: var(--bg-cream-alt);
     border-radius: 4px;
     padding: 1px 5px;
-    font-size: 12.5px;
+    font-size: var(--fs-micro);
 }

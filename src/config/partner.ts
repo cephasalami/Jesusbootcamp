@@ -25,9 +25,14 @@ import { formatUsd } from "./products";
 export const PARTNER_CURRENCY = "usd";
 export const PARTNER_INTERVAL = "month" as const;
 
-// FIX 8 — custom ("any amount") monthly gifts. Amounts outside this range are
-// rejected server-side.
-export const PARTNER_MIN_CENTS = 100; // $1 minimum
+// Custom monthly gifts. Amounts outside this range are rejected server-side.
+//
+// The floor is $25 because that is what Paul's Global Expansion letter states
+// unlocks the extra material. It briefly sat at $1, which let someone subscribe
+// below the threshold the letter names and still be tagged `partner-active`.
+// Any change here must be matched in CUSTOM_MIN_CENTS in PartnerJoinClient and
+// in the on-page copy, which quotes the figure.
+export const PARTNER_MIN_CENTS = 2500; // $25 minimum
 export const PARTNER_MAX_CENTS = 100_000; // $1,000 sanity cap
 
 export type PartnerTierId = "25" | "50" | "100";

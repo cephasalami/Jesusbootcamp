@@ -20,7 +20,11 @@ const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;
 const NUDGE_AT_MS = 6000;
 const HARD_FAIL_MS = 22000;
 const MAX_ATTEMPTS = 2;
-const CUSTOM_MIN_CENTS = 100; // $1 — mirrors PARTNER_MIN_CENTS server-side
+// Mirrors PARTNER_MIN_CENTS in config/partner.ts, which is the authority — the
+// server re-validates every amount and this only spares the giver a round trip.
+// Change both together, and note the on-page copy quotes the figure too.
+const CUSTOM_MIN_CENTS = 2500; // $25
+const CUSTOM_MIN_LABEL = formatUsd(CUSTOM_MIN_CENTS);
 
 type Selection = PartnerTierId | "custom";
 
@@ -109,13 +113,18 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                 <header className={styles.header}>
                     <span className={styles.brand}>JESUS BOOT CAMP</span>
                     <span className={styles.secure}>
-                        <Lock size={13} /> Secure checkout
+                        <Lock size={15} /> Secure checkout
                     </span>
                 </header>
 
+                {/* Two columns from 980px up; one below. See .layout. */}
+                <div className={styles.layout}>
+                  <div className={styles.pitchCol}>
                 {/* ── The pitch — verbatim from Paul's Global Expansion letter ── */}
                 <section className={styles.pitch}>
-                    <span className={styles.pitchEyebrow}>A word from Paul Joseph, Founder</span>
+                    <span className={styles.sectionLabel}>
+                        <span className={styles.sectionName}>A word from Paul Joseph, Founder</span>
+                    </span>
                     <h1 className={styles.pitchTitle}>We Are ALL Laborers in the Harvest</h1>
                     <p className={styles.pitchLead}>
                         We will always offer the core classes of the Jesus Boot Camp completely
@@ -131,19 +140,38 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                     <p className={styles.pitchLead}>
                         Therefore we need your financial partnership to allow us to{" "}
                         <em>produce</em> this curriculum at the highest tier of quality,{" "}
-                        <em>translate</em> it, scale <em>digital</em> access worldwide, and get it
-                        into the hands of &ldquo;disciplers&rdquo; globally who are desperate for a
-                        reproducible model.
+                        {/* Explicit {" "} after each <em>: without it JSX drops the
+                            space and Paul's letter reads "scale digitalaccess". */}
+                        <em>translate</em> it, scale <em>digital</em>{" "}
+                        access worldwide, and get it into the hands of
+                        &ldquo;disciplers&rdquo; globally who are desperate for a reproducible
+                        model.
                     </p>
+                    {/* "$25 or more" is the Global Expansion letter's own figure.
+                        This line read "any amount" while the floor was $1; with
+                        the floor back at $25 that wording would promise access
+                        the checkout then refuses. Flagged for Paul alongside the
+                        rest of the pitch copy. */}
                     <p className={styles.pitchLead}>
                         Moving forward, the <strong>extra material</strong> below will be made
-                        available to those who partner with us with a monthly donation of any
-                        amount:
+                        available to those who partner with us with a monthly donation of{" "}
+                        {CUSTOM_MIN_LABEL} or more:
                     </p>
+                </section>
+
+                {/* The unlock list is the offer itself, so it is its own
+                    section of cards rather than fine print under the letter. */}
+                <section className={styles.unlocks}>
+                    <span className={styles.sectionLabel}>
+                        <span className={styles.sectionName}>What partners unlock</span>
+                    </span>
                     <ul className={styles.unlockList}>
                         {UNLOCKS.map((u, i) => (
                             <li key={i} className={styles.unlockItem}>
-                                <Check size={15} className={styles.unlockCheck} /> <span>{u}</span>
+                                <span className={styles.unlockCheck}>
+                                    <Check size={15} />
+                                </span>
+                                <span>{u}</span>
                             </li>
                         ))}
                     </ul>
@@ -154,11 +182,16 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                         translation of this curriculum.
                     </p>
                 </section>
+                  </div>
 
+                  <div className={styles.formCol}>
+                <span className={styles.sectionLabel}>
+                    <span className={styles.sectionName}>Your partnership</span>
+                </span>
                 <div className={styles.card}>
                     <p className={styles.anyAmountLine}>
-                        Partner with a monthly donation of <strong>any amount</strong> — every gift
-                        fuels the mission.
+                        Partner with a monthly donation of{" "}
+                        <strong>{CUSTOM_MIN_LABEL} or more</strong> — every gift fuels the mission.
                     </p>
 
                     {/* ── Amount selection: presets + "Other amount" ── */}
@@ -180,12 +213,16 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                                 >
                                     <span className={styles.tierAmount}>{t.amountLabel}</span>
                                     <span className={styles.tierPer}>/month</span>
-                                    <span className={styles.tierLabel}>{t.label}</span>
                                     {active && <Check size={16} className={styles.tierCheck} />}
                                 </button>
                             );
                         })}
                     </div>
+
+                    {/* Paul's values-line for the chosen amount. It used to sit
+                        inside each card, where three-across left it a clipped
+                        fragment; full width it can actually be read. */}
+                    <p className={styles.tierLabelOut}>{presetTier?.label ?? " "}</p>
 
                     <button
                         type="button"
@@ -204,12 +241,12 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                             <input
                                 type="number"
                                 inputMode="decimal"
-                                min={1}
+                                min={CUSTOM_MIN_CENTS / 100}
                                 step={1}
                                 className={styles.customInput}
                                 value={customDollars}
                                 onChange={(e) => setCustomDollars(e.target.value)}
-                                placeholder="Enter amount"
+                                placeholder={`${CUSTOM_MIN_CENTS / 100} or more`}
                                 aria-label="Custom monthly amount in dollars"
                                 autoFocus
                             />
@@ -260,6 +297,8 @@ export default function PartnerJoinClient({ tiers }: { tiers: PartnerTierView[] 
                             onRequestRemount={requestRemount}
                         />
                     </Elements>
+                </div>
+                  </div>
                 </div>
             </div>
         </div>
@@ -356,7 +395,7 @@ function PartnerPaymentSection({
         if (!name.trim()) return setError("Please enter your full name.");
         if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Please enter a valid email address.");
         if (selection === "custom" && customCents < CUSTOM_MIN_CENTS) {
-            return setError("Please enter a monthly amount of at least $1.");
+            return setError(`Please enter a monthly amount of at least ${CUSTOM_MIN_LABEL}.`);
         }
 
         setSubmitting(true);
@@ -462,7 +501,7 @@ function PartnerPaymentSection({
             )}
 
             <p className={styles.recurringNote}>
-                <Heart size={13} /> This is a recurring monthly gift. Cancel anytime — one email
+                <Heart size={15} /> This is a recurring monthly gift. Cancel anytime — one email
                 and it stops.
             </p>
 
@@ -476,16 +515,16 @@ function PartnerPaymentSection({
                     : !paymentReady
                     ? "Loading…"
                     : customTooLow
-                    ? "Enter an amount ($1 min)"
+                    ? `Enter an amount (${CUSTOM_MIN_LABEL} min)`
                     : `Partner With Us at ${amountLabel}/month`}
             </button>
 
             <div className={styles.trustRow}>
                 <span>
-                    <Lock size={13} /> Secure &amp; encrypted
+                    <Lock size={15} /> Secure &amp; encrypted
                 </span>
                 <span>
-                    <ShieldCheck size={13} /> Cancel anytime
+                    <ShieldCheck size={15} /> Cancel anytime
                 </span>
             </div>
         </form>
