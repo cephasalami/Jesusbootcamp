@@ -16,37 +16,73 @@
       "slug": "0",
       "file": "classes/0.html",
       "name": "JBC Class 0 — What is the Jesus Boot Camp",
-      "subject": "What is the Jesus Boot Camp?"
+      "subject": "Class 0 - What is the Jesus Boot Camp?"
     },
     {
       "slug": "1",
       "file": "classes/1.html",
       "name": "JBC Class 1 — Born Again",
-      "subject": "What it means to be born again"
+      "subject": "Class 1 - What it means to be born again"
     },
     {
       "slug": "2",
       "file": "classes/2.html",
       "name": "JBC Class 2 — Who You Are in Christ",
-      "subject": "Who you are in Christ"
+      "subject": "Class 2 - Who you are in Christ"
     },
     {
       "slug": "3",
       "file": "classes/3.html",
       "name": "JBC Class 3 — The Man With a Vision",
-      "subject": "The man with a vision"
+      "subject": "Class 3 - The man with a vision"
     },
     {
       "slug": "4a",
       "file": "classes/4a.html",
       "name": "JBC Class 4a — All Laborers In The Harvest",
-      "subject": "We're ALL laborers in the harvest"
+      "subject": "Class 4A - We're ALL laborers in the harvest"
     },
     {
       "slug": "4b",
       "file": "classes/4b.html",
       "name": "JBC Class 4b — The Purpose of the New Testament",
-      "subject": "The purpose of the New Testament"
+      "subject": "Class 4B - The purpose of the New Testament"
+    },
+    {
+      "slug": "5",
+      "file": "classes/5.html",
+      "name": "JBC Class 5 — God's Gift to Believers, the Holy Spirit",
+      "subject": "Class 5 - God's gift to believers, the Holy Spirit"
+    },
+    {
+      "slug": "6",
+      "file": "classes/6.html",
+      "name": "JBC Class 6 — The Gift of Tongues",
+      "subject": "Class 6 - The gift of tongues"
+    },
+    {
+      "slug": "7",
+      "file": "classes/7.html",
+      "name": "JBC Class 7 — Dare to Be Different",
+      "subject": "Class 7 - Dare to be different"
+    },
+    {
+      "slug": "8",
+      "file": "classes/8.html",
+      "name": "JBC Class 8 — The Power of God's Word",
+      "subject": "Class 8 - The power of God's Word"
+    },
+    {
+      "slug": "11a",
+      "file": "classes/11a.html",
+      "name": "JBC Class 11 — You Rule! As One Having Authority",
+      "subject": "Class 11 - You rule! As one having authority"
+    },
+    {
+      "slug": "12a",
+      "file": "classes/12a.html",
+      "name": "JBC Class 12 — Silence Is No Longer an Option",
+      "subject": "Class 12 - Silence is no longer an option"
     },
     {
       "file": "book-delivery.html",
