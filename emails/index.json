@@ -103,6 +103,18 @@
       "subject": "Class 15 - How faith works"
     },
     {
+      "slug": "9",
+      "file": "classes/9.html",
+      "name": "JBC Class 9 — The Power of Proclamations",
+      "subject": "Class 9 - The power of proclamations"
+    },
+    {
+      "slug": "10",
+      "file": "classes/10.html",
+      "name": "JBC Class 10 — How to Hear God",
+      "subject": "Class 10 - How to hear God"
+    },
+    {
       "file": "book-delivery.html",
       "name": "JBC Book delivery (transactional)",
       "subject": "Your download is ready",
